@@ -1,4 +1,5 @@
-import { useForm } from "../../../packages/react/src";
+// Import the hook from the packaged library
+import { useForm } from "el-form";
 import { userSchema, User } from "../../react/userSchema";
 
 export function UseFormDemo() {

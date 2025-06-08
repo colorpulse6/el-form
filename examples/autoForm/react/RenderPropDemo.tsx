@@ -1,4 +1,5 @@
-import { AutoForm } from "../../../packages/react/src";
+// Import the AutoForm component directly from the library
+import { AutoForm } from "el-form";
 import { userSchema, User } from "../../react/userSchema";
 
 export function RenderPropDemo() {

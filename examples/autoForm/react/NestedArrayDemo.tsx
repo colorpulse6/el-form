@@ -1,4 +1,5 @@
-import { AutoForm } from "../../../packages/react/src";
+// AutoForm is exported from the main package
+import { AutoForm } from "el-form";
 import { z } from "zod";
 
 // Define nested schema for deeply nested arrays

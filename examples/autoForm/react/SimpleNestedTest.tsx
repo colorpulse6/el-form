@@ -1,4 +1,5 @@
-import { AutoForm } from "../../../packages/react/src";
+// AutoForm is available directly via the main package
+import { AutoForm } from "el-form";
 import { z } from "zod";
 
 // Simple nested array schema for testing
