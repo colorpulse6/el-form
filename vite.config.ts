@@ -5,9 +5,14 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [react()],
   root: "examples/react",
+  resolve: {
+    alias: {
+      "el-form": resolve(__dirname, "packages/el-form/src/index.ts"),
+    },
+  },
   build: {
     lib: {
-      entry: resolve(__dirname, "packages/index.ts"),
+      entry: resolve(__dirname, "packages/el-form/src/index.ts"),
       name: "ElForm",
       fileName: "index",
     },
