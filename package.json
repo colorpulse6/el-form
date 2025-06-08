@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@8.15.0",
   "workspaces": ["packages/*"],
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
