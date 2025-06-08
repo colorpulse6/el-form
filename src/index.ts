@@ -1,15 +1,12 @@
-export { useForm } from "./useForm";
-export { AutoForm } from "./AutoForm";
-export { Form } from "./Form";
+export { useForm, Form } from "../packages/use-form/src";
+export type { FormState, UseFormOptions, UseFormReturn } from "../packages/use-form/src/types";
+export { AutoForm } from "../packages/auto-form/src";
 export type {
-  FieldConfig,
-  FormState,
-  UseFormOptions,
-  UseFormReturn,
   AutoFormProps,
   AutoFormFieldConfig,
   AutoFormFieldProps,
   AutoFormErrorProps,
   GridColumns,
-} from "./types";
-export { parseZodErrors } from "./utils";
+  FieldConfig,
+} from "../packages/auto-form/src/types";
+export { parseZodErrors } from "../packages/use-form/src/utils";

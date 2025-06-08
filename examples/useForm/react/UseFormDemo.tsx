@@ -1,5 +1,5 @@
-import { useForm } from "../index";
-import { userSchema, User } from "./userSchema";
+import { useForm } from "../../../packages/use-form/src";
+import { userSchema, User } from "../../react/userSchema";
 
 export function UseFormDemo() {
   // API #2: useForm Hook (Manual Control)

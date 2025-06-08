@@ -1,6 +1,6 @@
 import React from "react";
-import { AutoForm, AutoFormErrorProps } from "../index";
-import { userSchema, User } from "./userSchema";
+import { AutoForm, AutoFormErrorProps } from "../../../packages/auto-form/src";
+import { userSchema, User } from "../../react/userSchema";
 
 // Custom Error Component Example 1: Elegant Style
 const ElegantErrorComponent: React.FC<AutoFormErrorProps> = ({
