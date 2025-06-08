@@ -7,7 +7,7 @@ export default defineConfig({
   root: "examples/react",
   build: {
     lib: {
-      entry: resolve(__dirname, "packages/index.ts"),
+      entry: resolve(__dirname, "packages/el-form/src/index.ts"),
       name: "ElForm",
       fileName: "index",
     },

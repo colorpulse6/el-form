@@ -9,6 +9,7 @@ A **TypeScript-first React form library** with Zod validation, offering multiple
 - **`<AutoForm>` Component**: Declarative, rapid prototyping
 - **`useForm` Hook**: Manual control, maximum flexibility
 - **Render Props Pattern**: Hybrid approach combining both APIs
+- **Single Package Import**: Both APIs available via the `el-form` npm package
 
 ### ✅ **Advanced Form Management**
 
