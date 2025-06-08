@@ -1,5 +1,5 @@
-import { AutoForm } from "../index";
-import { userSchema, User } from "./userSchema";
+import { AutoForm } from "../../../packages/auto-form/src";
+import { userSchema, User } from "../../react/userSchema";
 
 export function RenderPropDemo() {
   // AutoForm field configuration

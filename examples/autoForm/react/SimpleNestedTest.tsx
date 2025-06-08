@@ -1,4 +1,4 @@
-import { AutoForm } from "../index";
+import { AutoForm } from "../../../packages/auto-form/src";
 import { z } from "zod";
 
 // Simple nested array schema for testing

@@ -1,11 +1,11 @@
-import { AutoFormDemo } from "./AutoFormDemo";
-import { UseFormDemo } from "./UseFormDemo";
-import { RenderPropDemo } from "./RenderPropDemo";
-import { ErrorComponentDemo } from "./ErrorComponentDemo";
-import { ApiComparison } from "./ApiComparison";
-import { NestedArrayDemo } from "./NestedArrayDemo";
-import { SimpleNestedTest } from "./SimpleNestedTest";
-import { DirectArrayTest } from "./DirectArrayTest";
+import { AutoFormDemo } from "../autoForm/react/AutoFormDemo";
+import { UseFormDemo } from "../useForm/react/UseFormDemo";
+import { RenderPropDemo } from "../autoForm/react/RenderPropDemo";
+import { ErrorComponentDemo } from "../autoForm/react/ErrorComponentDemo";
+import { ApiComparison } from "../autoForm/react/ApiComparison";
+import { NestedArrayDemo } from "../autoForm/react/NestedArrayDemo";
+import { SimpleNestedTest } from "../autoForm/react/SimpleNestedTest";
+import { DirectArrayTest } from "../useForm/react/DirectArrayTest";
 
 function App() {
   return (

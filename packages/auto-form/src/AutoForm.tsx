@@ -1,5 +1,5 @@
 import React from "react";
-import { useForm } from "./useForm";
+import { useForm } from "../../use-form/src";
 import {
   AutoFormProps,
   AutoFormFieldConfig,

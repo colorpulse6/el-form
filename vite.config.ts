@@ -2,13 +2,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  root: "src/testApp", // Point to our test app
+  root: "examples/react",
   build: {
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: resolve(__dirname, "packages/index.ts"),
       name: "ElForm",
       fileName: "index",
     },
