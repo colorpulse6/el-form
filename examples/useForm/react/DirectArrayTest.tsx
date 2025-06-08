@@ -1,4 +1,4 @@
-import { useForm } from "../../../packages/use-form/src";
+import { useForm } from "../../../packages/react/src";
 import { z } from "zod";
 
 // Test the useForm hook directly with array operations

@@ -1,4 +1,4 @@
-import { AutoForm } from "../../../packages/auto-form/src";
+import { AutoForm } from "../../../packages/react/src";
 import { userSchema, User } from "../../react/userSchema";
 
 export function AutoFormDemo() {

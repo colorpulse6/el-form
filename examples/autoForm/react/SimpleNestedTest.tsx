@@ -1,4 +1,4 @@
-import { AutoForm } from "../../../packages/auto-form/src";
+import { AutoForm } from "../../../packages/react/src";
 import { z } from "zod";
 
 // Simple nested array schema for testing

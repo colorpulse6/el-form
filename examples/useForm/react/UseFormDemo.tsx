@@ -1,4 +1,4 @@
-import { useForm } from "../../../packages/use-form/src";
+import { useForm } from "../../../packages/react/src";
 import { userSchema, User } from "../../react/userSchema";
 
 export function UseFormDemo() {

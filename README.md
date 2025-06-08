@@ -9,7 +9,7 @@ A **TypeScript-first React form library** with Zod validation, offering multiple
 - **`<AutoForm>` Component**: Declarative, rapid prototyping
 - **`useForm` Hook**: Manual control, maximum flexibility
 - **Render Props Pattern**: Hybrid approach combining both APIs
-- **Single Package Import**: Both APIs available via the `el-form` npm package
+- **Single Package Import (React)**: Import both APIs from `@el-form/react` or the default `el-form` alias
 
 ### ✅ **Advanced Form Management**
 
@@ -31,6 +31,12 @@ A **TypeScript-first React form library** with Zod validation, offering multiple
 - **Custom Error Components**: Full customization with `AutoFormErrorProps` interface
 - **Multiple Error Styles**: 6+ different error component examples included
 - **Error State Management**: Comprehensive error and touched state tracking
+
+### 📦 **Package Structure**
+
+- `@el-form/react` – React-specific package combining `useForm` and `AutoForm`
+- `el-form` – Alias to the React package (default)
+- Future frameworks will have their own packages (e.g., `@el-form/vue`)
 
 ---
 

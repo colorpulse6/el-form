@@ -1,5 +1,5 @@
 import React from "react";
-import { AutoForm, AutoFormErrorProps } from "../../../packages/auto-form/src";
+import { AutoForm, AutoFormErrorProps } from "../../../packages/react/src";
 import { userSchema, User } from "../../react/userSchema";
 
 // Custom Error Component Example 1: Elegant Style
