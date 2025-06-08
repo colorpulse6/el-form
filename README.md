@@ -34,7 +34,7 @@ A **TypeScript-first React form library** with Zod validation, offering multiple
 
 ### 📦 **Package Structure**
 
-- `@el-form/react` – React-specific package combining `useForm` and `AutoForm`
+- `@el-form/react` – React-specific package containing `useForm` and `AutoForm` sources under `packages/react`
 - `el-form` – Alias to the React package (default)
 - Future frameworks will have their own packages (e.g., `@el-form/vue`)
 

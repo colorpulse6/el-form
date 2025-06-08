@@ -21,6 +21,11 @@
     "declaration": true,
     "outDir": "dist"
   },
-  "include": ["packages/*/src", "src/index.ts"],
+  "include": [
+    "packages/*/src",
+    "packages/react/src",
+    "packages/react/*/src",
+    "src/index.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
