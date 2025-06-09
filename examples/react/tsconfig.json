@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "el-form": ["./packages/el-form/src/index.ts"],
+      "el-form/react": ["./packages/el-form/src/react.ts"],
+      "el-form/core": ["./packages/el-form/src/core.ts"]
+    }
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules", "dist"]
+}

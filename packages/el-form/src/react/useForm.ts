@@ -1,12 +1,8 @@
 import { useState, useCallback } from "react";
 import { z } from "zod";
 import { FormState, UseFormOptions, UseFormReturn } from "./types";
-import {
-  parseZodErrors,
-  setNestedValue,
-  addArrayItem,
-  removeArrayItem,
-} from "./utils";
+import { parseZodErrors } from "../core/validation";
+import { setNestedValue, addArrayItemReact, removeArrayItem } from "./utils";
 
 export function useForm<T extends Record<string, any>>(
   options: UseFormOptions<T>
@@ -182,7 +178,7 @@ export function useForm<T extends Record<string, any>>(
   const addArrayItemHandler = useCallback(
     (path: string, item: any) => {
       setFormState((prev) => {
-        const newValues = addArrayItem(prev.values, path, item);
+        const newValues = addArrayItemReact(prev.values, path, item);
         const { errors } = validate(newValues);
 
         return {

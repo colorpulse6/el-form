@@ -1,5 +1,5 @@
-import React from "react";
-import { useForm } from "../../use-form/src";
+import * as React from "react";
+import { useForm } from "./useForm";
 import {
   AutoFormProps,
   AutoFormFieldConfig,
@@ -12,7 +12,7 @@ import {
 const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({
   errors,
   touched,
-}) => {
+}: AutoFormErrorProps) => {
   const errorEntries = Object.entries(errors).filter(
     ([field]) => touched[field]
   );
@@ -29,7 +29,7 @@ const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({
           <li key={field} className="flex items-start">
             <span className="text-red-500 mr-2">•</span>
             <span className="capitalize">{field}:</span>
-            <span className="ml-1">{error}</span>
+            <span className="ml-1">{String(error)}</span>
           </li>
         ))}
       </ul>
@@ -49,7 +49,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
   error,
   touched,
   options,
-}) => {
+}: AutoFormFieldProps) => {
   const fieldId = `field-${name}`;
 
   const inputClasses = `
@@ -96,7 +96,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           className={inputClasses}
         >
           <option value="">{placeholder || "Select an option"}</option>
-          {options.map((option) => (
+          {options.map((option: { value: string; label: string }) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -123,7 +123,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
 };
 
 // Array Field Component for handling nested arrays
-const ArrayField: React.FC<{
+interface ArrayFieldProps {
   fieldConfig: AutoFormFieldConfig;
   value: any[];
   path: string;
@@ -132,7 +132,9 @@ const ArrayField: React.FC<{
   onValueChange: (path: string, value: any) => void;
   register: any;
   formState: any;
-}> = ({
+}
+
+const ArrayField: React.FC<ArrayFieldProps> = ({
   fieldConfig,
   value = [],
   path,
@@ -141,7 +143,7 @@ const ArrayField: React.FC<{
   onValueChange,
   register,
   formState,
-}) => {
+}: ArrayFieldProps) => {
   const arrayValue = Array.isArray(value) ? value : [];
 
   const createEmptyItem = () => {

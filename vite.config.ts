@@ -7,6 +7,8 @@ export default defineConfig({
   root: "examples/react",
   resolve: {
     alias: {
+      "el-form/react": resolve(__dirname, "packages/el-form/src/react.ts"),
+      "el-form/core": resolve(__dirname, "packages/el-form/src/core.ts"),
       "el-form": resolve(__dirname, "packages/el-form/src/index.ts"),
     },
   },
