@@ -1,0 +1,27 @@
+{
+  "id": "nested-arrays",
+  "title": "Nested Arrays",
+  "description": "El Form provides powerful support for nested objects and dynamic arrays, making it easy to handle complex form structures.",
+  "source": "@site/docs/nested-arrays.md",
+  "sourceDirName": ".",
+  "slug": "/nested-arrays",
+  "permalink": "/el-form/docs/nested-arrays",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/your-username/el-form/tree/main/docs/docs/nested-arrays.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "useForm Hook",
+    "permalink": "/el-form/docs/useform"
+  },
+  "next": {
+    "title": "Examples",
+    "permalink": "/el-form/docs/examples"
+  }
+}

@@ -12,14 +12,18 @@
   },
   "dependencies": {
     "@docusaurus/core": "^3.2.1",
-    "@docusaurus/preset-classic": "^3.2.1",
     "@docusaurus/plugin-content-docs": "^3.2.1",
     "@docusaurus/plugin-content-pages": "^3.2.1",
+    "@docusaurus/preset-classic": "^3.2.1",
     "@docusaurus/theme-classic": "^3.2.1",
     "@mdx-js/react": "^3.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.2.2",
-    "@docusaurus/module-type-aliases": "^3.2.1"
+    "@docusaurus/module-type-aliases": "^3.8.1",
+    "@docusaurus/tsconfig": "^3.8.1",
+    "@docusaurus/types": "^3.8.1",
+    "@tailwindcss/postcss": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.8.3"
   }
 }

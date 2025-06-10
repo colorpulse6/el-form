@@ -1,0 +1,27 @@
+{
+  "id": "autoform",
+  "title": "AutoForm",
+  "description": "AutoForm is the heart of El Form - it automatically generates form fields from your Zod schema, handling validation, error messages, and form submission.",
+  "source": "@site/docs/autoform.md",
+  "sourceDirName": ".",
+  "slug": "/autoform",
+  "permalink": "/el-form/docs/autoform",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/your-username/el-form/tree/main/docs/docs/autoform.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Quick Start",
+    "permalink": "/el-form/docs/quick-start"
+  },
+  "next": {
+    "title": "useForm Hook",
+    "permalink": "/el-form/docs/useform"
+  }
+}
