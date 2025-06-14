@@ -1,0 +1,24 @@
+{
+  "id": "quick-start",
+  "title": "quick-start",
+  "description": "1`---",
+  "source": "@site/docs/quick-start.md",
+  "sourceDirName": ".",
+  "slug": "/quick-start",
+  "permalink": "/el-form/docs/quick-start",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/your-username/el-form/tree/main/docs/docs/quick-start.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docs",
+  "previous": {
+    "title": "Introduction",
+    "permalink": "/el-form/docs/intro"
+  },
+  "next": {
+    "title": "AutoForm",
+    "permalink": "/el-form/docs/autoform"
+  }
+}

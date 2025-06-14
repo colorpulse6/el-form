@@ -1,0 +1,27 @@
+{
+  "id": "examples",
+  "title": "Examples",
+  "description": "Explore practical examples of El Form in action.",
+  "source": "@site/docs/examples.md",
+  "sourceDirName": ".",
+  "slug": "/examples",
+  "permalink": "/el-form/docs/examples",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/your-username/el-form/tree/main/docs/docs/examples.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "sidebar_position": 6
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Nested Arrays",
+    "permalink": "/el-form/docs/nested-arrays"
+  },
+  "next": {
+    "title": "Frequently Asked Questions",
+    "permalink": "/el-form/docs/faq"
+  }
+}
