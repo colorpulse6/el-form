@@ -47,6 +47,16 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     // image: "img/docusaurus-social-card.jpg",
+    colorMode: {
+      defaultMode: "light",
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
+    },
+    prism: {
+      theme: require("prism-react-renderer").themes.github,
+      darkTheme: require("prism-react-renderer").themes.vsDark,
+      additionalLanguages: ["typescript", "jsx", "tsx"],
+    },
     navbar: {
       title: "El Form",
       logo: {

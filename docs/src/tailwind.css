@@ -1,3 +1,279 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 /* Tailwind CSS imports and custom styles for El Form docs */
+
+/* Root variables for consistent theming */
+:root {
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --el-primary-50: #f0f9ff;
+  --el-primary-100: #e0f2fe;
+  --el-primary-200: #bae6fd;
+  --el-primary-300: #7dd3fc;
+  --el-primary-400: #38bdf8;
+  --el-primary-500: #0ea5e9;
+  --el-primary-600: #0284c7;
+  --el-primary-700: #0369a1;
+  --el-primary-800: #075985;
+  --el-primary-900: #0c4a6e;
+}
+
+/* Dark mode variables */
+[data-theme="dark"] {
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Global styles */
+html {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
+}
+
+/* Enhanced documentation styling */
+.markdown h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.markdown h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  color: rgb(30 41 59);
+}
+
+.dark .markdown h2 {
+  border-bottom-color: rgb(51 65 85);
+  color: rgb(226 232 240);
+}
+
+.markdown h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: rgb(30 41 59);
+}
+
+.dark .markdown h3 {
+  color: rgb(226 232 240);
+}
+
+.markdown p {
+  line-height: 1.625;
+  margin-bottom: 1.5rem;
+  color: rgb(71 85 105);
+}
+
+.dark .markdown p {
+  color: rgb(148 163 184);
+}
+
+.markdown a {
+  color: rgb(37 99 235);
+  transition: color 0.2s ease-in-out;
+}
+
+.markdown a:hover {
+  color: rgb(29 78 216);
+}
+
+.dark .markdown a {
+  color: rgb(96 165 250);
+}
+
+.dark .markdown a:hover {
+  color: rgb(147 197 253);
+}
+
+.markdown code {
+  background-color: rgb(241 245 249);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  color: rgb(30 41 59);
+}
+
+.dark .markdown code {
+  background-color: rgb(30 41 59);
+  color: rgb(226 232 240);
+}
+
+/* Smooth transitions for interactive elements */
+button,
+.button,
+a {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Enhanced focus states */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(59 130 246), 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Improved table styling */
+.markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 1.5rem 0;
+}
+
+.dark .markdown table {
+  border-color: rgb(51 65 85);
+}
+
+.markdown th {
+  background-color: rgb(248 250 252);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.dark .markdown th {
+  background-color: rgb(30 41 59);
+  border-bottom-color: rgb(51 65 85);
+}
+
+.markdown td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+
+.dark .markdown td {
+  border-bottom-color: rgb(30 41 59);
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: rgb(241 245 249);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background-color: rgb(30 41 59);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(203 213 225);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgb(71 85 105);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(148 163 184);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(100 116 139);
+}
+
+/* Code block enhancements */
+.prism-code {
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+[data-theme="dark"] .prism-code {
+  border-color: #334155;
+}
+
+/* Syntax highlighting improvements */
+.token.title.class-name {
+  color: var(--el-primary-600);
+}
+
+[data-theme="dark"] .token.title.class-name {
+  color: var(--el-primary-400);
+}
+
+.token.function {
+  color: #9333ea;
+}
+
+[data-theme="dark"] .token.function {
+  color: #a855f7;
+}
+
+.token.string {
+  color: #059669;
+}
+
+[data-theme="dark"] .token.string {
+  color: #10b981;
+}
+
+.token.keyword {
+  color: #2563eb;
+}
+
+[data-theme="dark"] .token.keyword {
+  color: #3b82f6;
+}
+
+/* Custom button styles */
+.button--primary {
+  background-color: var(--el-primary-600);
+  border-color: var(--el-primary-600);
+}
+
+.button--primary:hover {
+  background-color: var(--el-primary-700);
+  border-color: var(--el-primary-700);
+}
+
+.button--secondary {
+  background-color: #f1f5f9;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.button--secondary:hover {
+  background-color: #e2e8f0;
+}
+
+[data-theme="dark"] .button--secondary {
+  background-color: #1e293b;
+  color: #d1d5db;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .button--secondary:hover {
+  background-color: #334155;
+}
+
+/* Enhanced focus styles */
+*:focus {
+  outline: 2px solid var(--el-primary-500);
+  outline-offset: 2px;
+}
