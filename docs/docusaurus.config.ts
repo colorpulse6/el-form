@@ -7,14 +7,15 @@ const config: Config = {
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://your-username.github.io",
+  url: "https://colorpulse6.github.io",
   // Set the /<baseUrl>/ pathname under which your site is served
   baseUrl: "/el-form/",
 
   // GitHub pages deployment config.
-  organizationName: "Nic Barnes",
+  organizationName: "colorpulse6",
   projectName: "el-form",
   deploymentBranch: "gh-pages",
+  trailingSlash: false,
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
 
@@ -74,7 +75,7 @@ const config: Config = {
           label: "Quick Start",
         },
         {
-          href: "https://github.com/your-username/el-form",
+          href: "https://github.com/colorpulse6/el-form",
           label: "GitHub",
           position: "right",
           className: "navbar__item--github",
@@ -102,7 +103,7 @@ const config: Config = {
           items: [
             {
               label: "GitHub",
-              href: "https://github.com/your-username/el-form",
+              href: "https://github.com/colorpulse6/el-form",
             },
           ],
         },
