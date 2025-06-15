@@ -33,7 +33,7 @@ const config: Config = {
         docs: {
           sidebarPath: "./sidebars.ts",
           // Please change this to your repo.
-          editUrl: "https://github.com/your-username/el-form/tree/main/docs/",
+          editUrl: "https://github.com/colorpulse6/el-form/tree/main/docs/",
         },
         blog: false,
         theme: {
@@ -64,15 +64,20 @@ const config: Config = {
       },
       items: [
         {
-          type: "docSidebar",
-          sidebarId: "docs",
+          to: "/docs/intro",
           position: "left",
           label: "Documentation",
+        },
+        {
+          to: "/docs/quick-start",
+          position: "left",
+          label: "Quick Start",
         },
         {
           href: "https://github.com/your-username/el-form",
           label: "GitHub",
           position: "right",
+          className: "navbar__item--github",
         },
       ],
     },
