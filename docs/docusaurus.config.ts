@@ -15,7 +15,6 @@ const config: Config = {
   organizationName: "Nic Barnes",
   projectName: "el-form",
   deploymentBranch: "gh-pages",
-
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
 

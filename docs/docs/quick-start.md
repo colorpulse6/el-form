@@ -1,6 +1,5 @@
-1`---
+---
 sidebar_position: 2
-
 ---
 
 import { InstallCommand, CodeBlock, Callout, FeatureCard, InteractivePreview, ProgressSteps } from '@site/src/components/DocComponents';
@@ -51,69 +50,72 @@ Install El Form and its peer dependency Zod:
 Let's create a simple contact form that showcases El Form's power:
 
 <InteractivePreview
-title="Contact Form Example"
-code={`import { AutoForm } from "el-form";
+  title="Quick Start Contact Form"
+  description="A fully functional contact form with validation"
+  componentName="QuickStartExample"
+/>
+
+Here's the complete code:
+
+```tsx
+import { AutoForm } from "el-form/react";
 import { z } from "zod";
 
 // Define your schema with validation rules
 const contactSchema = z.object({
-name: z.string().min(1, "Name is required"),
-email: z.string().email("Please enter a valid email"),
-message: z.string().min(10, "Message must be at least 10 characters"),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Please enter a valid email"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
 });
 
 function ContactForm() {
-const handleSubmit = (data: z.infer<typeof contactSchema>) => {
-console.log("Form submitted:", data);
-// Handle your form submission here
-};
+  const handleSubmit = (data: Record<string, any>) => {
+    console.log("Form submitted:", data);
+    // Handle your form submission here
+  };
 
-return (
-<div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-<h2 className="text-2xl font-bold mb-4 text-gray-800">Contact Us</h2>
-<AutoForm schema={contactSchema} onSubmit={handleSubmit} />
-</div>
-);
-}`}
+  const fields = [
+    {
+      name: "name",
+      label: "Name",
+      type: "text",
+      colSpan: 12,
+      placeholder: "Enter your name",
+    },
+    {
+      name: "email",
+      label: "Email",
+      type: "email",
+      colSpan: 12,
+      placeholder: "you@example.com",
+    },
+    {
+      name: "message",
+      label: "Message",
+      type: "textarea",
+      colSpan: 12,
+      placeholder: "Tell us what you think...",
+    },
+  ];
 
->
-
-  <div className="max-w-md mx-auto p-6 bg-white dark:bg-slate-700 rounded-lg shadow-lg border border-slate-200 dark:border-slate-600">
-    <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Contact Us</h2>
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-        <input
-          type="text"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-600 dark:text-white"
-          placeholder="Enter your name"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-        <input
-          type="email"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-600 dark:text-white"
-          placeholder="you@example.com"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label>
-        <textarea
-          rows={3}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-600 dark:text-white"
-          placeholder="Tell us what you think..."
-        />
-      </div>
-      <button
-        type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      >
-        Submit
-      </button>
+  return (
+    <div className="max-w-md mx-auto">
+      <AutoForm
+        schema={contactSchema}
+        fields={fields}
+        layout="grid"
+        columns={12}
+        onSubmit={handleSubmit}
+        initialValues={{
+          name: "",
+          email: "",
+          message: "",
+        }}
+      />
     </div>
-  </div>
-</InteractivePreview>
+  );
+}
+```
 
 <Callout type="success" title="🎉 That's it!">
 You now have a fully functional form with:
@@ -150,72 +152,39 @@ You now have a fully functional form with:
 
 ## Customization
 
-Want to customize the form? You can override individual fields with `fieldConfig`:
+Want to customize field labels and types? You can configure each field in the `fields` array:
 
 <InteractivePreview
-title="Customized Form Example"
-code={`<AutoForm
-  schema={contactSchema}
-  onSubmit={handleSubmit}
-  fieldConfig={{
-    name: {
-      label: "Full Name",
-      placeholder: "Enter your full name",
-      description: "We'll use this to personalize your experience",
-    },
-    email: {
-      label: "Email Address",
-      placeholder: "you@example.com",
-    },
-    message: {
-      fieldType: "textarea",
-      label: "Your Message",
-      placeholder: "Tell us what you think...",
-      rows: 4,
-    },
-  }}
-  className="space-y-4"
-/>`}
+  title="Customized Field Configuration"
+  description="Customize labels, placeholders, and field types"
+  componentName="FieldConfigExample"
+/>
 
->
-
-  <div className="max-w-md mx-auto p-6 bg-white dark:bg-slate-700 rounded-lg shadow-lg border border-slate-200 dark:border-slate-600">
-    <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Customized Form</h2>
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-        <input
-          type="text"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-600 dark:text-white"
-          placeholder="Enter your full name"
-        />
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">We'll use this to personalize your experience</p>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
-        <input
-          type="email"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-600 dark:text-white"
-          placeholder="you@example.com"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Message</label>
-        <textarea
-          rows={4}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-600 dark:text-white"
-          placeholder="Tell us what you think..."
-        />
-      </div>
-      <button
-        type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      >
-        Submit
-      </button>
-    </div>
-  </div>
-</InteractivePreview>
+```tsx
+const fields = [
+  {
+    name: "name",
+    label: "Full Name",
+    type: "text",
+    colSpan: 12,
+    placeholder: "Enter your full name",
+  },
+  {
+    name: "email",
+    label: "Email Address",
+    type: "email",
+    colSpan: 12,
+    placeholder: "you@example.com",
+  },
+  {
+    name: "message",
+    label: "Your Message",
+    type: "textarea",
+    colSpan: 12,
+    placeholder: "Tell us what you think...",
+  },
+];
+```
 
 ## Advanced Usage with useForm Hook
 
@@ -250,6 +219,7 @@ console.error("Submission failed:", error);
 };
 
 return (
+
 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mx-auto">
 <div>
 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -265,47 +235,47 @@ className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-b
 )}
 </div>
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Email
-        </label>
-        <input
-          {...register("email")}
-          id="email"
-          type="email"
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-        )}
-      </div>
+<div>
+<label htmlFor="email" className="block text-sm font-medium text-gray-700">
+Email
+</label>
+<input
+{...register("email")}
+id="email"
+type="email"
+className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+/>
+{errors.email && (
+<p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+)}
+</div>
 
-      <div>
-        <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-          Message
-        </label>
-        <textarea
-          {...register("message")}
-          id="message"
-          rows={4}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
-        {errors.message && (
-          <p className="mt-1 text-sm text-red-600">{errors.message.message}</p>
-        )}
-      </div>
+<div>
+<label htmlFor="message" className="block text-sm font-medium text-gray-700">
+Message
+</label>
+<textarea
+{...register("message")}
+id="message"
+rows={4}
+className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+/>
+{errors.message && (
+<p className="mt-1 text-sm text-red-600">{errors.message.message}</p>
+)}
+</div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-      >
-        {isSubmitting ? "Submitting..." : "Submit"}
-      </button>
-    </form>
+<button
+type="submit"
+disabled={isSubmitting}
+className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
 
+> {isSubmitting ? "Submitting..." : "Submit"}
+> </button>
+
+</form>
 );
-}`}
+}}`}
 </CodeBlock>
 
 <Callout type="info" title="Pro Tip">
@@ -363,8 +333,8 @@ The `useForm` hook gives you complete control over form state, validation timing
         🔗
       </div>
       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-        <a href="./nested-arrays" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-          Nested Arrays
+        <a href="./arrays" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+         Arrays
         </a>
       </h3>
     </div>

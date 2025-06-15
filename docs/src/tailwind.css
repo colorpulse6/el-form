@@ -101,12 +101,12 @@ html {
 }
 
 .markdown code {
-  background-color: rgb(241 245 249);
+  /* background-color: rgb(241 245 249); */
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
   font-family: ui-monospace, SFMono-Regular, monospace;
-  color: rgb(30 41 59);
+  /* color: rgb(241 245 249); */
 }
 
 .dark .markdown code {

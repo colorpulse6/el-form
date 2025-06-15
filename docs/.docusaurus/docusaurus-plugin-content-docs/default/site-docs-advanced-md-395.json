@@ -1,0 +1,18 @@
+{
+  "id": "advanced",
+  "title": "Advanced Patterns",
+  "description": "Explore advanced form patterns and techniques with El Form.",
+  "source": "@site/docs/advanced.md",
+  "sourceDirName": ".",
+  "slug": "/advanced",
+  "permalink": "/el-form/docs/advanced",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/your-username/el-form/tree/main/docs/docs/advanced.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "sidebar_position": 8
+  }
+}

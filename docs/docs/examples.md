@@ -2,6 +2,9 @@
 sidebar_position: 6
 ---
 
+import { InteractivePreview } from '@site/src/components';
+import { RegistrationFormExample, ContactFormExample, ProfileFormExample } from '@site/src/components/examples';
+
 # Examples
 
 Explore practical examples of El Form in action.
@@ -85,6 +88,32 @@ function RegistrationForm() {
   );
 }
 ```
+
+### Try it out:
+
+<InteractivePreview title="Registration Form Example">
+  <RegistrationFormExample />
+</InteractivePreview>
+
+## Contact Form
+
+A simple contact form with dropdown selections:
+
+### Try it out:
+
+<InteractivePreview title="Contact Form Example">
+  <ContactFormExample />
+</InteractivePreview>
+
+## Profile Form
+
+A comprehensive profile form with arrays and various field types:
+
+### Try it out:
+
+<InteractivePreview title="Profile Form Example">
+  <ProfileFormExample />
+</InteractivePreview>
 
 ## Contact Form with Custom Styling
 

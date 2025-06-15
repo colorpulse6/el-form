@@ -2,7 +2,10 @@
 sidebar_position: 5
 ---
 
-# Nested Arrays
+import { InteractivePreview } from '@site/src/components';
+import { BasicArrayExample, ObjectArrayExample, NestedArrayExample } from '@site/src/components/examples';
+
+# Arrays
 
 El Form provides powerful support for nested objects and dynamic arrays, making it easy to handle complex form structures.
 
@@ -41,6 +44,12 @@ function SkillsForm() {
 }
 ```
 
+### Try it out:
+
+<InteractivePreview title="Basic Array Example">
+  <BasicArrayExample />
+</InteractivePreview>
+
 ## Object Arrays
 
 Handle arrays of objects for more complex structures:
@@ -74,6 +83,12 @@ function ContactsForm() {
   );
 }
 ```
+
+### Try it out:
+
+<InteractivePreview title="Object Array Example">
+  <ObjectArrayExample />
+</InteractivePreview>
 
 ## Dynamic Array Management
 
@@ -492,6 +507,18 @@ function TeamForm() {
   );
 }
 ```
+
+## Nested Arrays
+
+For complex nested structures with multiple levels of arrays:
+
+### Try it out:
+
+<InteractivePreview title="Nested Array Example">
+  <NestedArrayExample />
+</InteractivePreview>
+
+This example demonstrates handling deeply nested array structures with multiple levels of objects and arrays. El Form automatically generates the appropriate UI for adding, removing, and managing nested data.
 
 ## Best Practices
 

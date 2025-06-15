@@ -2,6 +2,9 @@
 sidebar_position: 4
 ---
 
+import { InteractivePreview } from '@site/src/components';
+import { UseFormExample, SimpleAutoFormExample } from '@site/src/components/examples';
+
 # useForm Hook
 
 The `useForm` hook provides complete control over your forms while maintaining type safety and validation through Zod schemas.
@@ -53,6 +56,36 @@ function LoginForm() {
   );
 }
 ```
+
+### Try it out:
+
+<InteractivePreview title="useForm Hook Example">
+  <UseFormExample />
+</InteractivePreview>
+
+## AutoForm vs useForm Comparison
+
+See the difference between declarative and imperative approaches:
+
+### AutoForm (Declarative)
+
+<InteractivePreview title="AutoForm - Declarative Approach">
+  <SimpleAutoFormExample />
+</InteractivePreview>
+
+**AutoForm Benefits:**
+
+- Minimal code required
+- Automatic layout and styling
+- Built-in error handling
+- Consistent UI across forms
+
+**useForm Benefits:**
+
+- Maximum control over rendering
+- Custom layouts and styling
+- Access to form state
+- Integration with existing components
 
 ## Form State
 

@@ -11,9 +11,22 @@
           "mainDocId": "intro",
           "docs": [
             {
+              "id": "advanced",
+              "path": "/el-form/docs/advanced"
+            },
+            {
+              "id": "arrays",
+              "path": "/el-form/docs/arrays",
+              "sidebar": "docs"
+            },
+            {
               "id": "autoform",
               "path": "/el-form/docs/autoform",
               "sidebar": "docs"
+            },
+            {
+              "id": "error-handling",
+              "path": "/el-form/docs/error-handling"
             },
             {
               "id": "examples",
@@ -28,11 +41,6 @@
             {
               "id": "intro",
               "path": "/el-form/docs/intro",
-              "sidebar": "docs"
-            },
-            {
-              "id": "nested-arrays",
-              "path": "/el-form/docs/nested-arrays",
               "sidebar": "docs"
             },
             {
