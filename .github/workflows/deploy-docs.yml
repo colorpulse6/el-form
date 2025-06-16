@@ -34,6 +34,13 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
+        run: pnpm install
+
+      - name: Build el-form package
+        working-directory: ./packages/el-form
+        run: pnpm run build
+
+      - name: Install docs dependencies
         working-directory: ./docs
         run: pnpm install
 
