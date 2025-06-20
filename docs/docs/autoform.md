@@ -45,9 +45,37 @@ This will generate a form with the following fields:
 - `role`: Select/dropdown with "admin", "user", and "guest" options
 - `agreesToTerms`: A checkbox
 
-## Customizing Fields
+## Hybrid Approach: Auto + Manual
 
-While `AutoForm` is great for speed, you can still customize individual fields by providing a `fields` array. This allows you to override labels, placeholders, or even field types.
+The most powerful way to use `AutoForm` is to combine automatic field generation with selective overrides. **Only specify the fields that need customization** - everything else is auto-generated:
+
+```tsx
+const userSchema = z.object({
+  firstName: z.string().min(1), // → Auto: text field
+  lastName: z.string().min(1), // → Auto: text field
+  email: z.string().email(), // → Auto: email field
+  age: z.number().min(18), // → Auto: number field
+  bio: z.string().optional(), // → Override: want textarea
+  newsletter: z.boolean(), // → Override: want full-width
+});
+
+<AutoForm
+  schema={userSchema}
+  fields={[
+    // Only specify what needs customization
+    { name: "bio", type: "textarea", colSpan: 2 },
+    { name: "newsletter", colSpan: 2 },
+    // firstName, lastName, email, age auto-generated!
+  ]}
+  layout="grid"
+  columns={2}
+  onSubmit={handleSubmit}
+/>;
+```
+
+## Complete Field Customization
+
+For full control over all fields, you can provide a complete `fields` array:
 
 ```tsx
 <AutoForm
@@ -66,7 +94,7 @@ While `AutoForm` is great for speed, you can still customize individual fields b
     {
       name: "role",
       label: "Your Role",
-      type: "select", // Can be explicit
+      type: "select",
       options: [
         { value: "admin", label: "Administrator" },
         { value: "user", label: "Regular User" },

@@ -1,6 +1,6 @@
 {
   "name": "@colorpulse/el-form",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Modern form library with automatic form generation and framework-agnostic core",
   "author": "Nichalas Barnes",
   "license": "MIT",

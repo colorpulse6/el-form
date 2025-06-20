@@ -132,9 +132,46 @@ const componentMap: ComponentMap = {
 };
 ```
 
-## Field-Level Overrides
+## Overriding Auto-Generated Fields
 
-For even more granular control, you can still override individual fields using the `fields` prop:
+### Automatic Field Generation
+
+`AutoForm` automatically generates fields from your Zod schema:
+
+```tsx
+const userSchema = z.object({
+  firstName: z.string(), // → text field
+  email: z.string().email(), // → email field
+  age: z.number(), // → number field
+  role: z.enum(["admin", "user"]), // → select field
+  isActive: z.boolean(), // → checkbox field
+});
+
+// All fields auto-generated, no fields prop needed!
+<AutoForm schema={userSchema} componentMap={componentMap} />;
+```
+
+### Selective Field Overrides
+
+When you need to customize specific fields (like layout or type), use the `fields` prop with **only the fields you want to override**:
+
+```tsx
+<AutoForm
+  schema={userSchema}
+  componentMap={componentMap}
+  fields={[
+    // Only specify fields that need customization
+    { name: "bio", type: "textarea", colSpan: 2 }, // Override type
+    { name: "terms", type: "checkbox", colSpan: 2 }, // Override layout
+    // All other fields auto-generated from schema!
+  ]}
+  onSubmit={handleSubmit}
+/>
+```
+
+### Field-Level Component Overrides
+
+For complete control over individual fields, use the `component` prop:
 
 ```tsx
 <AutoForm
@@ -150,11 +187,74 @@ For even more granular control, you can still override individual fields using t
 />
 ```
 
-The priority order is:
+### Priority Order
 
-1. Field-level `component` prop (highest priority)
-2. `componentMap` based on field type
-3. Default components (lowest priority)
+The component selection follows this priority:
+
+1. **Field-level `component` prop** (highest priority)
+2. **`componentMap` based on field type**
+3. **Auto-generated from schema + default components** (lowest priority)
+
+## Complete Example: Hybrid Approach
+
+Here's a real-world example showing the power of combining automatic generation with selective overrides:
+
+```tsx
+import { AutoForm, ComponentMap } from "@colorpulse/el-form";
+import { z } from "zod";
+
+// Custom components for specific field types
+const componentMap: ComponentMap = {
+  text: CustomTextInput,
+  email: CustomEmailInput,
+  select: CustomSelect,
+  textarea: CustomTextarea,
+};
+
+// Schema with various field types
+const userSchema = z.object({
+  // These will be auto-generated:
+  firstName: z.string().min(1), // → text (CustomTextInput)
+  lastName: z.string().min(1), // → text (CustomTextInput)
+  email: z.string().email(), // → email (CustomEmailInput)
+  age: z.number().min(18), // → number (CustomTextInput)
+  role: z.enum(["admin", "user"]), // → select (CustomSelect)
+
+  // These need manual override:
+  bio: z.string().optional(), // Want textarea, not text
+  newsletter: z.boolean(), // Want full-width checkbox
+});
+
+function UserForm() {
+  return (
+    <AutoForm
+      schema={userSchema}
+      componentMap={componentMap}
+      fields={[
+        // Only override what needs customization
+        {
+          name: "bio",
+          type: "textarea",
+          colSpan: 2,
+          placeholder: "Tell us about yourself...",
+        },
+        { name: "newsletter", type: "checkbox", colSpan: 2 },
+        // firstName, lastName, email, age, role auto-generated!
+      ]}
+      layout="grid"
+      columns={2}
+      onSubmit={(data) => console.log(data)}
+    />
+  );
+}
+```
+
+This approach gives you:
+
+- ✅ **Automatic field generation** for most fields
+- ✅ **Custom styling** via componentMap
+- ✅ **Selective overrides** for special cases
+- ✅ **Minimal configuration** - only specify what's different
 
 ## Best Practices
 
