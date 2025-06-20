@@ -38,3 +38,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Test projects
+el-form-test-project/

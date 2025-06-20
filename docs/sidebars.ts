@@ -4,9 +4,16 @@ const sidebars: SidebarsConfig = {
   docs: [
     "intro",
     "quick-start",
-    "autoform",
-    "useform",
-    "arrays",
+    {
+      type: "category",
+      label: "AutoForm",
+      items: ["autoform", "autoform-arrays", "custom-components"],
+    },
+    {
+      type: "category",
+      label: "useForm",
+      items: ["useform", "field-types", "useform-arrays"],
+    },
     "examples",
     "faq",
   ],

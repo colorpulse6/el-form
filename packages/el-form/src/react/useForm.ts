@@ -61,12 +61,15 @@ export function useForm<T extends Record<string, any>>(
         name,
         value: (formState.values[name] || "") as T[Name],
         onChange: (e: React.ChangeEvent<any>) => {
+          const target = e.target;
           const value =
-            e.target.type === "number"
-              ? e.target.value
-                ? Number(e.target.value)
+            target.type === "checkbox"
+              ? target.checked
+              : target.type === "number"
+              ? target.value
+                ? Number(target.value)
                 : undefined
-              : e.target.value;
+              : target.value;
 
           setFormState((prev) => {
             const newValues = { ...prev.values, [name]: value };

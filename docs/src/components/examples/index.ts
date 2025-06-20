@@ -37,3 +37,5 @@ export {
 
 // Quick Start example
 export { QuickStartExample } from "./QuickStartExample";
+
+export * from "./UseFormArraysExample";

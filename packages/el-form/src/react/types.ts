@@ -54,14 +54,7 @@ export interface FieldConfig {
 export interface AutoFormFieldConfig {
   name: string;
   label?: string;
-  type?:
-    | "text"
-    | "email"
-    | "password"
-    | "number"
-    | "textarea"
-    | "select"
-    | "array";
+  type?: FieldType;
   placeholder?: string;
   colSpan?: GridColumns;
   component?: React.ComponentType<AutoFormFieldProps>;
@@ -91,9 +84,26 @@ export interface AutoFormErrorProps {
   touched: Record<string, boolean>;
 }
 
+// Component mapping for custom field components
+export type FieldType =
+  | "text"
+  | "email"
+  | "password"
+  | "number"
+  | "textarea"
+  | "select"
+  | "array"
+  | "checkbox"
+  | "date"
+  | "url";
+
+export type ComponentMap = Partial<
+  Record<FieldType, React.ComponentType<AutoFormFieldProps>>
+>;
+
 export interface AutoFormProps<T extends Record<string, any>> {
   schema: z.ZodSchema<T>;
-  fields: AutoFormFieldConfig[];
+  fields?: AutoFormFieldConfig[];
   initialValues?: Partial<T>;
   layout?: "grid" | "flex";
   columns?: GridColumns;
@@ -101,4 +111,5 @@ export interface AutoFormProps<T extends Record<string, any>> {
   onError?: (errors: Record<keyof T, string>) => void;
   children?: (formApi: UseFormReturn<T>) => React.ReactNode;
   customErrorComponent?: React.ComponentType<AutoFormErrorProps>;
+  componentMap?: ComponentMap;
 }

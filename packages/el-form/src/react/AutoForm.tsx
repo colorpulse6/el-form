@@ -7,6 +7,7 @@ import {
   AutoFormErrorProps,
   GridColumns,
 } from "./types";
+import { z } from "zod";
 
 // Default error component
 const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({
@@ -51,6 +52,25 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
   options,
 }: AutoFormFieldProps) => {
   const fieldId = `field-${name}`;
+
+  if (type === "checkbox") {
+    return (
+      <div className="flex items-center gap-x-2">
+        <input
+          id={fieldId}
+          name={name}
+          type="checkbox"
+          checked={!!value}
+          onChange={onChange}
+          onBlur={onBlur}
+          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        <label htmlFor={fieldId} className="text-sm font-medium text-gray-900">
+          {label}
+        </label>
+      </div>
+    );
+  }
 
   const inputClasses = `
     w-full px-3 py-2 border rounded-md text-sm
@@ -277,6 +297,63 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
   );
 };
 
+function generateFieldsFromSchema<T extends z.ZodType<any, any>>(
+  schema: T
+): AutoFormFieldConfig[] {
+  if (!(schema instanceof z.ZodObject)) {
+    return [];
+  }
+
+  const shape = (schema as z.ZodObject<any, any>).shape;
+  const fields: AutoFormFieldConfig[] = [];
+
+  for (const key in shape) {
+    if (Object.prototype.hasOwnProperty.call(shape, key)) {
+      const zodType = shape[key] as z.ZodTypeAny;
+      const typeName = zodType._def.typeName;
+
+      const fieldConfig: AutoFormFieldConfig = {
+        name: key,
+        label: key
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (str) => str.toUpperCase()),
+        type: "text", // Default to text
+      };
+
+      if (typeName === "ZodString") {
+        const checks = (zodType._def as any).checks || [];
+        if (checks.some((c: { kind: string }) => c.kind === "email")) {
+          fieldConfig.type = "email";
+        } else if (checks.some((c: { kind: string }) => c.kind === "url")) {
+          fieldConfig.type = "url";
+        }
+      } else if (typeName === "ZodNumber") {
+        fieldConfig.type = "number";
+      } else if (typeName === "ZodBoolean") {
+        fieldConfig.type = "checkbox";
+      } else if (typeName === "ZodEnum") {
+        fieldConfig.type = "select";
+        fieldConfig.options = (zodType._def as any).values.map((v: string) => ({
+          value: v,
+          label: v,
+        }));
+      } else if (typeName === "ZodDate") {
+        fieldConfig.type = "date";
+      } else if (typeName === "ZodArray") {
+        fieldConfig.type = "array";
+        const arrayElementType = (zodType._def as any).type;
+        if (arrayElementType instanceof z.ZodObject) {
+          fieldConfig.fields = generateFieldsFromSchema(arrayElementType);
+        }
+      }
+
+      fields.push(fieldConfig);
+    }
+  }
+
+  return fields;
+}
+
 export function AutoForm<T extends Record<string, any>>({
   schema,
   fields,
@@ -287,6 +364,7 @@ export function AutoForm<T extends Record<string, any>>({
   onError,
   children,
   customErrorComponent,
+  componentMap,
 }: AutoFormProps<T>) {
   const {
     register,
@@ -302,6 +380,8 @@ export function AutoForm<T extends Record<string, any>>({
     validateOnChange: true,
     validateOnBlur: true,
   });
+
+  const fieldsToRender = fields || generateFieldsFromSchema(schema);
 
   // Choose which error component to use
   const ErrorComponent = customErrorComponent || DefaultErrorComponent;
@@ -374,7 +454,15 @@ export function AutoForm<T extends Record<string, any>>({
     const fieldProps = register(fieldName);
     const error = formState.errors[fieldName];
     const touched = formState.touched[fieldName];
-    const FieldComponent = fieldConfig.component || DefaultField;
+
+    // Determine which component to use:
+    // 1. Field-level component override (existing behavior)
+    // 2. ComponentMap override based on field type
+    // 3. Default field component
+    const FieldComponent =
+      fieldConfig.component ||
+      (fieldConfig.type && componentMap?.[fieldConfig.type]) ||
+      DefaultField;
 
     return (
       <div key={fieldConfig.name} className={fieldContainerClasses}>
@@ -435,7 +523,7 @@ export function AutoForm<T extends Record<string, any>>({
       />
 
       <div className={containerClasses}>
-        {fields.map(renderField)}
+        {fieldsToRender.map(renderField)}
 
         <div
           className={`
@@ -493,7 +581,9 @@ export function AutoForm<T extends Record<string, any>>({
             removeArrayItem,
           })}
 
-          <div className={containerClasses}>{fields.map(renderField)}</div>
+          <div className={containerClasses}>
+            {fieldsToRender.map(renderField)}
+          </div>
         </form>
       </div>
     );

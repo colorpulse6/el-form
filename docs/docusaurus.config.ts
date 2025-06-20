@@ -1,5 +1,6 @@
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import path from "path";
 
 const config: Config = {
   title: "El Form",
@@ -44,9 +45,40 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    "docusaurus-plugin-sass",
+    async function tailwindPlugin(context, options) {
+      return {
+        name: "docusaurus-tailwindcss",
+        configurePostCss(postcssOptions) {
+          postcssOptions.plugins.push(require("tailwindcss"));
+          postcssOptions.plugins.push(require("autoprefixer"));
+          return postcssOptions;
+        },
+      };
+    },
+    // Custom plugin to handle monorepo Webpack configuration
+    async function monorepoWebpack(context, options) {
+      return {
+        name: "docusaurus-monorepo-webpack",
+        configureWebpack(config, isServer, utils) {
+          return {
+            resolve: {
+              alias: {
+                "@colorpulse/el-form": path.resolve(
+                  __dirname,
+                  "../packages/el-form/src"
+                ),
+              },
+            },
+          };
+        },
+      };
+    },
+  ],
+
   themeConfig: {
-    // Replace with your project's social card
-    // image: "img/docusaurus-social-card.jpg",
+    image: "img/docusaurus-social-card.jpg",
     colorMode: {
       defaultMode: "light",
       disableSwitch: false,
