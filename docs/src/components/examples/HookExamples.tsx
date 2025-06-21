@@ -1,5 +1,4 @@
-import React from "react";
-import { AutoForm, useForm } from "el-form/react";
+import { AutoForm, useForm } from "el-form-react";
 import { z } from "zod";
 
 // Basic useForm Example
@@ -159,7 +158,7 @@ export const UseFormExample: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={reset}
+            onClick={() => reset()}
             className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             Reset

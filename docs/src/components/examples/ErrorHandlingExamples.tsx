@@ -1,5 +1,5 @@
 import React from "react";
-import { AutoForm, AutoFormErrorProps } from "el-form/react";
+import { AutoForm, AutoFormErrorProps } from "el-form-react";
 import { z } from "zod";
 
 // Schema for demonstrating errors
@@ -55,7 +55,7 @@ const ElegantErrorComponent: React.FC<AutoFormErrorProps> = ({
               <span className="font-medium text-pink-700 capitalize">
                 {field}:
               </span>
-              <span className="ml-2 text-pink-600">{error}</span>
+              <span className="ml-2 text-pink-600">{String(error)}</span>
             </div>
           </div>
         ))}
@@ -86,7 +86,8 @@ const MinimalErrorComponent: React.FC<AutoFormErrorProps> = ({
             <ul className="list-disc pl-5 space-y-1">
               {errorEntries.map(([field, error]) => (
                 <li key={field}>
-                  <strong className="capitalize">{field}:</strong> {error}
+                  <strong className="capitalize">{field}:</strong>{" "}
+                  {String(error)}
                 </li>
               ))}
             </ul>

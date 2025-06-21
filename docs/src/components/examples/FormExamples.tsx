@@ -1,5 +1,5 @@
 import React from "react";
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
 // Registration Form Schema (simplified for supported field types)

@@ -21,6 +21,7 @@ export {
 
 // Hook examples
 export { UseFormExample } from "./HookExamples";
+export { default as UseFormAdvancedExample } from "./UseFormAdvancedExample";
 
 // Advanced examples
 export {

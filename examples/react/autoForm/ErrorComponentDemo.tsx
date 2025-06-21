@@ -1,6 +1,6 @@
 import React from "react";
 // Import the AutoForm component and types from the React-specific entry point
-import { AutoForm, AutoFormErrorProps } from "el-form/react";
+import { AutoForm, AutoFormErrorProps } from "el-form-react";
 import { userSchema, User } from "../../react/userSchema";
 
 // Custom Error Component Example 1: Elegant Style

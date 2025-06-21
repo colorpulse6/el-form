@@ -46,13 +46,11 @@ const config: Config = {
   ],
 
   plugins: [
-    "docusaurus-plugin-sass",
     async function tailwindPlugin(context, options) {
       return {
         name: "docusaurus-tailwindcss",
         configurePostCss(postcssOptions) {
-          postcssOptions.plugins.push(require("tailwindcss"));
-          postcssOptions.plugins.push(require("autoprefixer"));
+          postcssOptions.plugins.push(require("@tailwindcss/postcss"));
           return postcssOptions;
         },
       };
@@ -65,9 +63,13 @@ const config: Config = {
           return {
             resolve: {
               alias: {
-                "@colorpulse/el-form": path.resolve(
+                "el-form-react": path.resolve(
                   __dirname,
-                  "../packages/el-form/src"
+                  "../packages/el-form-react/src"
+                ),
+                "el-form": path.resolve(
+                  __dirname,
+                  "../packages/el-form-core/src"
                 ),
               },
             },

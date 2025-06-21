@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
 // Conditional Form Example

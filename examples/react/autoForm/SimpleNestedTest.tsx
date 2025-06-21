@@ -1,5 +1,5 @@
 // AutoForm is available from el-form/react
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
 // Simple nested array schema for testing

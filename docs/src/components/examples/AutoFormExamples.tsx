@@ -1,5 +1,4 @@
-import React from "react";
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
 // Simple AutoForm Example

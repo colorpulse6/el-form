@@ -1,4 +1,4 @@
-import { useForm } from "el-form/react";
+import { useForm } from "el-form-react";
 import { z } from "zod";
 
 const experienceSchema = z.object({

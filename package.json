@@ -20,7 +20,8 @@
     "release": "pnpm build:packages && changeset publish"
   },
   "dependencies": {
-    "el-form": "workspace:^",
+    "el-form-core": "workspace:^",
+    "el-form-react": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zod": "^3.22.4"

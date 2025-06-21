@@ -3,8 +3,8 @@ import {
   setNestedValue,
   getNestedValue,
   removeArrayItem,
-} from "../../core/utils";
-import { parseZodErrors } from "../../core/validation";
+  parseZodErrors,
+} from "el-form";
 
 // Re-export core utilities for convenience
 export { setNestedValue, getNestedValue, removeArrayItem, parseZodErrors };

@@ -1,5 +1,5 @@
 // Import the hook from the React-specific entry point
-import { useForm } from "el-form/react";
+import { useForm } from "el-form-react";
 import { z } from "zod";
 
 // Test the useForm hook directly with array operations

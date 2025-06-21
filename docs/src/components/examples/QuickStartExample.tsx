@@ -1,4 +1,4 @@
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
 // Quick Start Contact Form Example

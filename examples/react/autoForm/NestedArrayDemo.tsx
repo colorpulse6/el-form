@@ -1,5 +1,5 @@
 // AutoForm is exported from the React-specific entry point
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
 // Define nested schema for deeply nested arrays

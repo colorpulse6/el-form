@@ -18,25 +18,71 @@ export interface UseFormOptions<T extends Record<string, any>> {
   validateOnBlur?: boolean;
 }
 
+export interface FieldState {
+  isDirty: boolean;
+  isTouched: boolean;
+  error?: string;
+}
+
+export interface ResetOptions<T> {
+  values?: Partial<T>;
+  keepErrors?: boolean;
+  keepDirty?: boolean;
+  keepTouched?: boolean;
+}
+
+export interface SetFocusOptions {
+  shouldSelect?: boolean;
+}
+
 export interface UseFormReturn<T extends Record<string, any>> {
-  register: <Name extends keyof T>(
-    name: Name
-  ) => {
-    name: Name;
-    value: T[Name];
+  register: (name: string) => {
+    name: string;
     onChange: (e: React.ChangeEvent<any>) => void;
     onBlur: (e: React.FocusEvent<any>) => void;
-  };
+  } & ({ checked: boolean; value?: never } | { value: any; checked?: never });
   handleSubmit: (
     onValid: (data: T) => void,
     onError?: (errors: Record<keyof T, string>) => void
   ) => (e: React.FormEvent) => void;
   formState: FormState<T>;
-  reset: () => void;
-  // Enhanced for nested arrays
+
+  // Basic form control
+  reset: (options?: ResetOptions<T>) => void;
   setValue: (path: string, value: any) => void;
+
+  // Watch system
+  watch: {
+    (): Partial<T>; // Watch all values
+    <Name extends keyof T>(name: Name): T[Name]; // Watch specific field
+    <Names extends keyof T>(names: Names[]): Pick<T, Names>; // Watch multiple fields
+  };
+
+  // Field state queries
+  getFieldState: <Name extends keyof T>(name: Name) => FieldState;
+  isDirty: <Name extends keyof T>(name?: Name) => boolean;
+  getDirtyFields: () => Partial<Record<keyof T, boolean>>;
+  getTouchedFields: () => Partial<Record<keyof T, boolean>>;
+
+  // Validation control
+  trigger: {
+    (): Promise<boolean>; // Validate all
+    <Name extends keyof T>(name: Name): Promise<boolean>; // Validate specific field
+    <Names extends keyof T>(names: Names[]): Promise<boolean>; // Validate multiple fields
+  };
+  clearErrors: (name?: keyof T) => void;
+  setError: <Name extends keyof T>(name: Name, error: string) => void;
+
+  // Focus management
+  setFocus: <Name extends keyof T>(
+    name: Name,
+    options?: SetFocusOptions
+  ) => void;
+
+  // Array operations
   addArrayItem: (path: string, item: any) => void;
   removeArrayItem: (path: string, index: number) => void;
+  resetField: <Name extends keyof T>(name: Name) => void;
 }
 
 // AutoForm types
