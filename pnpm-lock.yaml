@@ -146,6 +146,12 @@ importers:
       el-form-core:
         specifier: workspace:^
         version: link:../el-form-core
+      el-form-react-components:
+        specifier: workspace:^
+        version: link:../el-form-react-components
+      el-form-react-hooks:
+        specifier: workspace:^
+        version: link:../el-form-react-hooks
       react:
         specifier: '>=16.8.0'
         version: 18.3.1
