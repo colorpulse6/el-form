@@ -36,9 +36,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build el-form package
-        working-directory: ./packages/el-form
-        run: pnpm run build
+      - name: Build el-form packages
+        run: |
+          cd packages/el-form-core && pnpm run build
+          cd ../el-form-react && pnpm run build
 
       - name: Build docs
         working-directory: ./docs
