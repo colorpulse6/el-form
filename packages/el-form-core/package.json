@@ -1,6 +1,6 @@
 {
   "name": "el-form-core",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Framework-agnostic form validation core powered by Zod",
   "author": "Nichalas Barnes",
   "license": "MIT",
@@ -8,12 +8,15 @@
     "type": "git",
     "url": "https://github.com/colorpulse6/el-form"
   },
+  "homepage": "https://colorpulse6.github.io/el-form/",
   "keywords": [
     "form",
     "validation",
     "zod",
     "typescript",
-    "framework-agnostic"
+    "framework-agnostic",
+    "schema-validation",
+    "type-safe"
   ],
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -30,7 +33,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "zod": "^3.22.0"

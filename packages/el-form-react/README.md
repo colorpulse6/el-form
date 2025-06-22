@@ -1,98 +1,84 @@
-# @colorpulse/el-form
+# el-form-react
+
+Elegant React forms, powered by Zod validation.
 
 A **TypeScript-first React form library** with Zod validation, offering multiple powerful APIs and comprehensive form handling capabilities. Built for modern React applications with **type safety**, **flexibility**, and **developer experience** in mind.
 
 ## Installation
 
-You can install `@colorpulse/el-form` using your favorite package manager:
-
 ```bash
-# npm
-npm install @colorpulse/el-form zod react react-dom
-
-# pnpm
-pnpm add @colorpulse/el-form zod react react-dom
-
-# yarn
-yarn add @colorpulse/el-form zod react react-dom
+npm install el-form-react zod
 ```
 
-## Core Features
+## Quick Start
 
-- **Dual API Architecture**: Use the declarative `<AutoForm />` for speed or the `useForm()` hook for maximum control.
-- **Zod Schema Validation**: End-to-end type-safety from your Zod schema to your form fields.
-- **Advanced Form Management**: Familiar API with `register`, `handleSubmit`, and `formState`.
-- **Layout & Styling System**: Built-in support for responsive grid and flexbox layouts with Tailwind CSS.
-- **Customizable Error Handling**: Use the default error components or provide your own.
+### AutoForm Component
 
-## Basic Usage
-
-Here are quick examples of how to use the two main APIs.
-
-### API #1: `AutoForm` Component
-
-Perfect for **rapid prototyping** and **consistent forms** across your app.
+Perfect for **rapid prototyping** and **consistent forms**.
 
 ```tsx
-import { AutoForm } from "@colorpulse/el-form";
+import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
-const userSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
 });
 
-export function MyForm() {
-  return (
-    <AutoForm
-      schema={userSchema}
-      onSubmit={(data) => console.log("✅ Valid data:", data)}
-      fields={[
-        { name: "firstName", label: "First Name" },
-        { name: "lastName", label: "Last Name" },
-        { name: "email", label: "Email Address", type: "email" },
-      ]}
-    />
-  );
+function MyForm() {
+  return <AutoForm schema={schema} onSubmit={(data) => console.log(data)} />;
 }
 ```
 
-### API #2: `useForm` Hook
+### useForm Hook
 
 For **maximum flexibility** and **custom designs**.
 
 ```tsx
-import { useForm } from "@colorpulse/el-form";
+import { useForm } from "el-form-react";
 import { z } from "zod";
 
-const userSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  email: z.string().email("Invalid email address"),
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
 });
 
-export function MyCustomForm() {
-  const { register, handleSubmit, formState } = useForm({
-    schema: userSchema,
-  });
+function MyCustomForm() {
+  const { register, handleSubmit, formState } = useForm({ schema });
 
   return (
-    <form
-      onSubmit={handleSubmit(
-        (data) => console.log("Valid:", data),
-        (errors) => console.log("Errors:", errors)
-      )}
-    >
-      <input {...register("firstName")} placeholder="First name" />
-      {formState.errors.firstName && <span>{formState.errors.firstName}</span>}
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("name")} placeholder="Name" />
+      {formState.errors.name && <span>{formState.errors.name}</span>}
 
       <input {...register("email")} type="email" placeholder="Email" />
       {formState.errors.email && <span>{formState.errors.email}</span>}
 
-      <button type="submit" disabled={formState.isSubmitting}>
-        Submit
-      </button>
+      <button type="submit">Submit</button>
     </form>
   );
 }
 ```
+
+## Core Features
+
+- **🚀 Dual API Architecture**: Use `<AutoForm />` for speed or `useForm()` hook for control
+- **🔒 Type-Safe**: Powered by Zod for runtime validation with full TypeScript support
+- **⚡ Fast & Lightweight**: Minimal bundle size, maximum performance
+- **🎨 Flexible Styling**: Customizable components that adapt to your design system
+- **📱 Responsive**: Built-in support for responsive layouts
+
+## Documentation
+
+📚 **[View Full Documentation](https://colorpulse6.github.io/el-form/)**
+
+- [Quick Start Guide](https://colorpulse6.github.io/el-form/docs/quick-start)
+- [AutoForm API](https://colorpulse6.github.io/el-form/docs/autoform)
+- [useForm Hook](https://colorpulse6.github.io/el-form/docs/useform)
+- [Field Types](https://colorpulse6.github.io/el-form/docs/field-types)
+- [Error Handling](https://colorpulse6.github.io/el-form/docs/error-handling)
+- [Examples](https://colorpulse6.github.io/el-form/docs/examples)
+
+## License
+
+MIT

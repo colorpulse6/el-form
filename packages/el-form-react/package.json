@@ -1,6 +1,6 @@
 {
   "name": "el-form-react",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "React form components and hooks powered by Zod validation",
   "author": "Nichalas Barnes",
   "license": "MIT",
@@ -8,6 +8,7 @@
     "type": "git",
     "url": "https://github.com/colorpulse6/el-form"
   },
+  "homepage": "https://colorpulse6.github.io/el-form/",
   "keywords": [
     "react",
     "form",
@@ -15,7 +16,10 @@
     "zod",
     "typescript",
     "hooks",
-    "components"
+    "components",
+    "autoform",
+    "type-safe",
+    "schema-validation"
   ],
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -32,7 +36,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "el-form-core": "workspace:^",
