@@ -1,50 +1,76 @@
 # el-form-react
 
-Elegant React forms, powered by Zod validation.
+⚡ **Complete React form solution with hooks and pre-built components**
 
-A **TypeScript-first React form library** with Zod validation, offering multiple powerful APIs and comprehensive form handling capabilities. Built for modern React applications with **type safety**, **flexibility**, and **developer experience** in mind.
+This is the **all-in-one** package that includes everything you need for React forms. If you want to optimize bundle size, consider using the individual packages instead.
 
-## Installation
+## 📦 Installation
 
 ```bash
-npm install el-form-react zod
+npm install el-form-react
+# or
+yarn add el-form-react
+# or
+pnpm add el-form-react
 ```
 
-## Quick Start
+**⚠️ Styling Requirement:** This package requires Tailwind CSS for the AutoForm component styling.
 
-### AutoForm Component
+```bash
+npm install tailwindcss
+```
 
-Perfect for **rapid prototyping** and **consistent forms**.
+## 🎯 What's Included
+
+- **`useForm`** - React hooks for custom UIs
+- **`AutoForm`** - Pre-built form components
+- **TypeScript types** - Full type safety
+- **29KB bundle size** - Complete form solution
+- **Tailwind styling** - Beautiful default components
+
+## 🚀 Quick Start
+
+### Option 1: Auto-Generated Forms
 
 ```tsx
 import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
-const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+const userSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email"),
+  age: z.number().min(18, "Must be 18 or older"),
+  hobbies: z.array(z.string()).optional(),
 });
 
-function MyForm() {
-  return <AutoForm schema={schema} onSubmit={(data) => console.log(data)} />;
+function App() {
+  return (
+    <AutoForm
+      schema={userSchema}
+      onSubmit={(data) => console.log("✅ Form data:", data)}
+      layout="grid"
+      columns={2}
+    />
+  );
 }
 ```
 
-### useForm Hook
-
-For **maximum flexibility** and **custom designs**.
+### Option 2: Custom Forms with Hooks
 
 ```tsx
 import { useForm } from "el-form-react";
 import { z } from "zod";
 
-const schema = z.object({
+const userSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email"),
 });
 
-function MyCustomForm() {
-  const { register, handleSubmit, formState } = useForm({ schema });
+function CustomForm() {
+  const { register, handleSubmit, formState } = useForm({
+    schema: userSchema,
+  });
 
   return (
     <form onSubmit={handleSubmit((data) => console.log(data))}>
@@ -60,25 +86,104 @@ function MyCustomForm() {
 }
 ```
 
-## Core Features
+## 🏗️ Bundle Size Optimization
 
-- **🚀 Dual API Architecture**: Use `<AutoForm />` for speed or `useForm()` hook for control
-- **🔒 Type-Safe**: Powered by Zod for runtime validation with full TypeScript support
-- **⚡ Fast & Lightweight**: Minimal bundle size, maximum performance
-- **🎨 Flexible Styling**: Customizable components that adapt to your design system
-- **📱 Responsive**: Built-in support for responsive layouts
+**Want smaller bundles?** Use these specialized packages instead:
 
-## Documentation
+### For Custom UIs Only (11KB)
 
-📚 **[View Full Documentation](https://colorpulse6.github.io/el-form/)**
+```bash
+npm install el-form-react-hooks
+```
 
-- [Quick Start Guide](https://colorpulse6.github.io/el-form/docs/quick-start)
-- [AutoForm API](https://colorpulse6.github.io/el-form/docs/autoform)
-- [useForm Hook](https://colorpulse6.github.io/el-form/docs/useform)
-- [Field Types](https://colorpulse6.github.io/el-form/docs/field-types)
-- [Error Handling](https://colorpulse6.github.io/el-form/docs/error-handling)
-- [Examples](https://colorpulse6.github.io/el-form/docs/examples)
+```tsx
+import { useForm } from "el-form-react-hooks";
+// Only hooks, no UI components
+```
 
-## License
+### For Pre-built Components Only (18KB)
+
+```bash
+npm install el-form-react-components
+```
+
+```tsx
+import { AutoForm } from "el-form-react-components";
+// Includes hooks + AutoForm component
+```
+
+### Framework-Agnostic Core (4KB)
+
+```bash
+npm install el-form-core
+```
+
+```tsx
+import { validateForm } from "el-form-core";
+// Pure validation logic, no React
+```
+
+## 📚 Complete API Reference
+
+This package re-exports everything from:
+
+- `el-form-react-hooks` - All hook functionality
+- `el-form-react-components` - All component functionality
+
+### useForm Hook
+
+```tsx
+const {
+  register, // Register fields
+  handleSubmit, // Form submission
+  formState, // Form state (errors, values, etc.)
+  setValue, // Set field value
+  addArrayItem, // Add array item
+  removeArrayItem, // Remove array item
+  reset, // Reset form
+} = useForm({ schema, initialValues });
+```
+
+### AutoForm Component
+
+```tsx
+<AutoForm
+  schema={zodSchema}          // Required: Zod schema
+  onSubmit={(data) => {}}     // Required: Submit handler
+  fields={[...]}              // Optional: Field configs
+  initialValues={{}}          // Optional: Initial values
+  layout="grid"               // Optional: "grid" or "flex"
+  columns={2}                 // Optional: Grid columns
+  componentMap={{}}           // Optional: Custom components
+  onError={(errors) => {}}    // Optional: Error handler
+/>
+```
+
+## 🎨 Array Support
+
+Full support for dynamic arrays:
+
+```tsx
+const schema = z.object({
+  hobbies: z.array(z.string()),
+  addresses: z.array(
+    z.object({
+      street: z.string(),
+      city: z.string(),
+    })
+  ),
+});
+
+<AutoForm schema={schema} onSubmit={(data) => console.log(data)} />;
+// Automatically generates Add/Remove buttons
+```
+
+## 🔗 Links
+
+- [Documentation](https://colorpulse6.github.io/el-form/)
+- [GitHub](https://github.com/colorpulse6/el-form)
+- [npm](https://www.npmjs.com/package/el-form-react)
+
+## 📄 License
 
 MIT

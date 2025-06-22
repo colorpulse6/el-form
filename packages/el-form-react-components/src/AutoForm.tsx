@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useForm } from "./useForm";
+import { useForm } from "el-form-react-hooks";
 import {
   AutoFormProps,
   AutoFormFieldConfig,
@@ -8,7 +8,6 @@ import {
   GridColumns,
 } from "./types";
 import { z } from "zod";
-import "./styles.css";
 
 // Default error component
 const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({

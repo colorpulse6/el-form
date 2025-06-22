@@ -1,7 +1,7 @@
 {
-  "name": "el-form-react",
+  "name": "el-form-react-components",
   "version": "2.0.0",
-  "description": "React form components and hooks powered by Zod validation",
+  "description": "React UI components for forms powered by Zod validation",
   "author": "Nichalas Barnes",
   "license": "MIT",
   "repository": {
@@ -11,15 +11,14 @@
   "homepage": "https://colorpulse6.github.io/el-form/",
   "keywords": [
     "react",
+    "components",
     "form",
     "validation",
     "zod",
     "typescript",
-    "hooks",
-    "components",
     "autoform",
-    "type-safe",
-    "schema-validation"
+    "ui",
+    "tailwind"
   ],
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -29,22 +28,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
-    },
-    "./hooks": {
-      "types": "./dist/hooks.d.ts",
-      "import": "./dist/hooks.mjs",
-      "require": "./dist/hooks.js"
-    },
-    "./components": {
-      "types": "./dist/components.d.ts",
-      "import": "./dist/components.mjs",
-      "require": "./dist/components.js"
-    },
-    "./styles.css": "./src/styles.css"
+    }
   },
   "files": [
-    "dist",
-    "src/styles.css"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",
@@ -52,9 +39,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "el-form-core": "workspace:^",
     "el-form-react-hooks": "workspace:^",
-    "el-form-react-components": "workspace:^",
     "zod": "^3.22.0"
   },
   "peerDependencies": {

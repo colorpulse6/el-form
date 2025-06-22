@@ -1,0 +1,216 @@
+/* el-form-react essential styles */
+.el-form-field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.el-form-field:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.el-form-field--error {
+  border-color: #ef4444;
+}
+
+.el-form-field--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.el-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.el-form-error {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.el-form-error-summary {
+  padding: 1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.el-form-error-summary h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #991b1b;
+  margin-bottom: 0.5rem;
+}
+
+.el-form-error-summary ul {
+  font-size: 0.875rem;
+  color: #7f1d1d;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.el-form-error-summary li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.25rem;
+}
+
+.el-form-button-primary {
+  padding: 0.625rem 1.25rem;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.el-form-button-primary:hover {
+  background-color: #2563eb;
+}
+
+.el-form-button-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.el-form-button-secondary {
+  padding: 0.625rem 1.25rem;
+  background-color: #6b7280;
+  color: white;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.el-form-button-secondary:hover {
+  background-color: #4b5563;
+}
+
+.el-form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.el-form-grid--cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+.el-form-grid--cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.el-form-grid--cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.el-form-col-span-1 {
+  grid-column: span 1 / span 1;
+}
+.el-form-col-span-2 {
+  grid-column: span 2 / span 2;
+}
+.el-form-col-span-3 {
+  grid-column: span 3 / span 3;
+}
+
+.el-form-checkbox {
+  height: 1rem;
+  width: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #d1d5db;
+  color: #3b82f6;
+}
+
+.el-form-checkbox:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.el-form-textarea {
+  resize: none;
+  min-height: 4rem;
+}
+
+.el-form-array-container {
+  margin-bottom: 0.75rem;
+}
+
+.el-form-array-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.el-form-array-item {
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  margin-bottom: 1rem;
+}
+
+.el-form-array-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.el-form-array-item-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.el-form-button-add {
+  padding: 0.25rem 0.75rem;
+  background-color: #059669;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.el-form-button-add:hover {
+  background-color: #047857;
+}
+
+.el-form-button-remove {
+  padding: 0.25rem 0.5rem;
+  background-color: #dc2626;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.el-form-button-remove:hover {
+  background-color: #b91c1c;
+}
+
+.el-form-empty-state {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem 0;
+}

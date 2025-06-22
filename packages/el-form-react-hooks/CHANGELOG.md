@@ -1,4 +1,4 @@
-# el-form-react
+# el-form-react-hooks
 
 ## 2.0.0
 
@@ -47,44 +47,6 @@
 
 ### Patch Changes
 
-- Fix AutoForm array functionality - Add buttons and proper handling for primitive arrays
-
-  - Fixed missing Add/Remove buttons for array fields in AutoForm
-  - Added support for primitive arrays (z.array(z.string()), z.array(z.number()), etc.)
-  - Improved array field schema generation and rendering
-  - Fixed createEmptyItem function to handle both primitive and object arrays correctly
-
-  This resolves the issue where array fields would show empty state messages but no interactive buttons to add or remove items.
-
 - Updated dependencies
 - Updated dependencies
-  - el-form-react-hooks@2.0.0
-  - el-form-react-components@2.0.0
   - el-form-core@1.0.3
-
-## 1.0.2
-
-### Patch Changes
-
-- Fix AutoForm array functionality - Add buttons and proper handling for primitive arrays
-
-  - Fixed missing Add/Remove buttons for array fields in AutoForm
-  - Added support for primitive arrays (z.array(z.string()), z.array(z.number()), etc.)
-  - Improved array field schema generation and rendering
-  - Fixed createEmptyItem function to handle both primitive and object arrays correctly
-
-  This resolves the issue where array fields would show empty state messages but no interactive buttons to add or remove items.
-
-- Updated dependencies
-  - el-form-core@1.0.2
-
-## 1.0.0
-
-### Major Changes
-
-- First publish
-
-### Patch Changes
-
-- Updated dependencies
-  - el-form-core@1.0.0

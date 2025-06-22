@@ -14,6 +14,12 @@ importers:
       el-form-react:
         specifier: workspace:^
         version: link:packages/el-form-react
+      el-form-react-components:
+        specifier: workspace:^
+        version: link:packages/el-form-react-components
+      el-form-react-hooks:
+        specifier: workspace:^
+        version: link:packages/el-form-react-hooks
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -156,6 +162,50 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.8.3
+
+  packages/el-form-react-components:
+    dependencies:
+      el-form-react-hooks:
+        specifier: workspace:^
+        version: link:../el-form-react-hooks
+      react:
+        specifier: '>=16.8.0'
+        version: 18.3.1
+      zod:
+        specifier: ^3.22.0
+        version: 3.25.67
+    devDependencies:
+      '@types/react':
+        specifier: ^18.0.0
+        version: 18.3.23
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.0(postcss@8.5.4)(typescript@5.2.2)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.2.2
+
+  packages/el-form-react-hooks:
+    dependencies:
+      el-form-core:
+        specifier: workspace:^
+        version: link:../el-form-core
+      react:
+        specifier: '>=16.8.0'
+        version: 18.3.1
+      zod:
+        specifier: ^3.22.0
+        version: 3.25.67
+    devDependencies:
+      '@types/react':
+        specifier: ^18.0.0
+        version: 18.3.23
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.0(postcss@8.5.4)(typescript@5.2.2)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.2.2
 
 packages:
 
@@ -12312,6 +12362,51 @@ packages:
   /tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
     dev: false
+
+  /tsup@8.5.0(postcss@8.5.4)(typescript@5.2.2):
+    resolution: {integrity: sha512-VmBp77lWNQq6PfuMqCHD3xWl22vEoWsKajkF8t+yMBawlUS8JzEI+vOVMeuNZIuMML8qXRizFKi9oD5glKQVcQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+    peerDependencies:
+      '@microsoft/api-extractor': ^7.36.0
+      '@swc/core': ^1
+      postcss: ^8.4.12
+      typescript: '>=4.5.0'
+    peerDependenciesMeta:
+      '@microsoft/api-extractor':
+        optional: true
+      '@swc/core':
+        optional: true
+      postcss:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      bundle-require: 5.1.0(esbuild@0.25.5)
+      cac: 6.7.14
+      chokidar: 4.0.3
+      consola: 3.4.2
+      debug: 4.4.1
+      esbuild: 0.25.5
+      fix-dts-default-cjs-exports: 1.0.1
+      joycon: 3.1.1
+      picocolors: 1.1.1
+      postcss: 8.5.4
+      postcss-load-config: 6.0.1(postcss@8.5.4)
+      resolve-from: 5.0.0
+      rollup: 4.42.0
+      source-map: 0.8.0-beta.0
+      sucrase: 3.35.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.14
+      tree-kill: 1.2.2
+      typescript: 5.2.2
+    transitivePeerDependencies:
+      - jiti
+      - supports-color
+      - tsx
+      - yaml
+    dev: true
 
   /tsup@8.5.0(postcss@8.5.4)(typescript@5.8.3):
     resolution: {integrity: sha512-VmBp77lWNQq6PfuMqCHD3xWl22vEoWsKajkF8t+yMBawlUS8JzEI+vOVMeuNZIuMML8qXRizFKi9oD5glKQVcQ==}
