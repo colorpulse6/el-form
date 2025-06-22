@@ -347,22 +347,51 @@ select:focus {
 
 /* GitHub link styling */
 .navbar__item--github .navbar__link {
-  background-color: rgb(31 41 55);
-  color: white;
+  background: linear-gradient(135deg, #24292e, #2f363d);
+  color: white !important;
   font-weight: 600;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease-in-out;
+  text-decoration: none !important;
+}
+
+.navbar__item--github .navbar__link::before {
+  content: "⭐";
+  font-size: 0.875rem;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
 }
 
 .navbar__item--github .navbar__link:hover {
-  background-color: rgb(17 24 39);
-  color: white;
+  background: linear-gradient(135deg, #1b1f23, #24292e);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white !important;
 }
 
 [data-theme="dark"] .navbar__item--github .navbar__link {
-  background-color: rgb(55 65 81);
+  background: linear-gradient(135deg, #f6f8fa, #e1e4e8);
+  color: #24292e !important;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .navbar__item--github .navbar__link::before {
+  content: "⭐";
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
 }
 
 [data-theme="dark"] .navbar__item--github .navbar__link:hover {
-  background-color: rgb(75 85 99);
+  background: linear-gradient(135deg, #ffffff, #f6f8fa);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #24292e !important;
 }
 
 /* Mobile navbar improvements */
@@ -370,15 +399,34 @@ select:focus {
   .navbar-sidebar {
     background-color: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
 
   [data-theme="dark"] .navbar-sidebar {
     background-color: rgba(15, 23, 42, 0.98);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   }
 
   .navbar-sidebar__item .navbar__link {
     font-size: 1rem;
     padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin: 0.25rem 0.5rem;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .navbar-sidebar__item .navbar__link:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--el-primary-600);
+  }
+
+  /* Fix the hamburger menu overlay */
+  .navbar-sidebar__backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
   }
 }
 
