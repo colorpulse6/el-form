@@ -16,7 +16,8 @@ El Form is a React library that makes building forms simple, elegant, and type-s
 - 🛡️ **Type Safety** - Full TypeScript support with runtime validation
 - ⚡ **Performance** - Optimized for speed with minimal re-renders
 - 🎨 **Customizable** - Flexible styling and component overrides
-- 📦 **Lightweight** - Small bundle size with zero dependencies
+- � **Reusable Components** - Multiple patterns for form component reuse (Context + Form Passing)
+- �📦 **Lightweight** - Small bundle size with zero dependencies
 - 🔧 **Developer Experience** - Intuitive API with great TypeScript inference
 
 ## Philosophy
@@ -27,6 +28,26 @@ El Form is built on the principle that forms should be:
 2. **Type-safe by default** - Catch errors at compile time, not runtime
 3. **Flexible when needed** - Easy to customize without fighting the library
 4. **Performant** - Fast validation and rendering
+5. **Reusable** - Components that work across different forms and contexts
+
+## Form Reusability Made Easy
+
+El Form supports multiple reusability patterns, giving you the flexibility to choose what works best for your team:
+
+```tsx
+// Context Pattern (TanStack-style)
+<FormProvider form={form}>
+  <CustomField name="email" label="Email" />
+</FormProvider>
+
+// Form Passing Pattern (Conform-style)
+<CustomField name="email" label="Email" form={form} />
+
+// Hybrid - works with both!
+<CustomField name="email" label="Email" form={form} />
+```
+
+Learn more about [Form Component Reusability](./form-reusability.md).
 
 ## Getting Started
 

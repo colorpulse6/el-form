@@ -359,6 +359,12 @@ The `useForm` hook gives you complete control over form state, validation timing
         See Examples →
       </a>
       <a
+        href="./form-reusability"
+        className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+      >
+        Form Reusability →
+      </a>
+      <a
         href="./faq"
         className="inline-flex items-center px-6 py-3 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-semibold rounded-lg border border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
       >

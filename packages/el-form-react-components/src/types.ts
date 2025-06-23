@@ -38,6 +38,19 @@ export interface AutoFormErrorProps {
   touched: Record<string, boolean>;
 }
 
+// Reusable field component types
+export interface BaseFieldProps<
+  T extends Record<string, any>,
+  K extends keyof T
+> {
+  name: K;
+  label?: string;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+  required?: boolean;
+}
+
 // Component mapping for custom field components
 export type FieldType =
   | "text"
