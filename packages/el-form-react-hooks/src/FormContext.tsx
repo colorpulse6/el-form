@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from "react";
-import { UseFormReturn } from "./types";
+import { UseFormReturn } from "./useForm";
+import { FormContextValue } from "./types";
 
 // Generic form context that works with any form type
 export interface FormContextValue<T extends Record<string, any>> {
@@ -8,7 +9,7 @@ export interface FormContextValue<T extends Record<string, any>> {
 }
 
 // Context with proper generic typing
-const FormContext = createContext<FormContextValue<any> | null>(null);
+const FormContext = createContext<FormContextValue<any> | undefined>(undefined);
 
 // Provider component
 export function FormProvider<T extends Record<string, any>>({
