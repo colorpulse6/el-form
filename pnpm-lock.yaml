@@ -144,13 +144,13 @@ importers:
   packages/el-form-react:
     dependencies:
       el-form-core:
-        specifier: workspace:^
+        specifier: ^1.0.4
         version: link:../el-form-core
       el-form-react-components:
-        specifier: workspace:^
+        specifier: ^3.0.0
         version: link:../el-form-react-components
       el-form-react-hooks:
-        specifier: workspace:^
+        specifier: ^3.0.0
         version: link:../el-form-react-hooks
       react:
         specifier: '>=16.8.0'
@@ -172,7 +172,7 @@ importers:
   packages/el-form-react-components:
     dependencies:
       el-form-react-hooks:
-        specifier: workspace:^
+        specifier: ^3.0.0
         version: link:../el-form-react-hooks
       react:
         specifier: '>=16.8.0'
@@ -194,7 +194,7 @@ importers:
   packages/el-form-react-hooks:
     dependencies:
       el-form-core:
-        specifier: workspace:^
+        specifier: ^1.0.4
         version: link:../el-form-core
       react:
         specifier: '>=16.8.0'
