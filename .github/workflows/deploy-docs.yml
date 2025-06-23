@@ -39,6 +39,8 @@ jobs:
       - name: Build el-form packages
         run: |
           cd packages/el-form-core && pnpm run build
+          cd ../el-form-react-hooks && pnpm run build
+          cd ../el-form-react-components && pnpm run build
           cd ../el-form-react && pnpm run build
 
       - name: Build docs
