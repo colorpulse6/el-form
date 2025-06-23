@@ -52,9 +52,9 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "el-form-core": "workspace:^",
-    "el-form-react-hooks": "workspace:^",
-    "el-form-react-components": "workspace:^",
+    "el-form-core": "^1.0.4",
+    "el-form-react-hooks": "^3.0.0",
+    "el-form-react-components": "^3.0.0",
     "zod": "^3.22.0"
   },
   "peerDependencies": {
