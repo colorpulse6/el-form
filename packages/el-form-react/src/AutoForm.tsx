@@ -72,7 +72,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
   }
 
   const inputClasses = `
-    w-full px-3 py-2 border rounded-md text-sm
+    w-full px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-500
     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
     ${
       touched && error
@@ -642,7 +642,7 @@ export function AutoForm<T extends Record<string, any>>({
           <button
             type="submit"
             disabled={formState.isSubmitting}
-            className="px-5 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200"
+            className="p-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
           >
             {formState.isSubmitting ? "Submitting..." : "Submit"}
           </button>
@@ -650,7 +650,7 @@ export function AutoForm<T extends Record<string, any>>({
           <button
             type="button"
             onClick={() => reset()}
-            className="px-5 py-2.5 bg-gray-600 text-white rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+            className="p-2 bg-gray-600 text-white rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 cursor-pointer"
           >
             Reset
           </button>

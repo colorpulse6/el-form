@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 6
 ---
 
 import { InteractivePreview } from '@site/src/components';
@@ -7,7 +7,17 @@ import { DefaultErrorExample, ElegantErrorExample, MinimalErrorExample } from '@
 
 # Error Handling
 
-El Form provides flexible error handling capabilities with customizable error components and built-in validation display.
+El Form provides comprehensive error handling capabilities with built-in validation, manual error setting, and customizable error displays. This guide covers all aspects of error management in your forms.
+
+## Table of Contents
+
+- [Default Error Handling](#default-error-handling)
+- [Manual Error Management](#manual-error-management)
+- [Custom Error Components](#custom-error-components)
+- [Async Error Handling](#async-error-handling)
+- [Error Component Props](#error-component-props)
+- [Best Practices](#best-practices)
+- [useForm Error Handling](#useform-error-handling)
 
 ## Default Error Handling
 
@@ -55,6 +65,92 @@ function UserForm() {
 </InteractivePreview>
 
 _Try submitting the form without filling it out to see the default error display._
+
+## Manual Error Management
+
+El Form provides powerful methods to set and clear errors manually, perfect for custom validation scenarios and API error handling.
+
+### Setting Errors Manually
+
+Use the `setError` method to set field-specific errors:
+
+```tsx
+import { useForm } from "el-form/react";
+import { z } from "zod";
+
+const userSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  username: z.string().min(3, "Username too short"),
+});
+
+function MyForm() {
+  const { register, handleSubmit, setError, clearErrors, formState } = useForm({
+    schema: userSchema,
+  });
+
+  const handleEmailCheck = async () => {
+    const email = formState.values.email;
+
+    // Custom async validation
+    try {
+      const response = await fetch(`/api/check-email/${email}`);
+      const data = await response.json();
+
+      if (data.exists) {
+        setError("email", "This email is already registered");
+      } else {
+        clearErrors("email");
+      }
+    } catch (error) {
+      setError("email", "Unable to verify email. Please try again.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <div>
+        <input {...register("email")} placeholder="Email" />
+        <button type="button" onClick={handleEmailCheck}>
+          Check Email
+        </button>
+        {formState.errors.email && (
+          <p className="error">{formState.errors.email}</p>
+        )}
+      </div>
+
+      <input {...register("username")} placeholder="Username" />
+      {formState.errors.username && (
+        <p className="error">{formState.errors.username}</p>
+      )}
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+### Error Management Methods
+
+| Method                     | Description                  | Example                                   |
+| -------------------------- | ---------------------------- | ----------------------------------------- |
+| `setError(field, message)` | Set error on specific field  | `setError("email", "Email taken")`        |
+| `clearErrors(field?)`      | Clear specific or all errors | `clearErrors("email")` or `clearErrors()` |
+| `trigger(field?)`          | Manually trigger validation  | `trigger("email")` or `trigger()`         |
+
+### Clearing Errors
+
+```tsx
+const { clearErrors } = useForm({ schema });
+
+// Clear specific field error
+clearErrors("email");
+
+// Clear all errors
+clearErrors();
+
+// Clear multiple fields (in sequence)
+["email", "username"].forEach((field) => clearErrors(field));
+```
 
 ## Custom Error Components
 
@@ -166,6 +262,126 @@ const MinimalErrorComponent: React.FC<AutoFormErrorProps> = ({
   <MinimalErrorExample />
 </InteractivePreview>
 
+## Async Error Handling
+
+Handle server-side validation and API errors seamlessly:
+
+### API Error Integration
+
+```tsx
+import { useForm } from "el-form/react";
+
+function RegistrationForm() {
+  const { register, handleSubmit, setError, formState } = useForm({
+    schema: registrationSchema,
+  });
+
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        // Handle field-specific errors from server
+        if (errorData.fieldErrors) {
+          Object.entries(errorData.fieldErrors).forEach(([field, message]) => {
+            setError(field, message);
+          });
+          return;
+        }
+
+        // Handle general error
+        if (errorData.message) {
+          setError("root", errorData.message);
+        }
+      }
+
+      // Success
+      console.log("Registration successful!");
+    } catch (error) {
+      setError("root", "Network error. Please try again.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Form fields */}
+      <input {...register("email")} placeholder="Email" />
+      {formState.errors.email && (
+        <p className="error">{formState.errors.email}</p>
+      )}
+
+      <input {...register("password")} type="password" placeholder="Password" />
+      {formState.errors.password && (
+        <p className="error">{formState.errors.password}</p>
+      )}
+
+      {/* Display general errors */}
+      {formState.errors.root && (
+        <div className="general-error">
+          <p>{formState.errors.root}</p>
+        </div>
+      )}
+
+      <button type="submit" disabled={formState.isSubmitting}>
+        {formState.isSubmitting ? "Registering..." : "Register"}
+      </button>
+    </form>
+  );
+}
+```
+
+### Real-time Validation
+
+Combine schema validation with real-time server checks:
+
+```tsx
+function EmailForm() {
+  const { register, watch, setError, clearErrors } = useForm({
+    schema: z.object({
+      email: z.string().email("Invalid email format"),
+    }),
+  });
+
+  const email = watch("email");
+
+  // Debounced email validation
+  useEffect(() => {
+    if (!email || !z.string().email().safeParse(email).success) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/validate-email?email=${email}`);
+        const data = await response.json();
+
+        if (data.taken) {
+          setError("email", "This email is already registered");
+        } else {
+          clearErrors("email");
+        }
+      } catch (error) {
+        // Silently fail for real-time validation
+        console.warn("Email validation failed:", error);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [email, setError, clearErrors]);
+
+  return (
+    <form>
+      <input {...register("email")} placeholder="Email" />
+      {/* Error display */}
+    </form>
+  );
+}
+```
+
 ## Error Component Props
 
 The `AutoFormErrorProps` interface provides:
@@ -229,9 +445,11 @@ Ensure your error components are accessible:
 </div>
 ```
 
-## Error Handling with useForm
+## useForm Error Handling
 
-When using the `useForm` hook directly, you can handle errors in the submit handler:
+When using the `useForm` hook directly, you have full control over error handling:
+
+### Basic Error Handling
 
 ```tsx
 import { useForm } from "el-form/react";
@@ -243,12 +461,19 @@ function MyForm() {
 
   const onSubmit = handleSubmit(
     (data) => {
-      // Success handler
+      // Success handler - called when validation passes
       console.log("Form data:", data);
     },
     (errors) => {
-      // Error handler
+      // Error handler - called when validation fails
       console.log("Validation errors:", errors);
+
+      // Focus first error field
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const element = document.querySelector(`[name="${firstErrorField}"]`);
+        element?.focus();
+      }
     }
   );
 
@@ -263,3 +488,300 @@ function MyForm() {
   );
 }
 ```
+
+### Advanced Error Handling
+
+```tsx
+function AdvancedForm() {
+  const {
+    register,
+    handleSubmit,
+    formState,
+    setError,
+    clearErrors,
+    trigger,
+    getFieldState,
+    setFocus,
+  } = useForm({
+    schema: mySchema,
+    validateOnBlur: true,
+  });
+
+  const handleCustomValidation = async (fieldName) => {
+    // Trigger schema validation first
+    const isValid = await trigger(fieldName);
+    if (!isValid) return;
+
+    // Custom validation
+    const value = formState.values[fieldName];
+    const customError = await validateWithServer(fieldName, value);
+
+    if (customError) {
+      setError(fieldName, customError);
+    } else {
+      clearErrors(fieldName);
+    }
+  };
+
+  const onSubmit = handleSubmit(
+    async (data) => {
+      try {
+        await submitForm(data);
+        console.log("Success!");
+      } catch (error) {
+        if (error.fieldErrors) {
+          // Set multiple field errors
+          Object.entries(error.fieldErrors).forEach(([field, message]) => {
+            setError(field, message);
+          });
+
+          // Focus first error field
+          const firstErrorField = Object.keys(error.fieldErrors)[0];
+          setFocus(firstErrorField);
+        } else {
+          setError("root", "Submission failed. Please try again.");
+        }
+      }
+    },
+    (errors) => {
+      // Handle validation errors
+      console.log("Validation failed:", errors);
+
+      // Focus first error field with animation
+      const firstErrorField = Object.keys(errors)[0];
+      setFocus(firstErrorField, { shouldSelect: true });
+    }
+  );
+
+  return (
+    <form onSubmit={onSubmit}>
+      <div>
+        <input
+          {...register("email")}
+          onBlur={() => handleCustomValidation("email")}
+        />
+        {getFieldState("email").error && (
+          <p className="error-message">{getFieldState("email").error}</p>
+        )}
+      </div>
+
+      <div>
+        <input {...register("password")} type="password" />
+        {formState.errors.password && (
+          <p className="error-message">{formState.errors.password}</p>
+        )}
+      </div>
+
+      {formState.errors.root && (
+        <div className="general-error">{formState.errors.root}</div>
+      )}
+
+      <button
+        type="submit"
+        disabled={formState.isSubmitting || !formState.isValid}
+      >
+        {formState.isSubmitting ? "Submitting..." : "Submit"}
+      </button>
+    </form>
+  );
+}
+```
+
+### Error State Queries
+
+Get detailed information about field errors:
+
+```tsx
+const { formState, getFieldState, isDirty, getTouchedFields } = useForm({
+  schema,
+});
+
+// Check if field has error
+const emailState = getFieldState("email");
+console.log("Email error:", emailState.error);
+console.log("Email touched:", emailState.isTouched);
+console.log("Email dirty:", emailState.isDirty);
+
+// Get all touched fields with errors
+const touchedFields = getTouchedFields();
+const touchedErrors = Object.keys(formState.errors).filter(
+  (field) => touchedFields[field]
+);
+
+// Check if form has any errors
+const hasErrors = Object.keys(formState.errors).length > 0;
+```
+
+## Complete Error Handling Example
+
+Here's a comprehensive example that demonstrates all error handling patterns:
+
+```tsx
+import { useForm } from "el-form/react";
+import { z } from "zod";
+import { useEffect } from "react";
+
+const userSchema = z
+  .object({
+    email: z.string().email("Invalid email format"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+function CompleteErrorExample() {
+  const {
+    register,
+    handleSubmit,
+    formState,
+    setError,
+    clearErrors,
+    trigger,
+    getFieldState,
+    setFocus,
+    watch,
+  } = useForm({
+    schema: userSchema,
+    validateOnBlur: true,
+  });
+
+  const password = watch("password");
+
+  // Auto-validate confirm password when password changes
+  useEffect(() => {
+    if (formState.touched.confirmPassword && password) {
+      trigger("confirmPassword");
+    }
+  }, [password, trigger, formState.touched.confirmPassword]);
+
+  const handleEmailValidation = async () => {
+    const email = formState.values.email;
+
+    // First run schema validation
+    const isValid = await trigger("email");
+    if (!isValid) return;
+
+    // Then run custom validation
+    try {
+      const response = await fetch(`/api/check-email?email=${email}`);
+      const data = await response.json();
+
+      if (data.exists) {
+        setError("email", "This email is already registered");
+      } else {
+        clearErrors("email");
+      }
+    } catch (error) {
+      setError("email", "Unable to verify email");
+    }
+  };
+
+  const onSubmit = handleSubmit(
+    async (data) => {
+      try {
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+
+          if (errorData.fieldErrors) {
+            Object.entries(errorData.fieldErrors).forEach(
+              ([field, message]) => {
+                setError(field, message);
+              }
+            );
+            setFocus(Object.keys(errorData.fieldErrors)[0]);
+          } else {
+            setError("root", errorData.message || "Registration failed");
+          }
+          return;
+        }
+
+        console.log("Registration successful!");
+      } catch (error) {
+        setError("root", "Network error. Please try again.");
+      }
+    },
+    (errors) => {
+      console.log("Validation errors:", errors);
+      setFocus(Object.keys(errors)[0]);
+    }
+  );
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div>
+        <input
+          {...register("email")}
+          placeholder="Email"
+          className={`input ${getFieldState("email").error ? "error" : ""}`}
+          onBlur={handleEmailValidation}
+        />
+        {getFieldState("email").error && (
+          <p className="error-message">{getFieldState("email").error}</p>
+        )}
+      </div>
+
+      <div>
+        <input
+          {...register("password")}
+          type="password"
+          placeholder="Password"
+          className={`input ${getFieldState("password").error ? "error" : ""}`}
+        />
+        {getFieldState("password").error && (
+          <p className="error-message">{getFieldState("password").error}</p>
+        )}
+      </div>
+
+      <div>
+        <input
+          {...register("confirmPassword")}
+          type="password"
+          placeholder="Confirm Password"
+          className={`input ${
+            getFieldState("confirmPassword").error ? "error" : ""
+          }`}
+        />
+        {getFieldState("confirmPassword").error && (
+          <p className="error-message">
+            {getFieldState("confirmPassword").error}
+          </p>
+        )}
+      </div>
+
+      {formState.errors.root && (
+        <div className="general-error">
+          <p>{formState.errors.root}</p>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={formState.isSubmitting || !formState.isValid}
+        className="submit-button"
+      >
+        {formState.isSubmitting ? "Registering..." : "Register"}
+      </button>
+
+      {/* Debug info */}
+      <div className="debug-info">
+        <p>Form Valid: {formState.isValid ? "Yes" : "No"}</p>
+        <p>
+          Has Errors: {Object.keys(formState.errors).length > 0 ? "Yes" : "No"}
+        </p>
+        <p>Is Submitting: {formState.isSubmitting ? "Yes" : "No"}</p>
+      </div>
+    </form>
+  );
+}
+```
+
+This comprehensive error handling approach ensures your forms provide excellent user experience with clear feedback and robust error management.

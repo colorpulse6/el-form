@@ -69,6 +69,100 @@ function App() {
 }
 ```
 
+## 🛡️ Error Handling
+
+AutoForm provides comprehensive error handling with customization options:
+
+### Automatic Error Display
+
+```tsx
+const userSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+<AutoForm
+  schema={userSchema}
+  onSubmit={(data) => console.log("Success:", data)}
+  onError={(errors) => console.log("Validation failed:", errors)}
+/>;
+```
+
+### Custom Error Components
+
+```tsx
+import { AutoFormErrorProps } from "el-form-react-components";
+
+const ElegantErrorComponent: React.FC<AutoFormErrorProps> = ({
+  errors,
+  touched,
+}) => {
+  const errorEntries = Object.entries(errors).filter(
+    ([field]) => touched[field]
+  );
+
+  if (errorEntries.length === 0) return null;
+
+  return (
+    <div className="p-4 bg-gradient-to-r from-pink-50 to-rose-50 border-2 border-pink-200 rounded-xl mb-4">
+      <div className="flex items-center mb-3">
+        <div className="w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center mr-3">
+          <span className="text-white text-sm font-bold">!</span>
+        </div>
+        <h3 className="text-lg font-semibold text-pink-800">
+          Please fix these issues:
+        </h3>
+      </div>
+      <div className="space-y-2">
+        {errorEntries.map(([field, error]) => (
+          <div key={field} className="flex items-center">
+            <span className="w-2 h-2 bg-pink-400 rounded-full mr-3"></span>
+            <span className="font-medium text-pink-700 capitalize mr-2">
+              {field}:
+            </span>
+            <span className="text-pink-600">{error}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Use custom error component
+<AutoForm
+  schema={userSchema}
+  customErrorComponent={ElegantErrorComponent}
+  onSubmit={handleSubmit}
+/>;
+```
+
+### Error Component Styling Options
+
+Multiple pre-built error components available:
+
+```tsx
+// Minimal style
+const MinimalErrorComponent = ({ errors, touched }) => (
+  <div className="border-l-4 border-red-400 bg-red-50 p-4 mb-4">
+    {/* Minimal error display */}
+  </div>
+);
+
+// Toast style
+const ToastErrorComponent = ({ errors, touched }) => (
+  <div className="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg">
+    {/* Toast notification style */}
+  </div>
+);
+
+// Dark theme
+const DarkErrorComponent = ({ errors, touched }) => (
+  <div className="bg-gray-800 text-red-400 p-4 rounded-lg border border-red-800">
+    {/* Dark theme error display */}
+  </div>
+);
+```
+
 ## 🎨 Custom Field Configuration
 
 ```tsx

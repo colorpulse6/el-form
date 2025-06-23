@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+// Form Context types
+export interface FormContextValue<T extends Record<string, any>> {
+  form: UseFormReturn<T>;
+  formId?: string;
+}
+
 // UseForm types
 export interface FormState<T extends Record<string, any>> {
   values: Partial<T>;

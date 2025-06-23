@@ -1,6 +1,6 @@
 {
   "name": "el-form-core",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Framework-agnostic form validation core powered by Zod",
   "author": "Nichalas Barnes",
   "license": "MIT",

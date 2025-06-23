@@ -1,6 +1,6 @@
 {
   "name": "el-form-react-hooks",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "React hooks for form management powered by Zod validation",
   "author": "Nichalas Barnes",
   "license": "MIT",

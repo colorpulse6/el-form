@@ -78,6 +78,132 @@ function MyForm() {
 }
 ```
 
+## 🛡️ Error Handling
+
+Comprehensive error management with manual control:
+
+### Manual Error Control
+
+```tsx
+const { setError, clearErrors, getFieldState, formState } = useForm({ schema });
+
+// Set field-specific errors
+setError("email", "This email is already taken");
+
+// Clear errors
+clearErrors("email"); // Clear specific field
+clearErrors(); // Clear all fields
+
+// Check field state
+const emailState = getFieldState("email");
+console.log("Email error:", emailState.error);
+console.log("Email touched:", emailState.isTouched);
+```
+
+### API Error Integration
+
+```tsx
+const handleSubmit = async (data) => {
+  try {
+    const response = await fetch("/api/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+
+      // Handle field-specific errors
+      if (errorData.fieldErrors) {
+        Object.entries(errorData.fieldErrors).forEach(([field, message]) => {
+          setError(field, message);
+        });
+      }
+
+      // Handle general errors
+      if (errorData.message) {
+        setError("root", errorData.message);
+      }
+      return;
+    }
+
+    console.log("Success!");
+  } catch (error) {
+    setError("root", "Network error. Please try again.");
+  }
+};
+```
+
+### Real-time Validation
+
+```tsx
+const { register, watch, setError, clearErrors, trigger } = useForm({ schema });
+const email = watch("email");
+
+// Debounced validation
+useEffect(() => {
+  if (!email) return;
+
+  const timeoutId = setTimeout(async () => {
+    // First check schema validation
+    const isSchemaValid = await trigger("email");
+    if (!isSchemaValid) return;
+
+    // Then check external validation
+    try {
+      const response = await fetch(`/api/validate-email?email=${email}`);
+      const data = await response.json();
+
+      if (data.taken) {
+        setError("email", "Email already registered");
+      } else {
+        clearErrors("email");
+      }
+    } catch (error) {
+      console.warn("Email validation failed:", error);
+    }
+  }, 500);
+
+  return () => clearTimeout(timeoutId);
+}, [email, setError, clearErrors, trigger]);
+```
+
+### Advanced Error Handling
+
+```tsx
+const {
+  register,
+  handleSubmit,
+  formState,
+  setError,
+  clearErrors,
+  getFieldState,
+  setFocus,
+} = useForm({ schema });
+
+const onSubmit = handleSubmit(
+  async (data) => {
+    try {
+      await submitForm(data);
+    } catch (error) {
+      // Set errors and focus first error field
+      if (error.fieldErrors) {
+        Object.entries(error.fieldErrors).forEach(([field, message]) => {
+          setError(field, message);
+        });
+        setFocus(Object.keys(error.fieldErrors)[0]);
+      }
+    }
+  },
+  (errors) => {
+    // Handle validation errors
+    console.log("Validation failed:", errors);
+    setFocus(Object.keys(errors)[0]);
+  }
+);
+```
+
 ## 📚 API Reference
 
 ### `useForm(options)`

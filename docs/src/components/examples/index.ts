@@ -40,3 +40,11 @@ export {
 export { QuickStartExample } from "./QuickStartExample";
 
 export * from "./UseFormArraysExample";
+
+// Form Reusability examples
+export {
+  FormReusabilityDemo,
+  ContextPatternExample,
+  FormPassingExample,
+  HybridPatternExample,
+} from "./FormReusabilityExamples";

@@ -3,6 +3,7 @@ export * from "el-form-core";
 
 // Export React-specific hooks
 export { useForm } from "./useForm";
+export { FormProvider, useFormContext, useFormState } from "./FormContext";
 export type {
   UseFormOptions,
   UseFormReturn,
@@ -10,4 +11,5 @@ export type {
   FieldState,
   ResetOptions,
   SetFocusOptions,
+  FormContextValue,
 } from "./types";

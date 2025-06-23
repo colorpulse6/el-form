@@ -1,6 +1,6 @@
 {
   "name": "el-form-react-components",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "React UI components for forms powered by Zod validation",
   "author": "Nichalas Barnes",
   "license": "MIT",
