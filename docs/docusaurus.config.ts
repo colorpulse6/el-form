@@ -112,6 +112,11 @@ const config: Config = {
           label: "Quick Start",
         },
         {
+          to: "/docs/error-handling",
+          position: "left",
+          label: "Error Handling",
+        },
+        {
           type: "html",
           position: "right",
           value:
@@ -138,6 +143,10 @@ const config: Config = {
             {
               label: "Quick Start",
               to: "/docs/quick-start",
+            },
+            {
+              label: "Error Handling",
+              to: "/docs/error-handling",
             },
           ],
         },

@@ -86,6 +86,102 @@ function CustomForm() {
 }
 ```
 
+## 🛡️ Error Handling
+
+El Form provides comprehensive error management for all scenarios:
+
+### Automatic Schema Validation
+
+```tsx
+const userSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+// AutoForm handles errors automatically
+<AutoForm
+  schema={userSchema}
+  onSubmit={(data) => console.log("Success:", data)}
+  onError={(errors) => console.log("Validation failed:", errors)}
+/>;
+```
+
+### Manual Error Control with useForm
+
+```tsx
+const { setError, clearErrors, formState } = useForm({ schema });
+
+// Set custom errors
+setError("email", "This email is already taken");
+
+// Clear errors
+clearErrors("email"); // Clear specific field
+clearErrors(); // Clear all fields
+
+// Handle API errors
+const handleSubmit = async (data) => {
+  try {
+    await api.submitForm(data);
+  } catch (error) {
+    if (error.fieldErrors) {
+      Object.entries(error.fieldErrors).forEach(([field, message]) => {
+        setError(field, message);
+      });
+    }
+  }
+};
+```
+
+### Custom Error Components
+
+```tsx
+const CustomErrorComponent = ({ errors, touched }) => {
+  const errorEntries = Object.entries(errors).filter(
+    ([field]) => touched[field]
+  );
+  if (errorEntries.length === 0) return null;
+
+  return (
+    <div className="error-container">
+      {errorEntries.map(([field, error]) => (
+        <div key={field} className="error-item">
+          <strong>{field}:</strong> {error}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+<AutoForm
+  schema={schema}
+  customErrorComponent={CustomErrorComponent}
+  onSubmit={handleSubmit}
+/>;
+```
+
+### Real-time Validation
+
+```tsx
+const { register, watch, setError, clearErrors } = useForm({ schema });
+const email = watch("email");
+
+// Validate with external service
+useEffect(() => {
+  if (email && z.string().email().safeParse(email).success) {
+    const timeoutId = setTimeout(async () => {
+      const exists = await checkEmailExists(email);
+      if (exists) {
+        setError("email", "Email already registered");
+      } else {
+        clearErrors("email");
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }
+}, [email, setError, clearErrors]);
+```
+
 ## 🏗️ Bundle Size Optimization
 
 **Want smaller bundles?** Use these specialized packages instead:

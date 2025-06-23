@@ -31,6 +31,9 @@ A **TypeScript-first React form library** with Zod validation, offering multiple
 - **Custom Error Components**: Full customization with `AutoFormErrorProps` interface
 - **Multiple Error Styles**: 6+ different error component examples included
 - **Error State Management**: Comprehensive error and touched state tracking
+- **Manual Error Control**: Set/clear errors programmatically with `setError` and `clearErrors`
+- **Async Error Handling**: Server-side validation and API error integration
+- **Real-time Validation**: Debounced validation with external services
 
 ### 📦 **Package Structure**
 
@@ -167,6 +170,119 @@ Combines **declarative AutoForm** with **access to form state**.
     </div>
   )}
 </AutoForm>
+```
+
+### **Error Handling**
+
+El Form provides comprehensive error management for both automatic and manual scenarios:
+
+#### **Automatic Error Handling**
+
+```tsx
+// Schema-based validation with custom messages
+const userSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      "Password must contain uppercase, lowercase, and number"
+    ),
+});
+
+<AutoForm
+  schema={userSchema}
+  onSubmit={(data) => console.log("Success:", data)}
+  onError={(errors) => console.log("Validation failed:", errors)}
+  customErrorComponent={CustomErrorComponent} // Optional
+/>;
+```
+
+#### **Manual Error Control**
+
+```tsx
+const { setError, clearErrors, formState } = useForm({ schema });
+
+// Set field-specific errors
+setError("email", "This email is already registered");
+
+// Clear specific or all errors
+clearErrors("email"); // Clear one field
+clearErrors(); // Clear all fields
+
+// API error handling
+const handleSubmit = async (data) => {
+  try {
+    await submitForm(data);
+  } catch (error) {
+    if (error.fieldErrors) {
+      Object.entries(error.fieldErrors).forEach(([field, message]) => {
+        setError(field, message);
+      });
+    } else {
+      setError("root", "Something went wrong. Please try again.");
+    }
+  }
+};
+```
+
+#### **Custom Error Components**
+
+```tsx
+const CustomErrorComponent: React.FC<AutoFormErrorProps> = ({
+  errors,
+  touched,
+}) => {
+  const errorEntries = Object.entries(errors).filter(
+    ([field]) => touched[field]
+  );
+  if (errorEntries.length === 0) return null;
+
+  return (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+      <h3 className="text-red-800 font-semibold mb-2">
+        Please fix these issues:
+      </h3>
+      <ul className="space-y-1">
+        {errorEntries.map(([field, error]) => (
+          <li key={field} className="text-red-700">
+            <strong className="capitalize">{field}:</strong> {error}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+```
+
+#### **Real-time Validation**
+
+```tsx
+const { register, watch, setError, clearErrors } = useForm({ schema });
+const email = watch("email");
+
+// Debounced server validation
+useEffect(() => {
+  if (!email) return;
+
+  const timeoutId = setTimeout(async () => {
+    try {
+      const response = await fetch(`/api/validate-email?email=${email}`);
+      const data = await response.json();
+
+      if (data.taken) {
+        setError("email", "This email is already registered");
+      } else {
+        clearErrors("email");
+      }
+    } catch (error) {
+      console.warn("Validation failed:", error);
+    }
+  }, 500);
+
+  return () => clearTimeout(timeoutId);
+}, [email, setError, clearErrors]);
 ```
 
 ---

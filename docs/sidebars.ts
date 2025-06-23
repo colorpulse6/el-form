@@ -12,6 +12,8 @@ const sidebars = {
       label: "useForm",
       items: ["useform", "field-types", "useform-arrays"],
     },
+    "error-handling",
+    "advanced",
     "examples",
     "faq",
   ],
