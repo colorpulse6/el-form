@@ -1,0 +1,13 @@
+/* Essential Docusaurus overrides only */
+
+/* Ensure Tailwind classes work properly in navbar */
+.navbar__item {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Fix for HTML items in navbar */
+.navbar__items .navbar__item > * {
+  display: flex !important;
+  align-items: center !important;
+}

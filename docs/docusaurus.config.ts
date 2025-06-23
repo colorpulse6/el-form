@@ -39,7 +39,7 @@ const config: Config = {
         },
         blog: false,
         theme: {
-          customCss: "./src/tailwind.css",
+          customCss: ["./src/tailwind.css", "./src/css/custom.css"],
         },
       } satisfies Preset.Options,
     ],
@@ -96,7 +96,10 @@ const config: Config = {
       logo: {
         alt: "El Form Logo",
         src: "img/logo.svg",
+        href: "/docs/intro",
       },
+      hideOnScroll: false,
+      style: "primary",
       items: [
         {
           to: "/docs/intro",
@@ -109,10 +112,16 @@ const config: Config = {
           label: "Quick Start",
         },
         {
-          href: "https://github.com/colorpulse6/el-form",
-          label: "GitHub",
+          type: "html",
           position: "right",
-          className: "navbar__item--github",
+          value:
+            '<a href="https://github.com/colorpulse6/el-form" class="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-gray-800 to-black rounded-lg hover:from-gray-700 hover:to-gray-900 hover:-translate-y-0.5 transition-all duration-200 border border-white/10 shadow-md hover:shadow-lg ml-2 no-underline hover:no-underline hover:text-white" target="_blank" rel="noopener noreferrer">⭐ GitHub</a>',
+        },
+        {
+          type: "html",
+          position: "right",
+          value:
+            "<button onclick=\"document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')\" class=\"inline-flex items-center justify-center w-8 h-8 ml-2 text-lg rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200\" title=\"Toggle theme\">🌙</button>",
         },
       ],
     },
