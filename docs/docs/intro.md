@@ -4,21 +4,53 @@ sidebar_position: 1
 
 # Introduction
 
-Welcome to **El Form** - an elegant, type-safe React form library powered by Zod.
+Welcome to **El Form** - a powerful, schema-agnostic React form library with flexible validation.
 
 ## What is El Form?
 
-El Form is a React library that makes building forms simple, elegant, and type-safe. Built on top of Zod for schema validation, it provides both auto-generated forms and flexible custom form components.
+El Form is a modern React form library that supports any validation approach - Zod, Yup, Valibot, custom functions, or no validation at all. It provides both auto-generated forms and flexible custom form components with excellent TypeScript support.
 
 ## Key Features
 
-- 🔥 **Auto Form Generation** - Generate complete forms from Zod schemas
+- 🔥 **Schema-Agnostic Validation** - Use Zod, Yup, custom functions, or any schema library
+- 🤖 **Auto Form Generation** - Generate complete forms from Zod schemas (AutoForm)
 - 🛡️ **Type Safety** - Full TypeScript support with runtime validation
-- ⚡ **Performance** - Optimized for speed with minimal re-renders
+- ⚡ **Performance** - Optimized with debounced async validation and minimal re-renders
 - 🎨 **Customizable** - Flexible styling and component overrides
-- � **Reusable Components** - Multiple patterns for form component reuse (Context + Form Passing)
-- �📦 **Lightweight** - Small bundle size with zero dependencies
+- 🔄 **Reusable Components** - Multiple patterns for form component reuse
+- 📦 **Lightweight** - Small bundle size with optional dependencies
 - 🔧 **Developer Experience** - Intuitive API with great TypeScript inference
+
+## Validation Flexibility
+
+El Form supports multiple validation approaches:
+
+```tsx
+// Zod schemas
+const form = useForm({
+  validators: { onChange: zodSchema },
+});
+
+// Custom functions
+const form = useForm({
+  validators: {
+    onChange: ({ values }) => (values.email ? undefined : "Email required"),
+  },
+});
+
+// Mixed validation
+const form = useForm({
+  validators: { onChange: zodSchema },
+  fieldValidators: {
+    email: { onChangeAsync: checkEmailAvailable },
+  },
+});
+
+// No validation (just state management)
+const form = useForm({
+  defaultValues: { email: "" },
+});
+```
 
 ## Philosophy
 

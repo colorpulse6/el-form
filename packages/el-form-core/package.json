@@ -36,8 +36,14 @@
     "dev": "tsup --watch",
     "prepublishOnly": "pnpm run build"
   },
-  "dependencies": {
+  "dependencies": {},
+  "peerDependencies": {
     "zod": "^3.22.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "tsup": "^8.0.0",

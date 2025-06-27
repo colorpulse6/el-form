@@ -68,7 +68,7 @@ const userSchema = z.object({
 });
 
 function MyForm() {
-  const form = useForm({ schema: userSchema });
+  const form = useForm({ validators: { onChange: userSchema } });
 
   return (
     <FormProvider form={form}>
@@ -175,7 +175,7 @@ const shippingSchema = z.object({
 });
 
 function ShippingForm() {
-  const form = useForm({ schema: shippingSchema });
+  const form = useForm({ validators: { onChange: shippingSchema } });
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>

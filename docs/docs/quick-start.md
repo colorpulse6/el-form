@@ -7,29 +7,29 @@ import { InstallCommand, CodeBlock, Callout, FeatureCard, InteractivePreview, Pr
 # Quick Start
 
 <div className="text-xl text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-Get up and running with El Form in just a few minutes. Create beautiful, type-safe forms with minimal code.
+Get up and running with El Form in just a few minutes. Create beautiful, type-safe forms with any validation approach.
 </div>
 
 <Callout type="info" title="Prerequisites">
-Make sure you have React 16.8+ and TypeScript set up in your project. El Form works great with Next.js, Vite, and Create React App.
+Make sure you have React 16.8+ in your project. TypeScript is recommended but optional. El Form works great with Next.js, Vite, and Create React App.
 </Callout>
 
 <ProgressSteps
 steps={[
 {
 title: "Install El Form",
-description: "Add El Form and Zod to your project using your preferred package manager",
+description: "Add the form library to your project",
 completed: false,
 current: true
 },
 {
-title: "Create Your Schema",
-description: "Define your form structure and validation rules with Zod",
+title: "Choose Your Approach",
+description: "Use AutoForm for quick setup or useForm for custom forms",
 completed: false
 },
 {
-title: "Build Your Form",
-description: "Use AutoForm to generate a complete form from your schema",
+title: "Add Validation",
+description: "Use schemas, custom functions, or no validation at all",
 completed: false
 }
 ]}
@@ -37,175 +37,205 @@ completed: false
 
 ## Installation
 
-Install El Form and its peer dependency Zod:
+Choose your preferred package based on your needs:
 
 <InstallCommand 
-  npm="npm install el-form zod"
-  yarn="yarn add el-form zod"
-  pnpm="pnpm add el-form zod"
+  npm="npm install el-form-react-hooks"
+  yarn="yarn add el-form-react-hooks"
+  pnpm="pnpm add el-form-react-hooks"
 />
 
-## Your First Form
+For auto-generated forms with styling:
 
-Let's create a simple contact form that showcases El Form's power:
-
-<InteractivePreview
-  title="Quick Start Contact Form"
-  description="A fully functional contact form with validation"
-  componentName="QuickStartExample"
+<InstallCommand 
+  npm="npm install el-form-react-components"
+  yarn="yarn add el-form-react-components"
+  pnpm="pnpm add el-form-react-components"
 />
 
-Here's the complete code:
+## Quick Start: AutoForm
+
+The fastest way to create a form is with AutoForm and a Zod schema:
 
 ```tsx
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react-components";
 import { z } from "zod";
 
-// Define your schema with validation rules
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  email: z.string().email("Please enter a valid email"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
+  email: z.string().email("Invalid email"),
+  message: z.string().min(10, "Message too short"),
 });
 
 function ContactForm() {
-  const handleSubmit = (data: Record<string, any>) => {
-    console.log("Form submitted:", data);
-    // Handle your form submission here
-  };
-
-  const fields = [
-    {
-      name: "name",
-      label: "Name",
-      type: "text",
-      colSpan: 12,
-      placeholder: "Enter your name",
-    },
-    {
-      name: "email",
-      label: "Email",
-      type: "email",
-      colSpan: 12,
-      placeholder: "you@example.com",
-    },
-    {
-      name: "message",
-      label: "Message",
-      type: "textarea",
-      colSpan: 12,
-      placeholder: "Tell us what you think...",
-    },
-  ];
-
   return (
-    <div className="max-w-md mx-auto">
-      <AutoForm
-        schema={contactSchema}
-        fields={fields}
-        layout="grid"
-        columns={12}
-        onSubmit={handleSubmit}
-        initialValues={{
-          name: "",
-          email: "",
-          message: "",
-        }}
-      />
-    </div>
+    <AutoForm schema={contactSchema} onSubmit={(data) => console.log(data)} />
   );
 }
 ```
 
-<Callout type="success" title="🎉 That's it!">
-You now have a fully functional form with:
-- **Type-safe data handling** with automatic TypeScript inference
-- **Automatic field generation** from your Zod schema
-- **Built-in validation** with helpful error messages
-- **Accessible form controls** with proper ARIA labels
-</Callout>
+This generates a complete form with validation, error handling, and type safety!
 
-## What You Get Out of the Box
+## Alternative: useForm Hook
+
+For custom forms with full control, use the `useForm` hook:
+
+```tsx
+import { useForm } from "el-form-react-hooks";
+
+function CustomForm() {
+  const { register, handleSubmit, formState } = useForm({
+    defaultValues: { email: "", message: "" },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      <textarea {...register("message")} placeholder="Message" />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+## Validation Options
+
+El Form supports multiple validation approaches:
+
+### Schema Validation (Zod)
+
+```tsx
+import { z } from "zod";
+
+const schema = z.object({
+  email: z.string().email("Invalid email"),
+  age: z.number().min(18, "Must be 18+"),
+});
+
+const form = useForm({
+  validators: { onChange: schema },
+  defaultValues: { email: "", age: 18 },
+});
+```
+
+### Custom Validation Functions
+
+```tsx
+const form = useForm({
+  validators: {
+    onChange: ({ values }) => {
+      if (!values.email?.includes("@")) return "Invalid email";
+      if (!values.password || values.password.length < 6)
+        return "Password too short";
+      return undefined;
+    },
+  },
+  defaultValues: { email: "", password: "" },
+});
+```
+
+### No Validation (State Management Only)
+
+```tsx
+const form = useForm({
+  defaultValues: { email: "", message: "" },
+  // No validators needed!
+});
+```
+
+## What You Get
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
   <FeatureCard
-    icon="🔒"
-    title="Type Safety"
-    description="Fully typed form data with automatic TypeScript inference from your Zod schemas"
+    icon="�"
+    title="Schema-Agnostic"
+    description="Use Zod, Yup, custom functions, or no validation - your choice"
   />
   <FeatureCard
     icon="⚡"
     title="Auto Generation"
-    description="Form fields generated automatically with proper input types and validation rules"
+    description="Generate complete forms from schemas with AutoForm component"
   />
   <FeatureCard
     icon="🛡️"
-    title="Built-in Validation"
-    description="Client-side validation powered by Zod with customizable error messages"
+    title="Type Safety"
+    description="Full TypeScript support with automatic type inference"
   />
   <FeatureCard
-    icon="♿"
-    title="Accessibility"
-    description="ARIA labels, focus management, and screen reader support out of the box"
+    icon="🚀"
+    title="Performance"
+    description="Optimized with debounced async validation and minimal re-renders"
   />
 </div>
 
-## Customization
+## Field Customization
 
-Want to customize field labels and types? You can configure each field in the `fields` array:
-
-<InteractivePreview
-  title="Customized Field Configuration"
-  description="Customize labels, placeholders, and field types"
-  componentName="FieldConfigExample"
-/>
+Customize AutoForm fields as needed:
 
 ```tsx
-const fields = [
-  {
-    name: "name",
-    label: "Full Name",
-    type: "text",
-    colSpan: 12,
-    placeholder: "Enter your full name",
-  },
-  {
-    name: "email",
-    label: "Email Address",
-    type: "email",
-    colSpan: 12,
-    placeholder: "you@example.com",
-  },
-  {
-    name: "message",
-    label: "Your Message",
-    type: "textarea",
-    colSpan: 12,
-    placeholder: "Tell us what you think...",
-  },
-];
+<AutoForm
+  schema={contactSchema}
+  fields={[
+    {
+      name: "name",
+      label: "Full Name",
+      placeholder: "Enter your name",
+      colSpan: 6,
+    },
+    {
+      name: "email",
+      label: "Email Address",
+      placeholder: "you@example.com",
+      colSpan: 6,
+    },
+    {
+      name: "message",
+      type: "textarea",
+      label: "Your Message",
+      colSpan: 12,
+    },
+  ]}
+  layout="grid"
+  columns={12}
+  onSubmit={handleSubmit}
+/>
 ```
 
-## Advanced Usage with useForm Hook
+## Advanced Validation
 
-For more complex forms, you can use the `useForm` hook for complete control:
+Mix different validation approaches:
 
-<CodeBlock language="tsx" title="Advanced Form with useForm">
-{`import { useForm } from "el-form";
+```tsx
+<AutoForm
+  schema={baseSchema} // Basic validation
+  validators={customBusinessRules} // Custom business logic
+  fieldValidators={{
+    email: {
+      onChangeAsync: checkEmailAvailable, // Async field validation
+      asyncDebounceMs: 500,
+    },
+  }}
+  onSubmit={handleSubmit}
+/>
+```
 
-function AdvancedForm() {
+## Form State Management
+
+For reactive forms, you can watch field values:
+
+```tsx
 const {
-register,
-handleSubmit,
-formState: { errors, isSubmitting },
-watch,
+  register,
+  handleSubmit,
+  formState,
+  watch,
 } = useForm({
-schema: contactSchema,
-defaultValues: {
-name: "",
-email: "",
-message: "",
-},
+  validators: { onChange: contactSchema },
+  defaultValues: {
+    name: "",
+    email: "",
+    message: "",
+  },
 });
 
 const onSubmit = async (data) => {
@@ -373,3 +403,4 @@ The `useForm` hook gives you complete control over form state, validation timing
     </div>
   </div>
 </div>
+```

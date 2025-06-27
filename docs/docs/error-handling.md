@@ -85,7 +85,7 @@ const userSchema = z.object({
 
 function MyForm() {
   const { register, handleSubmit, setError, clearErrors, formState } = useForm({
-    schema: userSchema,
+    validators: { onChange: userSchema },
   });
 
   const handleEmailCheck = async () => {
@@ -273,7 +273,7 @@ import { useForm } from "el-form/react";
 
 function RegistrationForm() {
   const { register, handleSubmit, setError, formState } = useForm({
-    schema: registrationSchema,
+    validators: { onChange: registrationSchema },
   });
 
   const onSubmit = async (data) => {

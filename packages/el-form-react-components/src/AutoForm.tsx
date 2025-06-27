@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useForm } from "el-form-react-hooks";
+import type { ValidatorConfig } from "el-form-core";
 import {
   AutoFormProps,
   AutoFormFieldConfig,
@@ -454,12 +455,26 @@ export function AutoForm<T extends Record<string, any>>({
   children,
   customErrorComponent,
   componentMap,
+  validators,
+  fieldValidators,
+  validateOnChange = true,
+  validateOnBlur = true,
 }: AutoFormProps<T>) {
+  // Create validator config for the form
+  // If custom validators are provided, use them; otherwise use the schema
+  const formValidators = validators || {
+    [validateOnChange ? "onChange" : "onSubmit"]: schema,
+    ...(validateOnBlur ? { onBlur: schema } : {}),
+  };
+
   const formApi = useForm<T>({
-    schema,
-    initialValues,
-    validateOnChange: true,
-    validateOnBlur: true,
+    validators: formValidators,
+    fieldValidators: fieldValidators as
+      | Record<keyof T, ValidatorConfig>
+      | undefined,
+    defaultValues: initialValues,
+    validateOnChange,
+    validateOnBlur,
   });
 
   const {

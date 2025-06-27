@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm } from "el-form-react";
+import { useForm } from "el-form-react-hooks";
 import { z } from "zod";
 
 const advancedSchema = z
@@ -48,8 +48,21 @@ export default function UseFormAdvancedExample() {
     getDirtyFields,
     getTouchedFields,
   } = useForm<FormData>({
-    schema: advancedSchema,
-    initialValues: {
+    validators: {
+      onChange: advancedSchema,
+      onBlur: advancedSchema,
+    },
+    fieldValidators: {
+      email: {
+        onChangeAsync: async ({ value }: { value: string }) => {
+          if (!value) return undefined;
+          const exists = await checkEmailExists(value);
+          return exists ? "Email already taken" : undefined;
+        },
+        asyncDebounceMs: 500,
+      },
+    },
+    defaultValues: {
       firstName: "",
       lastName: "",
       email: "",
@@ -59,7 +72,6 @@ export default function UseFormAdvancedExample() {
       newsletter: false,
       terms: false,
     },
-    validateOnBlur: true,
   });
 
   // Watch specific fields for reactive updates
