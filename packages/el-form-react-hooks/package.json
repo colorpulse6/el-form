@@ -38,8 +38,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "el-form-core": "workspace:^",
-    "zod": "^3.22.0"
+    "el-form-core": "workspace:^"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

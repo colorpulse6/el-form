@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { ValidatorConfig } from "el-form-core";
 
 // Form Context types
 export interface FormContextValue<T extends Record<string, any>> {
@@ -17,11 +17,19 @@ export interface FormState<T extends Record<string, any>> {
 }
 
 export interface UseFormOptions<T extends Record<string, any>> {
-  schema: z.ZodSchema<T>;
-  initialValues?: Partial<T>;
+  defaultValues?: Partial<T>;
+  validators?: ValidatorConfig;
   onSubmit?: (values: T) => void | Promise<void>;
+
+  // Field-level validator configurations
+  fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
+
+  // Legacy validation mode options (still supported)
   validateOnChange?: boolean;
   validateOnBlur?: boolean;
+
+  // New validation mode (more flexible)
+  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
 }
 
 export interface FieldState {
@@ -154,7 +162,8 @@ export type ComponentMap = Partial<
 >;
 
 export interface AutoFormProps<T extends Record<string, any>> {
-  schema: z.ZodSchema<T>;
+  // AutoForm will still primarily use schemas, but now any schema type
+  schema: any; // Can be Zod, Yup, Valibot, etc.
   fields?: AutoFormFieldConfig[];
   initialValues?: Partial<T>;
   layout?: "grid" | "flex";

@@ -210,9 +210,8 @@ const dynamicSchema = createDynamicSchema(fieldConfig);
 
 Enable immediate feedback as users type:
 
-```tsx
-const { register, formState } = useForm({
-  schema: mySchema,
+```tsx const { register, formState } = useForm({
+    validators: { onChange: mySchema },
   validateOnChange: true, // Validate on every change
   validateOnBlur: true, // Validate when field loses focus
 });

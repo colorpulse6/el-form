@@ -1,4 +1,5 @@
-import { AutoForm, useForm } from "el-form-react";
+import { AutoForm } from "el-form-react";
+import { useForm } from "el-form-react-hooks";
 import { z } from "zod";
 
 // Basic useForm Example
@@ -12,12 +13,12 @@ const userSchema = z.object({
 
 export const UseFormExample: React.FC = () => {
   const { register, handleSubmit, formState, reset } = useForm({
-    schema: userSchema,
-    initialValues: {
+    validators: { onChange: userSchema },
+    defaultValues: {
       firstName: "",
       lastName: "",
       email: "",
-      age: undefined,
+      age: 18,
       bio: "",
     },
     validateOnChange: true,

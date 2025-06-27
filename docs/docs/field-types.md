@@ -34,7 +34,7 @@ function SettingsForm() {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    schema: settingsSchema,
+    validators: { onChange: settingsSchema },
     defaultValues: {
       username: "",
       age: 18,

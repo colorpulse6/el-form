@@ -63,3 +63,22 @@ export function addArrayItemReact(obj: any, path: string, item: any): any {
 
   return result;
 }
+
+/**
+ * Efficient equality comparison utilities
+ */
+export { shallowEqual, deepEqual } from "./equality";
+
+/**
+ * Dirty state management utilities
+ */
+export { createDirtyStateManager, type DirtyStateManager } from "./dirtyState";
+
+/**
+ * Validation management utilities
+ */
+export {
+  createValidationManager,
+  type ValidationManager,
+  type ValidationManagerOptions,
+} from "./validation";

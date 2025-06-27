@@ -39,6 +39,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
+    "el-form-core": "workspace:^",
     "el-form-react-hooks": "workspace:^",
     "zod": "^3.22.0"
   },

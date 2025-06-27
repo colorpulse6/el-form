@@ -69,7 +69,108 @@ function App() {
 }
 ```
 
-## 🛡️ Error Handling
+## � Enhanced Validation System
+
+AutoForm now supports a flexible validation system that goes beyond just Zod schemas. You can combine schema validation with custom validators for maximum flexibility.
+
+### Basic Schema Validation (Default)
+
+```tsx
+const schema = z.object({
+  email: z.string().email("Invalid email"),
+  age: z.number().min(18, "Must be 18+"),
+});
+
+<AutoForm
+  schema={schema}
+  onSubmit={handleSubmit}
+  validateOnChange={true}
+  validateOnBlur={true}
+/>;
+```
+
+### Custom Validators
+
+```tsx
+import type { ValidatorConfig } from "el-form-core";
+
+const customValidator: ValidatorConfig = {
+  onChange: (context) => {
+    const { values } = context;
+    if (!values.email?.includes("@")) {
+      return "Email must contain @";
+    }
+    return undefined;
+  },
+  onBlur: (context) => {
+    // More strict validation on blur
+    try {
+      schema.parse(context.values);
+      return undefined;
+    } catch (error) {
+      return "Please fix validation errors";
+    }
+  },
+};
+
+<AutoForm
+  schema={schema}
+  validators={customValidator}
+  onSubmit={handleSubmit}
+/>;
+```
+
+### Field-Level Validators
+
+```tsx
+const fieldValidators = {
+  email: {
+    onChangeAsync: async (context) => {
+      if (!context.value) return undefined;
+
+      // Simulate API call to check email availability
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      if (context.value === "admin@blocked.com") {
+        return "This email is not available";
+      }
+
+      return undefined;
+    },
+    asyncDebounceMs: 300,
+  } as ValidatorConfig,
+  username: {
+    onChange: (context) => {
+      if (context.value?.includes("admin")) {
+        return 'Username cannot contain "admin"';
+      }
+      return undefined;
+    },
+  } as ValidatorConfig,
+};
+
+<AutoForm
+  schema={schema}
+  fieldValidators={fieldValidators}
+  onSubmit={handleSubmit}
+/>;
+```
+
+### Mixed Validation (Schema + Custom)
+
+```tsx
+// Use Zod schema for basic validation + custom rules for business logic
+<AutoForm
+  schema={userSchema} // Base validation
+  validators={customGlobalValidator} // Global custom rules
+  fieldValidators={fieldLevelValidators} // Field-specific custom rules
+  validateOnChange={true}
+  validateOnBlur={true}
+  onSubmit={handleSubmit}
+/>
+```
+
+## �🛡️ Error Handling
 
 AutoForm provides comprehensive error handling with customization options:
 

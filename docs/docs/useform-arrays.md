@@ -43,8 +43,8 @@ function ExperienceForm() {
     addArrayItem,
     removeArrayItem,
   } = useForm<FormValues>({
-    schema: experienceSchema,
-    initialValues: {
+    validators: { onChange: experienceSchema },
+    defaultValues: {
       name: "",
       experience: [{ company: "", position: "" }],
     },

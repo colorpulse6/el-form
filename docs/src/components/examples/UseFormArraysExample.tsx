@@ -1,4 +1,4 @@
-import { useForm } from "el-form-react";
+import { useForm } from "el-form-react-hooks";
 import { z } from "zod";
 
 const experienceSchema = z.object({
@@ -23,8 +23,8 @@ export function UseFormArraysExample() {
     addArrayItem,
     removeArrayItem,
   } = useForm<FormValues>({
-    schema: experienceSchema,
-    initialValues: {
+    validators: { onChange: experienceSchema },
+    defaultValues: {
       name: "",
       experience: [{ company: "", position: "" }],
     },

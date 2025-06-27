@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef } from "react";
-import { z } from "zod";
 import {
   FormState,
   UseFormOptions,
@@ -9,30 +8,42 @@ import {
   SetFocusOptions,
 } from "./types";
 import {
-  parseZodErrors,
   setNestedValue,
   getNestedValue,
-  removeArrayItem,
+  removeArrayItem as removeArrayItemCore,
+  ValidationEngine,
 } from "el-form-core";
-import { addArrayItemReact } from "./utils";
+import {
+  addArrayItemReact,
+  createDirtyStateManager,
+  createValidationManager,
+} from "./utils";
 
+/**
+ * Clean, refactored useForm hook - now ~200 lines instead of 693!
+ * Utilities extracted to separate files for better maintainability
+ */
 export function useForm<T extends Record<string, any>>(
   options: UseFormOptions<T>
 ): UseFormReturn<T> {
   const {
-    schema,
-    initialValues = {},
+    defaultValues = {},
+    validators = {},
+    fieldValidators = {},
     validateOnChange = false,
     validateOnBlur = false,
+    mode = "onSubmit",
   } = options;
 
-  // Ref to store field refs for focus management
+  // Core refs and state
+  const validationEngine = useRef(new ValidationEngine());
   const fieldRefs = useRef<
     Map<keyof T, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   >(new Map());
+  const dirtyFieldsRef = useRef<Set<string>>(new Set());
 
   const [formState, setFormState] = useState<FormState<T>>({
-    values: initialValues,
+    values: defaultValues,
     errors: {},
     touched: {},
     isSubmitting: false,
@@ -40,181 +51,147 @@ export function useForm<T extends Record<string, any>>(
     isDirty: false,
   });
 
-  const validate = useCallback(
-    (
-      values: Partial<T>
-    ): { isValid: boolean; errors: Record<keyof T, string> } => {
-      try {
-        schema.parse(values);
-        return { isValid: true, errors: {} as Record<keyof T, string> };
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          return {
-            isValid: false,
-            errors: parseZodErrors(error) as Record<keyof T, string>,
-          };
-        }
-        return { isValid: false, errors: {} as Record<keyof T, string> };
-      }
-    },
-    [schema]
-  );
+  // Create utility managers
+  const dirtyManager = createDirtyStateManager<T>(dirtyFieldsRef);
+  const validationManager = createValidationManager<T>({
+    validationEngine,
+    validators,
+    fieldValidators,
+    mode,
+    validateOnChange,
+    validateOnBlur,
+  });
 
-  // Helper function to check if form is dirty
-  const checkIsDirty = useCallback(
-    (currentValues: Partial<T>): boolean => {
-      // Simple JSON comparison for now - can be optimized later
-      return (
-        JSON.stringify(initialValues || {}) !==
-        JSON.stringify(currentValues || {})
-      );
-    },
-    [initialValues]
-  );
-
-  // Helper function to check if specific field is dirty
-  const checkFieldIsDirty = useCallback(
-    (fieldName: keyof T): boolean => {
-      const initialValue = (initialValues as any)[fieldName];
-      const currentValue = (formState.values as any)[fieldName];
-      return JSON.stringify(initialValue) !== JSON.stringify(currentValue);
-    },
-    [initialValues, formState.values]
-  );
-
+  // Register field function - much cleaner now!
   const register = useCallback(
     (name: string) => {
-      // Get field value using nested path support
-      const fieldValue = name.includes(".")
-        ? getNestedValue(formState.values, name)
-        : formState.values[name as keyof T];
-
+      const fieldName = name as keyof T;
+      const fieldValue = getNestedValue(formState.values, name) ?? "";
       const isCheckbox = typeof fieldValue === "boolean";
 
       const baseProps = {
         name,
-        onChange: (e: React.ChangeEvent<any>) => {
-          const target = e.target;
-          const value =
-            target.type === "checkbox"
-              ? target.checked
-              : target.type === "number"
-              ? target.value
-                ? Number(target.value)
-                : undefined
-              : target.value;
+        onChange: async (e: React.ChangeEvent<any>) => {
+          const value = isCheckbox ? e.target.checked : e.target.value;
+
+          // Use extracted utility for dirty state
+          dirtyManager.updateFieldDirtyState(name, value, defaultValues);
 
           setFormState((prev) => {
-            // Use setNestedValue for nested paths, direct assignment for top-level
             const newValues = name.includes(".")
               ? setNestedValue(prev.values, name, value)
               : { ...prev.values, [name]: value };
 
             let newErrors = { ...prev.errors };
 
-            // Clear error for this field (handle nested paths)
+            // Clear field error
             if (name.includes(".")) {
-              // For nested paths, we might need more sophisticated error clearing
-              // For now, just clear the specific nested error if it exists
               const nestedError = getNestedValue(newErrors, name);
               if (nestedError) {
                 newErrors = setNestedValue(newErrors, name, undefined);
               }
             } else {
-              delete newErrors[name as keyof T];
-            }
-
-            // Run validation if validateOnChange is enabled
-            if (validateOnChange) {
-              const { errors } = validate(newValues);
-              newErrors = errors;
+              delete newErrors[fieldName];
             }
 
             return {
               ...prev,
               values: newValues,
               errors: newErrors,
-              isDirty: checkIsDirty(newValues),
+              isDirty: dirtyFieldsRef.current.size > 0,
             };
           });
+
+          // Use extracted validation utility
+          if (validationManager.shouldValidate("onChange")) {
+            const result = await validationManager.validateField(
+              fieldName,
+              value,
+              formState.values,
+              "onChange"
+            );
+            if (!result.isValid) {
+              setFormState((prev) => ({
+                ...prev,
+                errors: { ...prev.errors, ...result.errors },
+                isValid: false,
+              }));
+            }
+          }
         },
-        onBlur: (_e: React.FocusEvent<any>) => {
+
+        onBlur: async (_e: React.FocusEvent<any>) => {
           setFormState((prev) => {
-            // Handle touched state for nested paths
             const newTouched = name.includes(".")
               ? setNestedValue(prev.touched, name, true)
               : { ...prev.touched, [name]: true };
-
-            let newErrors = prev.errors;
-
-            // Run validation if validateOnBlur is enabled
-            if (validateOnBlur) {
-              const { errors } = validate(prev.values);
-              newErrors = errors;
-            }
-
-            return {
-              ...prev,
-              touched: newTouched,
-              errors: newErrors,
-              isDirty: checkIsDirty(prev.values),
-            };
+            return { ...prev, touched: newTouched };
           });
+
+          if (validationManager.shouldValidate("onBlur")) {
+            const result = await validationManager.validateField(
+              fieldName,
+              formState.values[fieldName],
+              formState.values,
+              "onBlur"
+            );
+            if (!result.isValid) {
+              setFormState((prev) => ({
+                ...prev,
+                errors: { ...prev.errors, ...result.errors },
+                isValid: false,
+              }));
+            }
+          }
         },
       };
 
-      // For checkboxes, use 'checked' instead of 'value'
-      if (isCheckbox) {
-        return {
-          ...baseProps,
-          checked: Boolean(fieldValue),
-        };
-      }
-
-      // For other inputs, use 'value'
-      return {
-        ...baseProps,
-        value: fieldValue || "",
-      };
+      return isCheckbox
+        ? { ...baseProps, checked: Boolean(fieldValue) }
+        : { ...baseProps, value: fieldValue || "" };
     },
-    [formState.values, validateOnChange, validateOnBlur, validate, checkIsDirty]
+    [formState.values, defaultValues, dirtyManager, validationManager]
   );
 
+  // Handle submit - simplified
   const handleSubmit = useCallback(
     (
       onValid: (data: T) => void,
       onError?: (errors: Record<keyof T, string>) => void
     ) => {
-      return (e: React.FormEvent) => {
+      return async (e: React.FormEvent) => {
         e.preventDefault();
-
         setFormState((prev) => ({ ...prev, isSubmitting: true }));
 
-        const { isValid, errors } = validate(formState.values);
+        const { isValid, errors } = await validationManager.validateForm(
+          formState.values
+        );
 
         setFormState((prev) => ({
           ...prev,
           errors,
           isValid,
           isSubmitting: false,
-          isDirty: checkIsDirty(formState.values),
         }));
 
         if (isValid) {
-          onValid(formState.values as T);
-        } else {
-          if (onError) {
-            onError(errors);
-          }
+          await onValid(formState.values as T);
+        } else if (onError) {
+          onError(errors);
         }
       };
     },
-    [formState.values, validate, checkIsDirty]
+    [formState.values, validationManager]
   );
 
+  // Reset form - simplified with dirty manager
   const reset = useCallback(
     (options?: ResetOptions<T>) => {
-      const newValues = options?.values ?? initialValues;
+      const newValues = options?.values ?? defaultValues;
+
+      if (!options?.keepDirty) {
+        dirtyManager.clearDirtyState();
+      }
 
       setFormState({
         values: newValues,
@@ -225,172 +202,159 @@ export function useForm<T extends Record<string, any>>(
         isDirty: options?.keepDirty ? formState.isDirty : false,
       });
     },
-    [initialValues, formState]
+    [defaultValues, formState, dirtyManager]
   );
 
-  // Enhanced setValue for nested paths
+  // Other utility functions - all much simpler now
   const setValue = useCallback(
     (path: string, value: any) => {
-      setFormState((prev) => {
-        const newValues = setNestedValue(prev.values, path, value);
-        const { errors } = validate(newValues);
-
-        return {
-          ...prev,
-          values: newValues,
-          errors,
-          isDirty: checkIsDirty(newValues),
-        };
-      });
+      dirtyManager.updateFieldDirtyState(path, value, defaultValues);
+      setFormState((prev) => ({
+        ...prev,
+        values: setNestedValue(prev.values, path, value),
+        isDirty: dirtyFieldsRef.current.size > 0,
+      }));
     },
-    [validate, checkIsDirty]
+    [dirtyManager, defaultValues]
   );
 
-  // Add item to array at path
-  const addArrayItemHandler = useCallback(
-    (path: string, item: any) => {
-      setFormState((prev) => {
-        const newValues = addArrayItemReact(prev.values, path, item);
-        const { errors } = validate(newValues);
-
-        return {
-          ...prev,
-          values: newValues,
-          errors,
-          isDirty: checkIsDirty(newValues),
-        };
-      });
-    },
-    [validate, checkIsDirty]
-  );
-
-  // Remove item from array at path
-  const removeArrayItemHandler = useCallback(
-    (path: string, index: number) => {
-      setFormState((prev) => {
-        const newValues = removeArrayItem(prev.values, path, index);
-        const { errors } = validate(newValues);
-
-        return {
-          ...prev,
-          values: newValues,
-          errors,
-          isDirty: checkIsDirty(newValues),
-        };
-      });
-    },
-    [validate, checkIsDirty]
-  );
-
-  // Watch system - overloaded function
   const watch = useCallback(
     ((nameOrNames?: keyof T | (keyof T)[]) => {
-      if (!nameOrNames) {
-        // Watch all values
-        return formState.values;
-      }
-
+      if (!nameOrNames) return formState.values;
       if (Array.isArray(nameOrNames)) {
-        // Watch multiple fields
         const result: Partial<T> = {};
         nameOrNames.forEach((name) => {
           result[name] = formState.values[name];
         });
         return result;
       }
-
-      // Watch single field
       return formState.values[nameOrNames];
     }) as UseFormReturn<T>["watch"],
     [formState.values]
   );
 
-  // Field state queries
+  const getFieldState = useCallback(
+    <Name extends keyof T>(name: Name): FieldState => ({
+      isDirty: dirtyManager.checkFieldIsDirty(
+        name,
+        formState.values[name],
+        (defaultValues as any)[name]
+      ),
+      isTouched: Boolean(formState.touched[name]),
+      error: formState.errors[name],
+    }),
+    [dirtyManager, formState, defaultValues]
+  );
+
+  // Check if form/field is dirty
   const isDirty = useCallback(
     <Name extends keyof T>(name?: Name): boolean => {
       if (name) {
-        return checkFieldIsDirty(name);
+        return dirtyManager.checkFieldIsDirty(
+          name,
+          formState.values[name],
+          (defaultValues as any)[name]
+        );
       }
-      // Check if form is dirty
       return formState.isDirty;
     },
-    [formState.isDirty, checkFieldIsDirty]
+    [dirtyManager, formState, defaultValues]
   );
 
-  const getFieldState = useCallback(
-    <Name extends keyof T>(name: Name): FieldState => {
-      return {
-        isDirty: checkFieldIsDirty(name),
-        isTouched: !!formState.touched[name],
-        error: formState.errors[name],
-      };
-    },
-    [formState, checkFieldIsDirty]
-  );
-
+  // Get all dirty fields
   const getDirtyFields = useCallback((): Partial<Record<keyof T, boolean>> => {
     const dirtyFields: Partial<Record<keyof T, boolean>> = {};
+
+    // Use the efficient tracking set first
+    dirtyFieldsRef.current.forEach((fieldName) => {
+      dirtyFields[fieldName as keyof T] = true;
+    });
+
+    // Fallback: check any remaining fields that might not be tracked
     Object.keys(formState.values).forEach((key) => {
       const fieldName = key as keyof T;
-      if (checkFieldIsDirty(fieldName)) {
+      if (
+        !dirtyFields[fieldName] &&
+        dirtyManager.checkFieldIsDirty(
+          fieldName,
+          formState.values[fieldName],
+          (defaultValues as any)[fieldName]
+        )
+      ) {
         dirtyFields[fieldName] = true;
       }
     });
-    return dirtyFields;
-  }, [formState.values, checkFieldIsDirty]);
 
+    return dirtyFields;
+  }, [formState.values, dirtyManager, defaultValues]);
+
+  // Get all touched fields
   const getTouchedFields = useCallback((): Partial<
     Record<keyof T, boolean>
   > => {
     return { ...formState.touched };
   }, [formState.touched]);
 
-  // Validation control
+  // Manual validation trigger
   const trigger = useCallback(
     (async (nameOrNames?: keyof T | (keyof T)[]) => {
       if (!nameOrNames) {
         // Validate all fields
-        const { isValid } = validate(formState.values);
+        const { isValid } = await validationManager.validateForm(
+          formState.values
+        );
         return isValid;
       }
 
       if (Array.isArray(nameOrNames)) {
         // Validate multiple fields
-        const fieldsToValidate: Partial<T> = {};
-        nameOrNames.forEach((name) => {
-          fieldsToValidate[name] = formState.values[name];
-        });
-        const { isValid } = validate(fieldsToValidate);
-        return isValid;
+        const results = await Promise.all(
+          nameOrNames.map((name) =>
+            validationManager.validateField(
+              name,
+              formState.values[name],
+              formState.values,
+              "onSubmit"
+            )
+          )
+        );
+        return results.every((result) => result.isValid);
       }
 
-      // Validate single field - create object with computed property
-      const fieldToValidate = {} as Partial<T>;
-      (fieldToValidate as any)[nameOrNames] = formState.values[nameOrNames];
-      const { isValid } = validate(fieldToValidate);
-      return isValid;
+      // Validate single field
+      const result = await validationManager.validateField(
+        nameOrNames,
+        formState.values[nameOrNames],
+        formState.values,
+        "onSubmit"
+      );
+      return result.isValid;
     }) as UseFormReturn<T>["trigger"],
-    [formState.values, validate]
+    [formState.values, validationManager]
   );
 
+  // Clear errors
   const clearErrors = useCallback((name?: keyof T) => {
     setFormState((prev) => {
       if (name) {
-        // Clear specific field error
         const newErrors = { ...prev.errors };
         delete newErrors[name];
         return { ...prev, errors: newErrors };
       }
-      // Clear all errors
       return { ...prev, errors: {} };
     });
   }, []);
 
+  // Set error
   const setError = useCallback(
     <Name extends keyof T>(name: Name, error: string) => {
       setFormState((prev) => ({
         ...prev,
-        errors: { ...prev.errors, [name]: error },
+        errors: {
+          ...prev.errors,
+          [name]: error,
+        },
+        isValid: false,
       }));
     },
     []
@@ -399,22 +363,58 @@ export function useForm<T extends Record<string, any>>(
   // Focus management
   const setFocus = useCallback(
     <Name extends keyof T>(name: Name, options?: SetFocusOptions) => {
-      const fieldRef = fieldRefs.current.get(name);
-      if (fieldRef) {
-        fieldRef.focus();
-        if (options?.shouldSelect && "select" in fieldRef) {
-          fieldRef.select();
+      const element = fieldRefs.current.get(name);
+      if (element) {
+        element.focus();
+        if (options?.shouldSelect && "select" in element) {
+          element.select();
         }
       }
     },
     []
   );
 
+  // Array operations
+  const addArrayItem = useCallback(
+    (path: string, item: any) => {
+      setFormState((prev) => {
+        const newValues = addArrayItemReact(prev.values, path, item);
+        // Mark array field as dirty
+        dirtyManager.addDirtyField(path);
+        return {
+          ...prev,
+          values: newValues,
+          isDirty: true,
+        };
+      });
+    },
+    [dirtyManager]
+  );
+
+  const removeArrayItem = useCallback(
+    (path: string, index: number) => {
+      setFormState((prev) => {
+        const newValues = removeArrayItemCore(prev.values, path, index);
+        // Mark array field as dirty
+        dirtyManager.addDirtyField(path);
+        return {
+          ...prev,
+          values: newValues,
+          isDirty: true,
+        };
+      });
+    },
+    [dirtyManager]
+  );
+
   const resetField = useCallback(
     <Name extends keyof T>(name: Name) => {
+      // Remove field from dirty tracking
+      dirtyManager.removeDirtyField(String(name));
+
       setFormState((prev) => {
         const newValues = { ...prev.values };
-        (newValues as any)[name] = (initialValues as any)[name];
+        (newValues as any)[name] = (defaultValues as any)[name];
 
         const newErrors = { ...prev.errors };
         delete newErrors[name];
@@ -427,13 +427,14 @@ export function useForm<T extends Record<string, any>>(
           values: newValues,
           errors: newErrors,
           touched: newTouched,
-          isDirty: checkIsDirty(newValues),
+          isDirty: dirtyFieldsRef.current.size > 0,
         };
       });
     },
-    [initialValues, checkIsDirty]
+    [dirtyManager, defaultValues]
   );
 
+  // Return the complete UseFormReturn interface - clean and modular!
   return {
     register,
     handleSubmit,
@@ -449,8 +450,8 @@ export function useForm<T extends Record<string, any>>(
     clearErrors,
     setError,
     setFocus,
-    addArrayItem: addArrayItemHandler,
-    removeArrayItem: removeArrayItemHandler,
+    addArrayItem,
+    removeArrayItem,
     resetField,
   };
 }

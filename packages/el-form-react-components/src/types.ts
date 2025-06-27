@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { UseFormReturn } from "el-form-react-hooks";
+import type { UseFormReturn, ValidatorConfig } from "el-form-react-hooks";
 
 // Grid layout types
 export type GridColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
@@ -79,4 +79,9 @@ export interface AutoFormProps<T extends Record<string, any>> {
   children?: (formApi: UseFormReturn<T>) => React.ReactNode;
   customErrorComponent?: React.ComponentType<AutoFormErrorProps>;
   componentMap?: ComponentMap;
+  // New validation options (optional for backward compatibility)
+  validators?: ValidatorConfig;
+  fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
+  validateOnChange?: boolean;
+  validateOnBlur?: boolean;
 }
