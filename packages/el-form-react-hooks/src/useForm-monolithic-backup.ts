@@ -47,25 +47,110 @@ export function useForm<T extends Record<string, any>>(
     isDirty: false,
   });
 
-  // Helper function to check if form is dirty
+  // Track which fields are dirty for better performance
+  const dirtyFieldsRef = useRef<Set<string>>(new Set());
+
+  // Efficient shallow comparison function
+  const shallowEqual = useCallback((obj1: any, obj2: any): boolean => {
+    if (obj1 === obj2) return true;
+    if (obj1 == null || obj2 == null) return false;
+    if (typeof obj1 !== "object" || typeof obj2 !== "object")
+      return obj1 === obj2;
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) return false;
+
+    for (let key of keys1) {
+      if (!keys2.includes(key) || obj1[key] !== obj2[key]) {
+        return false;
+      }
+    }
+    return true;
+  }, []);
+
+  // More efficient deep equality check (only when shallow fails)
+  const deepEqual = useCallback((obj1: any, obj2: any): boolean => {
+    if (obj1 === obj2) return true;
+    if (obj1 == null || obj2 == null) return false;
+    if (typeof obj1 !== typeof obj2) return false;
+
+    if (typeof obj1 !== "object") return obj1 === obj2;
+
+    if (Array.isArray(obj1) !== Array.isArray(obj2)) return false;
+
+    if (Array.isArray(obj1)) {
+      if (obj1.length !== obj2.length) return false;
+      for (let i = 0; i < obj1.length; i++) {
+        if (!deepEqual(obj1[i], obj2[i])) return false;
+      }
+      return true;
+    }
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) return false;
+
+    for (let key of keys1) {
+      if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) {
+        return false;
+      }
+    }
+    return true;
+  }, []);
+
+  // Helper function to check if form is dirty (optimized)
   const checkIsDirty = useCallback(
     (currentValues: Partial<T>): boolean => {
-      return (
-        JSON.stringify(defaultValues || {}) !==
-        JSON.stringify(currentValues || {})
-      );
+      // Quick check: if we have tracked dirty fields, form is dirty
+      if (dirtyFieldsRef.current.size > 0) return true;
+
+      // Fallback: shallow comparison first, then deep if needed
+      if (shallowEqual(defaultValues || {}, currentValues || {})) {
+        return false;
+      }
+
+      // Only do deep comparison if shallow comparison fails
+      return !deepEqual(defaultValues || {}, currentValues || {});
     },
-    [defaultValues]
+    [defaultValues, shallowEqual, deepEqual]
   );
 
-  // Helper function to check if specific field is dirty
+  // Helper function to check if specific field is dirty (optimized)
   const checkFieldIsDirty = useCallback(
     (fieldName: keyof T): boolean => {
+      const fieldKey = String(fieldName);
+
+      // Quick check: if field is in dirty set, it's dirty
+      if (dirtyFieldsRef.current.has(fieldKey)) return true;
+
       const initialValue = (defaultValues as any)[fieldName];
       const currentValue = (formState.values as any)[fieldName];
-      return JSON.stringify(initialValue) !== JSON.stringify(currentValue);
+
+      // Shallow comparison first
+      if (initialValue === currentValue) return false;
+
+      // Deep comparison for complex values (arrays, objects)
+      return !deepEqual(initialValue, currentValue);
     },
-    [defaultValues, formState.values]
+    [defaultValues, formState.values, deepEqual]
+  );
+
+  // Helper to mark field as dirty/clean
+  const updateFieldDirtyState = useCallback(
+    (fieldName: string, value: any) => {
+      const initialValue = getNestedValue(defaultValues || {}, fieldName);
+      const isDirty = !deepEqual(initialValue, value);
+
+      if (isDirty) {
+        dirtyFieldsRef.current.add(fieldName);
+      } else {
+        dirtyFieldsRef.current.delete(fieldName);
+      }
+    },
+    [defaultValues, deepEqual]
   );
 
   // Determine if validation should run based on mode and legacy options
@@ -201,6 +286,9 @@ export function useForm<T extends Record<string, any>>(
         onChange: async (e: React.ChangeEvent<any>) => {
           const value = isCheckbox ? e.target.checked : e.target.value;
 
+          // Update dirty state incrementally (much more efficient!)
+          updateFieldDirtyState(name, value);
+
           setFormState((prev) => {
             const newValues = name.includes(".")
               ? setNestedValue(prev.values, name, value)
@@ -222,7 +310,8 @@ export function useForm<T extends Record<string, any>>(
               ...prev,
               values: newValues,
               errors: newErrors,
-              isDirty: checkIsDirty(newValues),
+              // Use incremental dirty check - much faster!
+              isDirty: dirtyFieldsRef.current.size > 0,
             };
           });
 
@@ -338,6 +427,11 @@ export function useForm<T extends Record<string, any>>(
     (options?: ResetOptions<T>) => {
       const newValues = options?.values ?? defaultValues;
 
+      // Clear dirty fields tracking unless keepDirty is specified
+      if (!options?.keepDirty) {
+        dirtyFieldsRef.current.clear();
+      }
+
       setFormState({
         values: newValues,
         errors: options?.keepErrors ? formState.errors : {},
@@ -353,16 +447,19 @@ export function useForm<T extends Record<string, any>>(
   // Set field value
   const setValue = useCallback(
     (path: string, value: any) => {
+      // Update dirty state incrementally
+      updateFieldDirtyState(path, value);
+
       setFormState((prev) => {
         const newValues = setNestedValue(prev.values, path, value);
         return {
           ...prev,
           values: newValues,
-          isDirty: checkIsDirty(newValues),
+          isDirty: dirtyFieldsRef.current.size > 0,
         };
       });
     },
-    [checkIsDirty]
+    [updateFieldDirtyState]
   );
 
   // Watch system - overloaded function
@@ -414,12 +511,20 @@ export function useForm<T extends Record<string, any>>(
   // Get dirty fields
   const getDirtyFields = useCallback((): Partial<Record<keyof T, boolean>> => {
     const dirtyFields: Partial<Record<keyof T, boolean>> = {};
+
+    // Use the efficient tracking set first
+    dirtyFieldsRef.current.forEach((fieldName) => {
+      dirtyFields[fieldName as keyof T] = true;
+    });
+
+    // Fallback: check any remaining fields that might not be tracked
     Object.keys(formState.values).forEach((key) => {
       const fieldName = key as keyof T;
-      if (checkFieldIsDirty(fieldName)) {
+      if (!dirtyFields[fieldName] && checkFieldIsDirty(fieldName)) {
         dirtyFields[fieldName] = true;
       }
     });
+
     return dirtyFields;
   }, [formState.values, checkFieldIsDirty]);
 
@@ -496,36 +601,37 @@ export function useForm<T extends Record<string, any>>(
   );
 
   // Array operations
-  const addArrayItem = useCallback(
-    (path: string, item: any) => {
-      setFormState((prev) => {
-        const newValues = addArrayItemReact(prev.values, path, item);
-        return {
-          ...prev,
-          values: newValues,
-          isDirty: checkIsDirty(newValues),
-        };
-      });
-    },
-    [checkIsDirty]
-  );
+  const addArrayItem = useCallback((path: string, item: any) => {
+    setFormState((prev) => {
+      const newValues = addArrayItemReact(prev.values, path, item);
+      // Mark array field as dirty
+      dirtyFieldsRef.current.add(path);
+      return {
+        ...prev,
+        values: newValues,
+        isDirty: true,
+      };
+    });
+  }, []);
 
-  const removeArrayItem = useCallback(
-    (path: string, index: number) => {
-      setFormState((prev) => {
-        const newValues = removeArrayItemCore(prev.values, path, index);
-        return {
-          ...prev,
-          values: newValues,
-          isDirty: checkIsDirty(newValues),
-        };
-      });
-    },
-    [checkIsDirty]
-  );
+  const removeArrayItem = useCallback((path: string, index: number) => {
+    setFormState((prev) => {
+      const newValues = removeArrayItemCore(prev.values, path, index);
+      // Mark array field as dirty
+      dirtyFieldsRef.current.add(path);
+      return {
+        ...prev,
+        values: newValues,
+        isDirty: true,
+      };
+    });
+  }, []);
 
   const resetField = useCallback(
     <Name extends keyof T>(name: Name) => {
+      // Remove field from dirty tracking
+      dirtyFieldsRef.current.delete(String(name));
+
       setFormState((prev) => {
         const newValues = { ...prev.values };
         (newValues as any)[name] = (defaultValues as any)[name];
