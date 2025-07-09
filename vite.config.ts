@@ -7,9 +7,20 @@ export default defineConfig({
   root: "examples/react",
   resolve: {
     alias: {
-      "el-form/react": resolve(__dirname, "packages/el-form/src/react.ts"),
-      "el-form/core": resolve(__dirname, "packages/el-form/src/core.ts"),
-      "el-form": resolve(__dirname, "packages/el-form/src/index.ts"),
+      "el-form-ai": resolve(__dirname, "packages/el-form-ai/src/index.ts"),
+      "el-form-react": resolve(
+        __dirname,
+        "packages/el-form-react/src/index.ts"
+      ),
+      "el-form-react-hooks": resolve(
+        __dirname,
+        "packages/el-form-react-hooks/src/index.ts"
+      ),
+      "el-form-react-components": resolve(
+        __dirname,
+        "packages/el-form-react-components/src/index.ts"
+      ),
+      "el-form-core": resolve(__dirname, "packages/el-form-core/src/index.ts"),
     },
   },
   build: {
