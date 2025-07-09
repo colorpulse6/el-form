@@ -178,6 +178,245 @@ return (
 );
 ```
 
+## Methods
+
+All available methods returned by the `useForm` hook, organized alphabetically:
+
+### addArrayItem(path, item)
+
+Add an item to an array field at the specified path.
+
+```tsx
+const { addArrayItem } = useForm();
+
+// Add item to array
+addArrayItem("hobbies", "reading");
+addArrayItem("users.0.tags", "admin");
+```
+
+### clearErrors(name?)
+
+Clear form errors. If no name provided, clears all errors.
+
+```tsx
+const { clearErrors } = useForm();
+
+// Clear specific field error
+clearErrors("email");
+
+// Clear all errors
+clearErrors();
+```
+
+### formState
+
+Access current form state including values, errors, touched fields, and submission status.
+
+```tsx
+const { formState } = useForm();
+
+return (
+  <div>
+    <p>Valid: {formState.isValid}</p>
+    <p>Dirty: {formState.isDirty}</p>
+    <p>Submitting: {formState.isSubmitting}</p>
+    {formState.errors.email && <p>Error: {formState.errors.email}</p>}
+  </div>
+);
+```
+
+### getDirtyFields()
+
+Get an object containing all dirty (modified) fields.
+
+```tsx
+const { getDirtyFields } = useForm();
+
+const dirtyFields = getDirtyFields();
+// Returns: { email: true, name: true }
+```
+
+### getFieldState(name)
+
+Get detailed state information for a specific field.
+
+```tsx
+const { getFieldState } = useForm();
+
+const emailState = getFieldState("email");
+// Returns: { isDirty: boolean, isTouched: boolean, error?: string }
+```
+
+### getTouchedFields()
+
+Get an object containing all touched fields.
+
+```tsx
+const { getTouchedFields } = useForm();
+
+const touchedFields = getTouchedFields();
+// Returns: { email: true, password: true }
+```
+
+### handleSubmit(onValid, onError?)
+
+Creates a form submission handler with validation.
+
+```tsx
+const { handleSubmit } = useForm();
+
+const onSubmit = handleSubmit(
+  (data) => console.log("Success:", data),
+  (errors) => console.log("Errors:", errors)
+);
+
+<form onSubmit={onSubmit}>{/* form fields */}</form>;
+```
+
+### isDirty(name?)
+
+Check if the form or a specific field is dirty (modified).
+
+```tsx
+const { isDirty } = useForm();
+
+const isFormDirty = isDirty(); // Check entire form
+const isEmailDirty = isDirty("email"); // Check specific field
+```
+
+### register(fieldName)
+
+Register a field and return input props for form controls.
+
+```tsx
+const { register } = useForm();
+
+// Basic usage
+<input {...register("email")} />
+
+// With different input types
+<input {...register("age")} type="number" />
+<textarea {...register("bio")} />
+<input {...register("terms")} type="checkbox" />
+```
+
+### removeArrayItem(path, index)
+
+Remove an item from an array field at the specified path and index.
+
+```tsx
+const { removeArrayItem } = useForm();
+
+// Remove item at index 1 from hobbies array
+removeArrayItem("hobbies", 1);
+removeArrayItem("users.0.tags", 0);
+```
+
+### reset(options?)
+
+Reset the form to initial state or new values.
+
+```tsx
+const { reset } = useForm();
+
+// Reset to initial values
+reset();
+
+// Reset with new values
+reset({ values: { email: "new@email.com" } });
+
+// Reset with options
+reset({
+  values: { email: "" },
+  keepErrors: true,
+  keepTouched: false,
+});
+```
+
+### resetField(name)
+
+Reset a specific field to its initial value.
+
+```tsx
+const { resetField } = useForm();
+
+// Reset email field to initial value
+resetField("email");
+```
+
+### setError(name, error)
+
+Set an error message for a specific field.
+
+```tsx
+const { setError } = useForm();
+
+// Set custom error
+setError("email", "This email is already taken");
+```
+
+### setFocus(name, options?)
+
+Focus on a specific field programmatically.
+
+```tsx
+const { setFocus } = useForm();
+
+// Focus field
+setFocus("email");
+
+// Focus and select text
+setFocus("email", { shouldSelect: true });
+```
+
+### setValue(path, value)
+
+Set the value of a specific field, including nested paths.
+
+```tsx
+const { setValue } = useForm();
+
+// Set simple field
+setValue("email", "user@example.com");
+
+// Set nested field
+setValue("user.profile.name", "John Doe");
+```
+
+### trigger(name?)
+
+Manually trigger validation for fields.
+
+```tsx
+const { trigger } = useForm();
+
+// Validate all fields
+const isValid = await trigger();
+
+// Validate specific field
+const isEmailValid = await trigger("email");
+
+// Validate multiple fields
+const areValid = await trigger(["email", "password"]);
+```
+
+### watch(name?)
+
+Watch form values for reactive updates.
+
+```tsx
+const { watch } = useForm();
+
+// Watch all values
+const allValues = watch();
+
+// Watch specific field
+const email = watch("email");
+
+// Watch multiple fields
+const { firstName, lastName } = watch(["firstName", "lastName"]);
+```
+
 ## Reactive Updates
 
 ### Watch System
