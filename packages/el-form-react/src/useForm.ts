@@ -305,6 +305,41 @@ export function useForm<T extends Record<string, any>>(
     [formState.values]
   );
 
+  // setValues - Set multiple field values at once
+  const setValues = useCallback(
+    (values: Partial<T>) => {
+      setFormState((prev) => {
+        const newValues = { ...prev.values, ...values };
+        const { errors } = validate(newValues);
+
+        return {
+          ...prev,
+          values: newValues,
+          errors,
+          isDirty: checkIsDirty(newValues),
+        };
+      });
+    },
+    [validate, checkIsDirty]
+  );
+
+  // resetValues - Reset form with new default values
+  const resetValues = useCallback(
+    (values?: Partial<T>) => {
+      const newValues = values ?? initialValues;
+
+      setFormState({
+        values: newValues,
+        errors: {},
+        touched: {},
+        isSubmitting: false,
+        isValid: false,
+        isDirty: false,
+      });
+    },
+    [initialValues]
+  );
+
   // Field state queries
   const isDirty = useCallback(
     <Name extends keyof T>(name?: Name): boolean => {
@@ -440,7 +475,9 @@ export function useForm<T extends Record<string, any>>(
     formState,
     reset,
     setValue,
+    setValues,
     watch,
+    resetValues,
     getFieldState,
     isDirty,
     getDirtyFields,

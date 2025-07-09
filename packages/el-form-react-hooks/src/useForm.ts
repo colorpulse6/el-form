@@ -233,6 +233,42 @@ export function useForm<T extends Record<string, any>>(
     [formState.values]
   );
 
+  // setValues - Set multiple field values at once
+  const setValues = useCallback(
+    (values: Partial<T>) => {
+      Object.entries(values).forEach(([path, value]) => {
+        dirtyManager.updateFieldDirtyState(path, value, defaultValues);
+      });
+
+      setFormState((prev) => ({
+        ...prev,
+        values: { ...prev.values, ...values },
+        isDirty: dirtyFieldsRef.current.size > 0,
+      }));
+    },
+    [dirtyManager, defaultValues]
+  );
+
+  // resetValues - Reset form with new default values
+  const resetValues = useCallback(
+    (values?: Partial<T>) => {
+      const newValues = values ?? defaultValues;
+
+      // Clear dirty state since we're resetting
+      dirtyManager.clearDirtyState();
+
+      setFormState({
+        values: newValues,
+        errors: {},
+        touched: {},
+        isSubmitting: false,
+        isValid: false,
+        isDirty: false,
+      });
+    },
+    [defaultValues, dirtyManager]
+  );
+
   const getFieldState = useCallback(
     <Name extends keyof T>(name: Name): FieldState => ({
       isDirty: dirtyManager.checkFieldIsDirty(
@@ -441,7 +477,9 @@ export function useForm<T extends Record<string, any>>(
     formState,
     reset,
     setValue,
+    setValues,
     watch,
+    resetValues,
     getFieldState,
     isDirty,
     getDirtyFields,

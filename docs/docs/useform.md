@@ -344,6 +344,37 @@ const { resetField } = useForm();
 resetField("email");
 ```
 
+### resetValues(values?)
+
+Reset the entire form with new default values (different from reset).
+
+```tsx
+const { resetValues } = useForm();
+
+// Reset to original default values
+resetValues();
+
+// Reset with completely new default values
+resetValues({
+  email: "admin@company.com",
+  role: "admin",
+});
+```
+
+### resetValues(values?)
+
+Reset form with new default values and clear all state.
+
+```tsx
+const { resetValues } = useForm();
+
+// Reset to original default values
+resetValues();
+
+// Reset with new default values
+resetValues({ email: "admin@example.com", role: "admin" });
+```
+
 ### setError(name, error)
 
 Set an error message for a specific field.
@@ -381,6 +412,42 @@ setValue("email", "user@example.com");
 
 // Set nested field
 setValue("user.profile.name", "John Doe");
+```
+
+### setValues(values)
+
+Set multiple field values at once.
+
+```tsx
+const { setValues } = useForm();
+
+// Set multiple fields
+setValues({
+  email: "user@example.com",
+  firstName: "John",
+  lastName: "Doe",
+});
+
+// Partial updates are allowed
+setValues({ email: "newemail@example.com" });
+```
+
+### setValues(values)
+
+Set multiple field values at once.
+
+```tsx
+const { setValues } = useForm();
+
+// Set multiple fields
+setValues({
+  email: "user@example.com",
+  firstName: "John",
+  lastName: "Doe",
+});
+
+// Partial updates work too
+setValues({ email: "new@email.com" });
 ```
 
 ### trigger(name?)

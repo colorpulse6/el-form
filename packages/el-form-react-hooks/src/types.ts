@@ -64,6 +64,7 @@ export interface UseFormReturn<T extends Record<string, any>> {
   // Basic form control
   reset: (options?: ResetOptions<T>) => void;
   setValue: (path: string, value: any) => void;
+  setValues: (values: Partial<T>) => void;
 
   // Watch system
   watch: {
@@ -71,6 +72,9 @@ export interface UseFormReturn<T extends Record<string, any>> {
     <Name extends keyof T>(name: Name): T[Name]; // Watch specific field
     <Names extends keyof T>(names: Names[]): Pick<T, Names>; // Watch multiple fields
   };
+
+  // Reset utilities
+  resetValues: (values?: Partial<T>) => void;
 
   // Field state queries
   getFieldState: <Name extends keyof T>(name: Name) => FieldState;
