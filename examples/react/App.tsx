@@ -6,6 +6,7 @@ import { ApiComparison } from "./autoForm/ApiComparison";
 import { NestedArrayDemo } from "./autoForm/NestedArrayDemo";
 import { SimpleNestedTest } from "./autoForm/SimpleNestedTest";
 import { DirectArrayTest } from "./useForm/DirectArrayTest";
+import { AIFormExample } from "./ai-integration/AIFormExample";
 
 function App() {
   return (
@@ -15,6 +16,9 @@ function App() {
       </h1>
 
       <div className="space-y-12">
+        {/* 🤖 AI Integration Demo - Test AI Features Here! */}
+        <AIFormExample />
+
         {/* API #1: AutoForm Component (Declarative) */}
         <AutoFormDemo />
 
