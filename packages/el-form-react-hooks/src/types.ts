@@ -16,6 +16,14 @@ export interface FormState<T extends Record<string, any>> {
   isDirty: boolean;
 }
 
+export interface FormSnapshot<T extends Record<string, any>> {
+  values: Partial<T>;
+  errors: Partial<Record<keyof T, string>>;
+  touched: Partial<Record<keyof T, boolean>>;
+  timestamp: number;
+  isDirty: boolean;
+}
+
 export interface UseFormOptions<T extends Record<string, any>> {
   defaultValues?: Partial<T>;
   validators?: ValidatorConfig;
@@ -120,6 +128,12 @@ export interface UseFormReturn<T extends Record<string, any>> {
     | { success: false; errors: Partial<Record<keyof T, string>> }
   >;
   canSubmit: () => boolean;
+
+  // Form History & Persistence
+  getSnapshot: () => FormSnapshot<T>;
+  restoreSnapshot: (snapshot: FormSnapshot<T>) => void;
+  hasChanges: () => boolean;
+  getChanges: () => Partial<T>;
 }
 
 // AutoForm types

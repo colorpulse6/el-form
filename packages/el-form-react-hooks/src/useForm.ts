@@ -6,6 +6,7 @@ import {
   FieldState,
   ResetOptions,
   SetFocusOptions,
+  FormSnapshot,
 } from "./types";
 import {
   setNestedValue,
@@ -598,6 +599,66 @@ export function useForm<T extends Record<string, any>>(
     return formState.isValid && !formState.isSubmitting;
   }, [formState.isValid, formState.isSubmitting]);
 
+  // Form History & Persistence methods
+  const getSnapshot = useCallback((): FormSnapshot<T> => {
+    return {
+      values: { ...formState.values },
+      errors: { ...formState.errors },
+      touched: { ...formState.touched },
+      timestamp: Date.now(),
+      isDirty: formState.isDirty,
+    };
+  }, [formState]);
+
+  const restoreSnapshot = useCallback(
+    (snapshot: FormSnapshot<T>) => {
+      // Clear current dirty state tracking
+      dirtyManager.clearDirtyState();
+
+      // Recalculate dirty state based on restored values vs defaults
+      Object.entries(snapshot.values).forEach(([path, value]) => {
+        const defaultValue = getNestedValue(defaultValues, path);
+        if (value !== defaultValue) {
+          dirtyManager.updateFieldDirtyState(path, value, defaultValues);
+        }
+      });
+
+      setFormState({
+        values: { ...snapshot.values },
+        errors: { ...snapshot.errors },
+        touched: { ...snapshot.touched },
+        isSubmitting: false,
+        isValid: Object.keys(snapshot.errors).length === 0,
+        isDirty: snapshot.isDirty || dirtyFieldsRef.current.size > 0,
+      });
+    },
+    [dirtyManager, defaultValues]
+  );
+
+  const hasChanges = useCallback((): boolean => {
+    return formState.isDirty;
+  }, [formState.isDirty]);
+
+  const getChanges = useCallback((): Partial<T> => {
+    const changes: Partial<T> = {};
+
+    // Get all fields that are dirty
+    dirtyFieldsRef.current.forEach((fieldPath) => {
+      const currentValue = getNestedValue(formState.values, fieldPath);
+      const defaultValue = getNestedValue(defaultValues, fieldPath);
+
+      if (currentValue !== defaultValue) {
+        if (fieldPath.includes(".")) {
+          setNestedValue(changes, fieldPath, currentValue);
+        } else {
+          (changes as any)[fieldPath] = currentValue;
+        }
+      }
+    });
+
+    return changes;
+  }, [formState.values, defaultValues]);
+
   // Return the complete UseFormReturn interface - clean and modular!
   return {
     register,
@@ -630,5 +691,9 @@ export function useForm<T extends Record<string, any>>(
     submit,
     submitAsync,
     canSubmit,
+    getSnapshot,
+    restoreSnapshot,
+    hasChanges,
+    getChanges,
   };
 }

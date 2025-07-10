@@ -322,6 +322,28 @@ return (
 );
 ```
 
+### getChanges()
+
+Get only the fields that have been modified from their initial values.
+
+```tsx
+const { getChanges } = useForm();
+
+const changedFields = getChanges();
+// Returns: Partial<T> containing only modified fields
+
+// Example: if user changed email and name
+// Returns: { email: "new@email.com", name: "John Doe" }
+
+// Useful for patch updates to APIs
+const handleSaveChanges = async () => {
+  const changes = getChanges();
+  if (Object.keys(changes).length > 0) {
+    await saveChangesToAPI(changes); // Only send modified data
+  }
+};
+```
+
 ### getDirtyFields()
 
 Get an object containing all dirty (modified) fields.
@@ -331,6 +353,18 @@ const { getDirtyFields } = useForm();
 
 const dirtyFields = getDirtyFields();
 // Returns: { email: true, name: true }
+```
+
+### getErrorCount()
+
+Get the total number of validation errors.
+
+```tsx
+const { getErrorCount } = useForm();
+
+const errorCount = getErrorCount();
+// Returns: number of current errors
+console.log(`Found ${errorCount} validation errors`);
 ```
 
 ### getFieldState(name)
@@ -344,6 +378,31 @@ const emailState = getFieldState("email");
 // Returns: { isDirty: boolean, isTouched: boolean, error?: string }
 ```
 
+### getSnapshot()
+
+Get a complete snapshot of the current form state including values, errors, touched fields, and metadata.
+
+```tsx
+const { getSnapshot } = useForm();
+
+const snapshot = getSnapshot();
+// Returns: FormSnapshot<T> with structure:
+// {
+//   values: Partial<T>,
+//   errors: Partial<Record<keyof T, string>>,
+//   touched: Partial<Record<keyof T, boolean>>,
+//   timestamp: number,
+//   isDirty: boolean
+// }
+
+// Save form state for later restoration
+const handleSaveProgress = () => {
+  const snapshot = getSnapshot();
+  localStorage.setItem("form-backup", JSON.stringify(snapshot));
+  console.log("Form state saved at:", new Date(snapshot.timestamp));
+};
+```
+
 ### getTouchedFields()
 
 Get an object containing all touched fields.
@@ -355,16 +414,36 @@ const touchedFields = getTouchedFields();
 // Returns: { email: true, password: true }
 ```
 
-### getErrorCount()
+### hasChanges()
 
-Get the total number of validation errors.
+Check if the form has any unsaved changes (is dirty).
 
 ```tsx
-const { getErrorCount } = useForm();
+const { hasChanges } = useForm();
 
-const errorCount = getErrorCount();
-// Returns: number of current errors
-console.log(`Found ${errorCount} validation errors`);
+const formHasChanges = hasChanges();
+// Returns: true if form has been modified, false otherwise
+
+// Prevent navigation if there are unsaved changes
+useEffect(() => {
+  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    if (hasChanges()) {
+      e.preventDefault();
+      e.returnValue =
+        "You have unsaved changes. Are you sure you want to leave?";
+    }
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+}, [hasChanges]);
+
+// Conditional UI
+{
+  hasChanges() && (
+    <div className="unsaved-warning">You have unsaved changes</div>
+  );
+}
 ```
 
 ### handleSubmit(onValid, onError?)
@@ -573,18 +652,46 @@ resetValues({
 });
 ```
 
-### resetValues(values?)
+### restoreSnapshot(snapshot)
 
-Reset form with new default values and clear all state.
+Restore the form to a previously saved state snapshot.
 
 ```tsx
-const { resetValues } = useForm();
+const { getSnapshot, restoreSnapshot } = useForm();
 
-// Reset to original default values
-resetValues();
+// Save current state
+const currentState = getSnapshot();
 
-// Reset with new default values
-resetValues({ email: "admin@example.com", role: "admin" });
+// Later, restore the saved state
+const handleRestoreProgress = () => {
+  const savedSnapshot = localStorage.getItem("form-backup");
+  if (savedSnapshot) {
+    const snapshot = JSON.parse(savedSnapshot);
+    restoreSnapshot(snapshot);
+    console.log("Form state restored from:", new Date(snapshot.timestamp));
+  }
+};
+
+// Undo/Redo functionality
+const [formHistory, setFormHistory] = useState<FormSnapshot<FormData>[]>([]);
+
+const handleUndo = () => {
+  if (formHistory.length > 0) {
+    const previousState = formHistory[formHistory.length - 1];
+    restoreSnapshot(previousState);
+    setFormHistory(formHistory.slice(0, -1));
+  }
+};
+
+// Auto-save functionality
+useEffect(() => {
+  const interval = setInterval(() => {
+    const snapshot = getSnapshot();
+    localStorage.setItem("auto-save", JSON.stringify(snapshot));
+  }, 30000); // Auto-save every 30 seconds
+
+  return () => clearInterval(interval);
+}, [getSnapshot]);
 ```
 
 ### setError(name, error)
@@ -1320,10 +1427,10 @@ The new advanced form control methods enable sophisticated form interactions:
 
 ```tsx
 function WizardForm() {
-  const { register, submit, canSubmit, formState } = useForm({
+  const { register, handleSubmit, submit, canSubmit } = useForm({
     validateOn: "onChange",
     onSubmit: async (data) => {
-      await submitWizardData(data);
+      await submitForm(data);
     },
   });
 
@@ -1523,3 +1630,459 @@ function SignupForm() {
 <InteractivePreview title="Advanced useForm Example">
   <UseFormAdvancedExample />
 </InteractivePreview>
+
+## Form History & Persistence
+
+The form history and persistence API provides powerful capabilities for managing form state over time, including snapshots, change tracking, auto-save, and undo/redo functionality.
+
+### Basic Snapshot Management
+
+```tsx
+function FormWithSnapshots() {
+  const {
+    register,
+    handleSubmit,
+    getSnapshot,
+    restoreSnapshot,
+    hasChanges,
+    getChanges,
+    formState,
+  } = useForm({
+    defaultValues: {
+      title: "",
+      content: "",
+      tags: [""],
+    },
+    validators: { onChange: articleSchema },
+  });
+
+  const [savedSnapshots, setSavedSnapshots] = useState<
+    FormSnapshot<FormData>[]
+  >([]);
+
+  const handleSaveSnapshot = () => {
+    const snapshot = getSnapshot();
+    setSavedSnapshots((prev) => [...prev, snapshot]);
+    toast.success(
+      `Draft saved at ${new Date(snapshot.timestamp).toLocaleTimeString()}`
+    );
+  };
+
+  const handleLoadSnapshot = (snapshot: FormSnapshot<FormData>) => {
+    restoreSnapshot(snapshot);
+    toast.info("Draft restored");
+  };
+
+  const changedFields = getChanges();
+  const hasUnsavedChanges = hasChanges();
+
+  return (
+    <div>
+      <form onSubmit={handleSubmit((data) => console.log(data))}>
+        <input {...register("title")} placeholder="Article Title" />
+        <textarea {...register("content")} placeholder="Article Content" />
+
+        {/* Unsaved changes indicator */}
+        {hasUnsavedChanges && (
+          <div className="unsaved-indicator">
+            ⚠️ You have unsaved changes
+            <span className="changed-fields">
+              Modified: {Object.keys(changedFields).join(", ")}
+            </span>
+          </div>
+        )}
+
+        {/* Save/Load controls */}
+        <div className="form-controls">
+          <button type="button" onClick={handleSaveSnapshot}>
+            Save Draft
+          </button>
+
+          <button type="submit">Publish Article</button>
+        </div>
+      </form>
+
+      {/* Saved snapshots list */}
+      <div className="saved-drafts">
+        <h3>Saved Drafts ({savedSnapshots.length})</h3>
+        {savedSnapshots.map((snapshot, index) => (
+          <div key={index} className="draft-item">
+            <span>Draft {index + 1}</span>
+            <time>{new Date(snapshot.timestamp).toLocaleString()}</time>
+            <button onClick={() => handleLoadSnapshot(snapshot)}>
+              Restore
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Auto-Save with Local Storage
+
+```tsx
+function AutoSaveForm() {
+  const {
+    register,
+    handleSubmit,
+    getSnapshot,
+    restoreSnapshot,
+    hasChanges,
+    formState,
+  } = useForm({
+    defaultValues: {
+      email: "",
+      message: "",
+      priority: "medium",
+    },
+  });
+
+  const STORAGE_KEY = "contact-form-autosave";
+
+  // Auto-save every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (hasChanges()) {
+        const snapshot = getSnapshot();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+        console.log("Form auto-saved");
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [getSnapshot, hasChanges]);
+
+  // Restore from auto-save on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      try {
+        const snapshot = JSON.parse(savedData);
+        restoreSnapshot(snapshot);
+        toast.info("Previous session restored");
+      } catch (error) {
+        console.error("Failed to restore auto-saved data:", error);
+      }
+    }
+  }, [restoreSnapshot]);
+
+  // Clear auto-save on successful submission
+  const onSubmit = handleSubmit(async (data) => {
+    await submitForm(data);
+    localStorage.removeItem(STORAGE_KEY);
+    toast.success("Form submitted successfully!");
+  });
+
+  return (
+    <form onSubmit={onSubmit}>
+      <input {...register("email")} placeholder="Email" />
+      <textarea {...register("message")} placeholder="Message" />
+      <select {...register("priority")}>
+        <option value="low">Low Priority</option>
+        <option value="medium">Medium Priority</option>
+        <option value="high">High Priority</option>
+      </select>
+
+      <div className="auto-save-indicator">
+        {hasChanges() ? (
+          <span className="unsaved">● Unsaved changes</span>
+        ) : (
+          <span className="saved">✓ All changes saved</span>
+        )}
+      </div>
+
+      <button type="submit">Send Message</button>
+    </form>
+  );
+}
+```
+
+### Undo/Redo Functionality
+
+```tsx
+function FormWithHistory() {
+  const { register, handleSubmit, getSnapshot, restoreSnapshot, formState } =
+    useForm({
+      defaultValues: {
+        title: "",
+        description: "",
+        category: "",
+      },
+    });
+
+  const [history, setHistory] = useState<FormSnapshot<FormData>[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  // Save state to history on significant changes
+  const saveToHistory = useCallback(() => {
+    const snapshot = getSnapshot();
+    setHistory((prev) => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push(snapshot);
+      return newHistory.slice(-10); // Keep last 10 states
+    });
+    setHistoryIndex((prev) => Math.min(prev + 1, 9));
+  }, [getSnapshot, historyIndex]);
+
+  // Debounced history saving
+  useEffect(() => {
+    const timer = setTimeout(saveToHistory, 1000);
+    return () => clearTimeout(timer);
+  }, [formState.values, saveToHistory]);
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const previousState = history[historyIndex - 1];
+      restoreSnapshot(previousState);
+      setHistoryIndex((prev) => prev - 1);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const nextState = history[historyIndex + 1];
+      restoreSnapshot(nextState);
+      setHistoryIndex((prev) => prev + 1);
+    }
+  };
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < history.length - 1;
+
+  return (
+    <div>
+      <div className="history-controls">
+        <button
+          type="button"
+          onClick={handleUndo}
+          disabled={!canUndo}
+          title="Undo (Ctrl+Z)"
+        >
+          ↶ Undo
+        </button>
+
+        <button
+          type="button"
+          onClick={handleRedo}
+          disabled={!canRedo}
+          title="Redo (Ctrl+Y)"
+        >
+          ↷ Redo
+        </button>
+
+        <span className="history-info">
+          Step {historyIndex + 1} of {history.length}
+        </span>
+      </div>
+
+      <form onSubmit={handleSubmit((data) => console.log(data))}>
+        <input {...register("title")} placeholder="Title" />
+        <textarea {...register("description")} placeholder="Description" />
+        <select {...register("category")}>
+          <option value="">Select Category</option>
+          <option value="tech">Technology</option>
+          <option value="design">Design</option>
+          <option value="business">Business</option>
+        </select>
+
+        <button type="submit">Submit</button>
+      </form>
+
+      {/* Keyboard shortcuts */}
+      <div className="shortcuts-info">
+        <small>Keyboard shortcuts: Ctrl+Z (Undo), Ctrl+Y (Redo)</small>
+      </div>
+    </div>
+  );
+}
+```
+
+### Change Tracking and Diff Visualization
+
+```tsx
+function FormChangeTracker() {
+  const {
+    register,
+    handleSubmit,
+    getSnapshot,
+    getChanges,
+    hasChanges,
+    formState,
+  } = useForm({
+    defaultValues: {
+      name: "John Doe",
+      email: "john@example.com",
+      bio: "Software developer",
+    },
+  });
+
+  const [initialSnapshot, setInitialSnapshot] =
+    useState<FormSnapshot<FormData>>();
+
+  useEffect(() => {
+    // Capture initial state
+    setInitialSnapshot(getSnapshot());
+  }, []);
+
+  const changes = getChanges();
+  const hasModifications = hasChanges();
+
+  const getFieldStatus = (fieldName: string) => {
+    const currentValue = formState.values[fieldName];
+    const initialValue = initialSnapshot?.values[fieldName];
+
+    if (currentValue !== initialValue) {
+      return "modified";
+    }
+    return "unchanged";
+  };
+
+  const onSubmit = handleSubmit(async (data) => {
+    const changesSummary = {
+      modifiedFields: Object.keys(changes),
+      changes: changes,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log("Submitting changes:", changesSummary);
+
+    // Send only changed data to API
+    await updateUserProfile(changes);
+  });
+
+  return (
+    <div>
+      <form onSubmit={onSubmit}>
+        <div className="field-group">
+          <label>Name</label>
+          <input
+            {...register("name")}
+            className={`field ${getFieldStatus("name")}`}
+          />
+          {getFieldStatus("name") === "modified" && (
+            <span className="change-indicator">✎ Modified</span>
+          )}
+        </div>
+
+        <div className="field-group">
+          <label>Email</label>
+          <input
+            {...register("email")}
+            className={`field ${getFieldStatus("email")}`}
+          />
+          {getFieldStatus("email") === "modified" && (
+            <span className="change-indicator">✎ Modified</span>
+          )}
+        </div>
+
+        <div className="field-group">
+          <label>Bio</label>
+          <textarea
+            {...register("bio")}
+            className={`field ${getFieldStatus("bio")}`}
+          />
+          {getFieldStatus("bio") === "modified" && (
+            <span className="change-indicator">✎ Modified</span>
+          )}
+        </div>
+
+        <button type="submit" disabled={!hasModifications}>
+          {hasModifications ? "Save Changes" : "No Changes to Save"}
+        </button>
+      </form>
+
+      {/* Changes summary */}
+      {hasModifications && (
+        <div className="changes-summary">
+          <h3>Pending Changes</h3>
+          <ul>
+            {Object.entries(changes).map(([field, value]) => (
+              <li key={field}>
+                <strong>{field}:</strong>
+                <span className="old-value">
+                  "{initialSnapshot?.values[field]}"
+                </span>→<span className="new-value">"{value}"</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Form State Persistence Strategies
+
+```tsx
+// Strategy 1: Session Storage (survives page refresh)
+function useSessionPersistence(formKey: string) {
+  const { getSnapshot, restoreSnapshot } = useForm(options);
+
+  const saveToSession = useCallback(() => {
+    const snapshot = getSnapshot();
+    sessionStorage.setItem(formKey, JSON.stringify(snapshot));
+  }, [getSnapshot, formKey]);
+
+  const loadFromSession = useCallback(() => {
+    const saved = sessionStorage.getItem(formKey);
+    if (saved) {
+      const snapshot = JSON.parse(saved);
+      restoreSnapshot(snapshot);
+    }
+  }, [restoreSnapshot, formKey]);
+
+  return { saveToSession, loadFromSession };
+}
+
+// Strategy 2: IndexedDB for large forms
+function useIndexedDBPersistence(formKey: string) {
+  const { getSnapshot, restoreSnapshot } = useForm(options);
+
+  const saveToIndexedDB = useCallback(async () => {
+    const snapshot = getSnapshot();
+    const db = await openDB("FormStorage", 1, {
+      upgrade(db) {
+        db.createObjectStore("snapshots");
+      },
+    });
+    await db.put("snapshots", snapshot, formKey);
+  }, [getSnapshot, formKey]);
+
+  const loadFromIndexedDB = useCallback(async () => {
+    const db = await openDB("FormStorage", 1);
+    const snapshot = await db.get("snapshots", formKey);
+    if (snapshot) {
+      restoreSnapshot(snapshot);
+    }
+  }, [restoreSnapshot, formKey]);
+
+  return { saveToIndexedDB, loadFromIndexedDB };
+}
+
+// Strategy 3: Server-side persistence
+function useServerPersistence(formKey: string) {
+  const { getSnapshot, restoreSnapshot } = useForm(options);
+
+  const saveToServer = useCallback(async () => {
+    const snapshot = getSnapshot();
+    await fetch("/api/form-drafts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: formKey, snapshot }),
+    });
+  }, [getSnapshot, formKey]);
+
+  const loadFromServer = useCallback(async () => {
+    const response = await fetch(`/api/form-drafts/${formKey}`);
+    if (response.ok) {
+      const { snapshot } = await response.json();
+      restoreSnapshot(snapshot);
+    }
+  }, [restoreSnapshot, formKey]);
+
+  return { saveToServer, loadFromServer };
+}
+```

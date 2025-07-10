@@ -7,6 +7,7 @@ import {
   FieldState,
   ResetOptions,
   SetFocusOptions,
+  FormSnapshot,
 } from "./types";
 import {
   parseZodErrors,
@@ -603,6 +604,49 @@ export function useForm<T extends Record<string, any>>(
     return formState.isValid && !formState.isSubmitting;
   }, [formState.isValid, formState.isSubmitting]);
 
+  // Form History & Persistence methods
+  const getSnapshot = useCallback((): FormSnapshot<T> => {
+    return {
+      values: { ...formState.values },
+      errors: { ...formState.errors },
+      touched: { ...formState.touched },
+      timestamp: Date.now(),
+      isDirty: formState.isDirty,
+    };
+  }, [formState]);
+
+  const restoreSnapshot = useCallback((snapshot: FormSnapshot<T>) => {
+    setFormState({
+      values: { ...snapshot.values },
+      errors: { ...snapshot.errors },
+      touched: { ...snapshot.touched },
+      isSubmitting: false,
+      isValid: Object.keys(snapshot.errors).length === 0,
+      isDirty: snapshot.isDirty,
+    });
+  }, []);
+
+  const hasChanges = useCallback((): boolean => {
+    return formState.isDirty;
+  }, [formState.isDirty]);
+
+  const getChanges = useCallback((): Partial<T> => {
+    const changes: Partial<T> = {};
+
+    // Compare current values with initial values to find changes
+    Object.keys(formState.values).forEach((key) => {
+      const fieldName = key as keyof T;
+      const currentValue = formState.values[fieldName];
+      const initialValue = (initialValues as any)[fieldName];
+
+      if (currentValue !== initialValue) {
+        (changes as any)[fieldName] = currentValue;
+      }
+    });
+
+    return changes;
+  }, [formState.values, initialValues]);
+
   return {
     register,
     handleSubmit,
@@ -634,5 +678,9 @@ export function useForm<T extends Record<string, any>>(
     submit,
     submitAsync,
     canSubmit,
+    getSnapshot,
+    restoreSnapshot,
+    hasChanges,
+    getChanges,
   };
 }
