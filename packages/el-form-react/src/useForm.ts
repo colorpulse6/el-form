@@ -24,6 +24,8 @@ export function useForm<T extends Record<string, any>>(
     initialValues = {},
     validateOnChange = false,
     validateOnBlur = false,
+    validateOn,
+    onSubmit,
   } = options;
 
   // Ref to store field refs for focus management
@@ -39,6 +41,27 @@ export function useForm<T extends Record<string, any>>(
     isValid: false,
     isDirty: false,
   });
+
+  // Helper function to determine if validation should run
+  const shouldValidate = useCallback(
+    (eventType: "onChange" | "onBlur" | "onSubmit"): boolean => {
+      // New validateOn option takes precedence
+      if (validateOn) {
+        if (validateOn === "manual") return false;
+        if (validateOn === eventType) return true;
+        if (eventType === "onSubmit") return true; // Always validate on submit
+        return false;
+      }
+
+      // Fallback to legacy options
+      if (eventType === "onChange" && validateOnChange) return true;
+      if (eventType === "onBlur" && validateOnBlur) return true;
+      if (eventType === "onSubmit") return true; // Always validate on submit
+
+      return false;
+    },
+    [validateOn, validateOnChange, validateOnBlur]
+  );
 
   const validate = useCallback(
     (
@@ -124,8 +147,8 @@ export function useForm<T extends Record<string, any>>(
               delete newErrors[name as keyof T];
             }
 
-            // Run validation if validateOnChange is enabled
-            if (validateOnChange) {
+            // Run validation if shouldValidate for onChange returns true
+            if (shouldValidate("onChange")) {
               const { errors } = validate(newValues);
               newErrors = errors;
             }
@@ -147,8 +170,8 @@ export function useForm<T extends Record<string, any>>(
 
             let newErrors = prev.errors;
 
-            // Run validation if validateOnBlur is enabled
-            if (validateOnBlur) {
+            // Run validation if shouldValidate for onBlur returns true
+            if (shouldValidate("onBlur")) {
               const { errors } = validate(prev.values);
               newErrors = errors;
             }
@@ -177,7 +200,7 @@ export function useForm<T extends Record<string, any>>(
         value: fieldValue || "",
       };
     },
-    [formState.values, validateOnChange, validateOnBlur, validate, checkIsDirty]
+    [formState.values, shouldValidate, validate, checkIsDirty]
   );
 
   const handleSubmit = useCallback(
@@ -421,6 +444,65 @@ export function useForm<T extends Record<string, any>>(
     });
   }, []);
 
+  // Form State Utilities
+  const isFieldDirty = useCallback(
+    (name: string): boolean => {
+      return checkFieldIsDirty(name as keyof T);
+    },
+    [checkFieldIsDirty]
+  );
+
+  const isFieldTouched = useCallback(
+    (name: string): boolean => {
+      return !!formState.touched[name as keyof T];
+    },
+    [formState.touched]
+  );
+
+  const isFieldValid = useCallback(
+    (name: string): boolean => {
+      return !formState.errors[name as keyof T];
+    },
+    [formState.errors]
+  );
+
+  const hasErrors = useCallback((): boolean => {
+    return Object.keys(formState.errors).length > 0;
+  }, [formState.errors]);
+
+  const getErrorCount = useCallback((): number => {
+    return Object.keys(formState.errors).length;
+  }, [formState.errors]);
+
+  // Bulk operations
+  const markAllTouched = useCallback((): void => {
+    setFormState((prev) => {
+      const newTouched: Partial<Record<keyof T, boolean>> = {};
+      Object.keys(prev.values).forEach((key) => {
+        newTouched[key as keyof T] = true;
+      });
+      return { ...prev, touched: newTouched };
+    });
+  }, []);
+
+  const markFieldTouched = useCallback((name: string): void => {
+    setFormState((prev) => {
+      const newTouched = name.includes(".")
+        ? setNestedValue(prev.touched, name, true)
+        : { ...prev.touched, [name]: true };
+      return { ...prev, touched: newTouched };
+    });
+  }, []);
+
+  const markFieldUntouched = useCallback((name: string): void => {
+    setFormState((prev) => {
+      const newTouched = name.includes(".")
+        ? setNestedValue(prev.touched, name, false)
+        : { ...prev.touched, [name]: false };
+      return { ...prev, touched: newTouched };
+    });
+  }, []);
+
   const setError = useCallback(
     <Name extends keyof T>(name: Name, error: string) => {
       setFormState((prev) => ({
@@ -469,6 +551,68 @@ export function useForm<T extends Record<string, any>>(
     [initialValues, checkIsDirty]
   );
 
+  // Advanced form control methods
+  const submit = useCallback(async (): Promise<void> => {
+    if (!onSubmit) {
+      console.warn("useForm: No onSubmit handler provided for submit()");
+      return;
+    }
+
+    setFormState((prev) => ({ ...prev, isSubmitting: true }));
+
+    try {
+      // Always validate before submitting
+      const { isValid, errors } = validate(formState.values);
+
+      setFormState((prev) => ({
+        ...prev,
+        errors,
+        isValid,
+      }));
+
+      if (isValid) {
+        await onSubmit(formState.values as T);
+      }
+    } finally {
+      setFormState((prev) => ({ ...prev, isSubmitting: false }));
+    }
+  }, [formState.values, validate, onSubmit]);
+
+  const submitAsync = useCallback(async (): Promise<
+    | { success: true; data: T }
+    | { success: false; errors: Partial<Record<keyof T, string>> }
+  > => {
+    setFormState((prev) => ({ ...prev, isSubmitting: true }));
+
+    try {
+      // Always validate before submitting
+      const { isValid, errors } = validate(formState.values);
+
+      setFormState((prev) => ({
+        ...prev,
+        errors,
+        isValid,
+      }));
+
+      if (isValid) {
+        // If onSubmit is provided, call it
+        if (onSubmit) {
+          await onSubmit(formState.values as T);
+        }
+        return { success: true, data: formState.values as T };
+      } else {
+        return { success: false, errors };
+      }
+    } finally {
+      setFormState((prev) => ({ ...prev, isSubmitting: false }));
+    }
+  }, [formState.values, validate, onSubmit]);
+
+  const canSubmit = useCallback((): boolean => {
+    // Check if form is valid and not currently submitting
+    return formState.isValid && !formState.isSubmitting;
+  }, [formState.isValid, formState.isSubmitting]);
+
   return {
     register,
     handleSubmit,
@@ -482,6 +626,14 @@ export function useForm<T extends Record<string, any>>(
     isDirty,
     getDirtyFields,
     getTouchedFields,
+    isFieldDirty,
+    isFieldTouched,
+    isFieldValid,
+    hasErrors,
+    getErrorCount,
+    markAllTouched,
+    markFieldTouched,
+    markFieldUntouched,
     trigger,
     clearErrors,
     setError,
@@ -489,5 +641,8 @@ export function useForm<T extends Record<string, any>>(
     addArrayItem: addArrayItemHandler,
     removeArrayItem: removeArrayItemHandler,
     resetField,
+    submit,
+    submitAsync,
+    canSubmit,
   };
 }

@@ -129,6 +129,127 @@ function UserForm() {
 }
 ```
 
+### Validation Timing Control
+
+The new `validateOn` option provides fine-grained control over when validation occurs:
+
+```tsx
+// Only validate on form submission
+function OnSubmitForm() {
+  const { register, handleSubmit, formState } = useForm({
+    validateOn: "onSubmit", // Default behavior
+    validators: { onSubmit: userSchema },
+    defaultValues: { email: "", password: "" },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      <input {...register("password")} type="password" />
+      {/* Errors only show after submit attempt */}
+      {formState.errors.email && <p>{formState.errors.email}</p>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+
+// Validate as user types
+function OnChangeForm() {
+  const { register, handleSubmit, formState } = useForm({
+    validateOn: "onChange", // Immediate validation
+    validators: { onChange: userSchema },
+    defaultValues: { email: "", password: "" },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      {/* Shows errors immediately as user types */}
+      {formState.errors.email && <p>{formState.errors.email}</p>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+
+// Validate when field loses focus
+function OnBlurForm() {
+  const { register, handleSubmit, formState } = useForm({
+    validateOn: "onBlur", // Validate on field blur
+    validators: { onBlur: userSchema },
+    defaultValues: { email: "", password: "" },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      {/* Shows errors when user tabs away from field */}
+      {formState.errors.email && <p>{formState.errors.email}</p>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+
+// Manual validation control
+function ManualValidationForm() {
+  const { register, handleSubmit, trigger, formState } = useForm({
+    validateOn: "manual", // No automatic validation
+    validators: { onSubmit: userSchema },
+    defaultValues: { email: "", password: "" },
+  });
+
+  const handleValidateEmail = async () => {
+    const isValid = await trigger("email");
+    console.log("Email is valid:", isValid);
+  };
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      {formState.errors.email && <p>{formState.errors.email}</p>}
+      
+      <button type="button" onClick={handleValidateEmail}>
+        Validate Email
+      </button>
+      
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+### Validation Timing Options Comparison
+
+| Option | When Validation Runs | Use Case |
+|--------|---------------------|----------|
+| `"onChange"` | Every keystroke/change | Real-time feedback, immediate error correction |
+| `"onBlur"` | When field loses focus | Less intrusive, validates completed fields |
+| `"onSubmit"` | Only on form submission | Traditional form behavior, minimal interruption |
+| `"manual"` | Only when `trigger()` called | Custom validation logic, conditional validation |
+
+### Legacy Validation Options
+
+For backwards compatibility, the original validation options are still supported:
+
+```tsx
+// Legacy approach (still works)
+const form = useForm({
+  validateOnChange: true,  // Same as validateOn: "onChange"
+  validateOnBlur: true,    // Same as validateOn: "onBlur"
+  validators: { onChange: schema, onBlur: schema },
+});
+
+// New approach (recommended)
+const form = useForm({
+  validateOn: "onChange",  // Cleaner, single option
+  validators: { onChange: schema },
+});
+```
+
+**Priority Order:**
+1. `validateOn` takes precedence if provided
+2. Falls back to `validateOnChange`/`validateOnBlur` for compatibility
+3. Always validates on submit regardless of settings
+
 ## Core API
 
 ### register(fieldName)
@@ -258,6 +379,18 @@ const touchedFields = getTouchedFields();
 // Returns: { email: true, password: true }
 ```
 
+### getErrorCount()
+
+Get the total number of validation errors.
+
+```tsx
+const { getErrorCount } = useForm();
+
+const errorCount = getErrorCount();
+// Returns: number of current errors
+console.log(`Found ${errorCount} validation errors`);
+```
+
 ### handleSubmit(onValid, onError?)
 
 Creates a form submission handler with validation.
@@ -273,6 +406,22 @@ const onSubmit = handleSubmit(
 <form onSubmit={onSubmit}>{/* form fields */}</form>;
 ```
 
+### hasErrors()
+
+Check if the form currently has any validation errors.
+
+```tsx
+const { hasErrors } = useForm();
+
+const formHasErrors = hasErrors();
+// Returns: true if any field has errors, false otherwise
+
+// Useful for conditional rendering
+if (hasErrors()) {
+  console.log("Please fix validation errors before submitting");
+}
+```
+
 ### isDirty(name?)
 
 Check if the form or a specific field is dirty (modified).
@@ -282,6 +431,93 @@ const { isDirty } = useForm();
 
 const isFormDirty = isDirty(); // Check entire form
 const isEmailDirty = isDirty("email"); // Check specific field
+```
+
+### isFieldDirty(name)
+
+Check if a specific field has been modified from its initial value.
+
+```tsx
+const { isFieldDirty } = useForm();
+
+const emailDirty = isFieldDirty("email");
+// Returns: true if email field has been modified
+```
+
+### isFieldTouched(name)
+
+Check if a specific field has been touched (focused and blurred).
+
+```tsx
+const { isFieldTouched } = useForm();
+
+const emailTouched = isFieldTouched("email");
+// Returns: true if email field has been touched
+```
+
+### isFieldValid(name)
+
+Check if a specific field is currently valid (has no errors).
+
+```tsx
+const { isFieldValid } = useForm();
+
+const emailValid = isFieldValid("email");
+// Returns: true if email field has no validation errors
+
+// Useful for conditional styling
+const inputClassName = `input ${isFieldValid("email") ? "valid" : "invalid"}`;
+```
+
+### markAllTouched()
+
+Mark all fields in the form as touched.
+
+```tsx
+const { markAllTouched } = useForm();
+
+// Mark all fields as touched (useful before form submission)
+markAllTouched();
+
+// Common use case: show all validation errors
+const validateAndShowErrors = () => {
+  markAllTouched(); // Show errors for all fields
+  // Validation errors will now be visible for all fields
+};
+```
+
+### markFieldTouched(name)
+
+Mark a specific field as touched.
+
+```tsx
+const { markFieldTouched } = useForm();
+
+// Mark email field as touched
+markFieldTouched("email");
+
+// Useful for programmatic field interaction
+const handleCustomBlur = (fieldName: string) => {
+  markFieldTouched(fieldName);
+  // Field will now show validation errors if any
+};
+```
+
+### markFieldUntouched(name)
+
+Mark a specific field as untouched.
+
+```tsx
+const { markFieldUntouched } = useForm();
+
+// Mark email field as untouched (hide validation errors)
+markFieldUntouched("email");
+
+// Useful for resetting field state without changing value
+const resetFieldTouchedState = (fieldName: string) => {
+  markFieldUntouched(fieldName);
+  // Field validation errors will be hidden
+};
 ```
 
 ### register(fieldName)
@@ -467,6 +703,65 @@ const isEmailValid = await trigger("email");
 const areValid = await trigger(["email", "password"]);
 ```
 
+## Advanced Form Control Methods
+
+### canSubmit()
+
+Check if the form is in a submittable state (valid and not submitting).
+
+```tsx
+const { canSubmit } = useForm();
+
+// Check if form can be submitted
+const isSubmittable = canSubmit();
+
+// Use in UI
+<button type="submit" disabled={!canSubmit()}>
+  Submit
+</button>;
+```
+
+### submit()
+
+Programmatically submit the form. Requires an `onSubmit` handler in options.
+
+```tsx
+const { submit } = useForm({
+  onSubmit: (data) => console.log("Submitted:", data),
+});
+
+// Submit the form programmatically
+const handleCustomSubmit = async () => {
+  await submit(); // Validates first, then calls onSubmit if valid
+};
+
+<button onClick={handleCustomSubmit}>Custom Submit</button>;
+```
+
+### submitAsync()
+
+Async version of submit that returns validation results and data.
+
+```tsx
+const { submitAsync } = useForm({
+  onSubmit: (data) => saveToAPI(data),
+});
+
+const handleAsyncSubmit = async () => {
+  const result = await submitAsync();
+
+  if (result.success) {
+    console.log("Form submitted successfully:", result.data);
+    // Handle success
+  } else {
+    console.log("Validation errors:", result.errors);
+    // Handle validation errors
+  }
+};
+
+<button onClick={handleAsyncSubmit}>Submit with Result</button>;
+```
+
 ### watch(name?)
 
 Watch form values for reactive updates.
@@ -482,6 +777,210 @@ const email = watch("email");
 
 // Watch multiple fields
 const { firstName, lastName } = watch(["firstName", "lastName"]);
+```
+
+## Form State Utilities Example
+
+The new Form State Utilities provide convenient methods for checking field and form state:
+
+```tsx
+function FormStateExample() {
+  const {
+    register,
+    handleSubmit,
+    formState,
+    isFieldDirty,
+    isFieldTouched,
+    isFieldValid,
+    hasErrors,
+    getErrorCount,
+    markAllTouched,
+    markFieldTouched,
+    markFieldUntouched,
+  } = useForm({
+    validators: { onChange: userSchema },
+    defaultValues: { email: "", name: "", age: 18 },
+  });
+
+  const email = watch("email");
+
+  const handleValidateAll = () => {
+    // Mark all fields as touched to show validation errors
+    markAllTouched();
+  };
+
+  const handleResetEmailTouched = () => {
+    // Reset email field touched state (hide validation errors)
+    markFieldUntouched("email");
+  };
+
+  const handleFocusEmail = () => {
+    // Programmatically mark email as touched
+    markFieldTouched("email");
+  };
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      <input {...register("name")} placeholder="Name" />
+      <input {...register("age")} type="number" placeholder="Age" />
+
+      {/* Bulk operation buttons */}
+      <div className="form-controls">
+        <button type="button" onClick={handleValidateAll}>
+          Show All Errors
+        </button>
+        <button type="button" onClick={handleResetEmailTouched}>
+          Hide Email Errors
+        </button>
+        <button type="button" onClick={handleFocusEmail}>
+          Mark Email Touched
+        </button>
+      </div>
+
+      {/* Form state indicators */}
+      <div className="form-state-info">
+        <h3>Form State Information</h3>
+
+        {/* Field-specific checks */}
+        <p>Email field dirty: {isFieldDirty("email") ? "Yes" : "No"}</p>
+        <p>Email field touched: {isFieldTouched("email") ? "Yes" : "No"}</p>
+        <p>Email field valid: {isFieldValid("email") ? "Yes" : "No"}</p>
+
+        {/* Form-level checks */}
+        <p>Form has errors: {hasErrors() ? "Yes" : "No"}</p>
+        <p>Total errors: {getErrorCount()}</p>
+
+        {/* Conditional styling example */}
+        <input
+          {...register("email")}
+          className={`
+            input 
+            ${isFieldTouched("email") ? "touched" : ""}
+            ${isFieldValid("email") ? "valid" : "invalid"}
+            ${isFieldDirty("email") ? "dirty" : "pristine"}
+          `}
+        />
+
+        {/* Conditional rendering */}
+        {hasErrors() && (
+          <div className="error-summary">
+            Please fix {getErrorCount()} validation error
+            {getErrorCount() !== 1 ? "s" : ""}
+          </div>
+        )}
+      </div>
+    </form>
+  );
+}
+```
+
+## Bulk Operations Example
+
+Common patterns for managing touched state across multiple fields:
+
+```tsx
+function BulkOperationsExample() {
+  const {
+    register,
+    handleSubmit,
+    formState,
+    markAllTouched,
+    markFieldTouched,
+    markFieldUntouched,
+    getTouchedFields,
+    hasErrors,
+  } = useForm({
+    validators: { onChange: userSchema },
+    defaultValues: { email: "", firstName: "", lastName: "", phone: "" },
+  });
+
+  const handlePreSubmitValidation = () => {
+    // Mark all fields as touched before submission
+    // This ensures all validation errors are visible
+    markAllTouched();
+
+    if (hasErrors()) {
+      alert("Please fix validation errors before submitting");
+      return false;
+    }
+    return true;
+  };
+
+  const handleResetTouchedState = () => {
+    // Reset specific fields' touched state
+    ["email", "firstName", "lastName", "phone"].forEach((field) => {
+      markFieldUntouched(field);
+    });
+  };
+
+  const handleStepValidation = (step: number) => {
+    // Mark only specific step fields as touched
+    const stepFields = {
+      1: ["firstName", "lastName"],
+      2: ["email", "phone"],
+    };
+
+    stepFields[step]?.forEach((field) => {
+      markFieldTouched(field);
+    });
+  };
+
+  const onSubmit = handleSubmit((data) => {
+    if (handlePreSubmitValidation()) {
+      console.log("Form submitted:", data);
+    }
+  });
+
+  const touchedFields = getTouchedFields();
+  const touchedCount = Object.keys(touchedFields).length;
+
+  return (
+    <form onSubmit={onSubmit}>
+      <div className="form-section">
+        <h3>Personal Information</h3>
+        <input {...register("firstName")} placeholder="First Name" />
+        <input {...register("lastName")} placeholder="Last Name" />
+        <button type="button" onClick={() => handleStepValidation(1)}>
+          Validate Step 1
+        </button>
+      </div>
+
+      <div className="form-section">
+        <h3>Contact Information</h3>
+        <input {...register("email")} placeholder="Email" />
+        <input {...register("phone")} placeholder="Phone" />
+        <button type="button" onClick={() => handleStepValidation(2)}>
+          Validate Step 2
+        </button>
+      </div>
+
+      <div className="form-controls">
+        <button type="button" onClick={markAllTouched}>
+          Show All Errors ({touchedCount} fields touched)
+        </button>
+        <button type="button" onClick={handleResetTouchedState}>
+          Reset Touched State
+        </button>
+        <button type="submit">Submit Form</button>
+      </div>
+
+      {/* Show validation summary */}
+      {hasErrors() && (
+        <div className="validation-summary">
+          <h4>Validation Issues:</h4>
+          <ul>
+            {Object.entries(formState.errors).map(([field, error]) => (
+              <li key={field}>
+                <strong>{field}:</strong> {error}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </form>
+  );
+}
 ```
 
 ## Reactive Updates
@@ -765,6 +1264,136 @@ function TypedForm() {
 }
 ```
 
+## Advanced Examples
+
+### Flexible Validation Timing
+
+The new `validateOn` option provides fine-grained control over when validation occurs:
+
+```tsx
+// Only validate manually or on submit
+const strictForm = useForm({
+  validateOn: "manual",
+  validators: { onSubmit: zodSchema },
+  defaultValues: { email: "", password: "" },
+});
+
+// Validate immediately on every change
+const reactiveForm = useForm({
+  validateOn: "onChange",
+  validators: { onChange: zodSchema },
+  defaultValues: { email: "", password: "" },
+});
+
+// Only validate when fields lose focus
+const blurForm = useForm({
+  validateOn: "onBlur",
+  validators: { onBlur: zodSchema },
+  defaultValues: { email: "", password: "" },
+});
+
+// Custom submission flow
+function CustomSubmissionForm() {
+  const { register, submit, submitAsync, canSubmit, trigger } = useForm({
+    validateOn: "manual", // Don't auto-validate
+    onSubmit: async (data) => {
+      await saveToAPI(data);
+    },
+  });
+
+  const handleManualValidation = async () => {
+    const isValid = await trigger(); // Manually trigger validation
+    if (isValid) {
+      console.log("Form is valid!");
+    }
+  };
+
+  const handleCustomSubmit = async () => {
+    const result = await submitAsync();
+    if (result.success) {
+      toast.success("Saved successfully!");
+    } else {
+      toast.error("Please fix the errors");
+    }
+  };
+
+  return (
+    <form>
+      <input {...register("email")} />
+      <input {...register("password")} type="password" />
+
+      <button type="button" onClick={handleManualValidation}>
+        Validate Only
+      </button>
+
+      <button type="button" onClick={handleCustomSubmit}>
+        Custom Submit
+      </button>
+
+      <button type="submit" disabled={!canSubmit()}>
+        {canSubmit() ? "Submit" : "Fix Errors First"}
+      </button>
+    </form>
+  );
+}
+```
+
+### Programmatic Form Control
+
+The new advanced form control methods enable sophisticated form interactions:
+
+```tsx
+function WizardForm() {
+  const { register, submit, canSubmit, formState } = useForm({
+    validateOn: "onChange",
+    onSubmit: async (data) => {
+      await submitWizardData(data);
+    },
+  });
+
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const handleNext = async () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Final step - submit the form
+      await submit();
+    }
+  };
+
+  return (
+    <div>
+      <h3>Step {currentStep} of 3</h3>
+
+      {currentStep === 1 && (
+        <div>
+          <input {...register("firstName")} placeholder="First Name" />
+          <input {...register("lastName")} placeholder="Last Name" />
+        </div>
+      )}
+
+      {currentStep === 2 && (
+        <div>
+          <input {...register("email")} placeholder="Email" />
+          <input {...register("phone")} placeholder="Phone" />
+        </div>
+      )}
+
+      {currentStep === 3 && (
+        <div>
+          <textarea {...register("message")} placeholder="Message" />
+        </div>
+      )}
+
+      <button onClick={handleNext} disabled={currentStep === 3 && !canSubmit()}>
+        {currentStep === 3 ? "Submit" : "Next"}
+      </button>
+    </div>
+  );
+}
+```
+
 ## Configuration Reference
 
 ```tsx
@@ -789,8 +1418,14 @@ interface UseFormOptions<T> {
   validateOnChange?: boolean;
   validateOnBlur?: boolean;
 
+  // Flexible validation timing
+  validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
+
   // Validation mode
   mode?: "onChange" | "onBlur" | "onSubmit" | "all";
+
+  // Form submission handler
+  onSubmit?: (values: T) => void | Promise<void>;
 }
 ```
 
@@ -828,7 +1463,6 @@ const form = useForm({
 <InteractivePreview>
   <UseFormAdvancedExample />
 </InteractivePreview>
-```
 
 ### Custom Validation Functions
 

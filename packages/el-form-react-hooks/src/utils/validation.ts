@@ -32,6 +32,7 @@ export interface ValidationManagerOptions<T extends Record<string, any>> {
   mode: "onChange" | "onBlur" | "onSubmit" | "all";
   validateOnChange: boolean;
   validateOnBlur: boolean;
+  validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
 }
 
 /**
@@ -47,6 +48,7 @@ export function createValidationManager<T extends Record<string, any>>(
     mode,
     validateOnChange,
     validateOnBlur,
+    validateOn,
   } = options;
 
   return {
@@ -54,6 +56,15 @@ export function createValidationManager<T extends Record<string, any>>(
     shouldValidate: (
       eventType: "onChange" | "onBlur" | "onSubmit"
     ): boolean => {
+      // New validateOn option takes precedence
+      if (validateOn) {
+        if (validateOn === "manual") return false;
+        if (validateOn === eventType) return true;
+        if (eventType === "onSubmit") return true; // Always validate on submit
+        return false;
+      }
+
+      // Fallback to mode and legacy options
       if (mode === "all") return true;
       if (mode === eventType) return true;
 

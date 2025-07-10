@@ -16,6 +16,9 @@ export interface UseFormOptions<T extends Record<string, any>> {
   onSubmit?: (values: T) => void | Promise<void>;
   validateOnChange?: boolean;
   validateOnBlur?: boolean;
+
+  // Flexible validation timing
+  validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
 }
 
 export interface FieldState {
@@ -68,6 +71,18 @@ export interface UseFormReturn<T extends Record<string, any>> {
   getDirtyFields: () => Partial<Record<keyof T, boolean>>;
   getTouchedFields: () => Partial<Record<keyof T, boolean>>;
 
+  // Form State Utilities
+  isFieldDirty: (name: string) => boolean;
+  isFieldTouched: (name: string) => boolean;
+  isFieldValid: (name: string) => boolean;
+  hasErrors: () => boolean;
+  getErrorCount: () => number;
+
+  // Bulk operations
+  markAllTouched: () => void;
+  markFieldTouched: (name: string) => void;
+  markFieldUntouched: (name: string) => void;
+
   // Validation control
   trigger: {
     (): Promise<boolean>; // Validate all
@@ -87,6 +102,14 @@ export interface UseFormReturn<T extends Record<string, any>> {
   addArrayItem: (path: string, item: any) => void;
   removeArrayItem: (path: string, index: number) => void;
   resetField: <Name extends keyof T>(name: Name) => void;
+
+  // Advanced form control methods
+  submit: () => Promise<void>;
+  submitAsync: () => Promise<
+    | { success: true; data: T }
+    | { success: false; errors: Partial<Record<keyof T, string>> }
+  >;
+  canSubmit: () => boolean;
 }
 
 // AutoForm types
