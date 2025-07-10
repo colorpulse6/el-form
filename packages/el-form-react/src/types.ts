@@ -14,8 +14,6 @@ export interface UseFormOptions<T extends Record<string, any>> {
   schema: z.ZodSchema<T>;
   initialValues?: Partial<T>;
   onSubmit?: (values: T) => void | Promise<void>;
-  validateOnChange?: boolean;
-  validateOnBlur?: boolean;
 
   // Flexible validation timing
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";

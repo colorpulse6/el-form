@@ -206,11 +206,11 @@ function ManualValidationForm() {
     <form onSubmit={handleSubmit((data) => console.log(data))}>
       <input {...register("email")} placeholder="Email" />
       {formState.errors.email && <p>{formState.errors.email}</p>}
-      
+
       <button type="button" onClick={handleValidateEmail}>
         Validate Email
       </button>
-      
+
       <button type="submit">Submit</button>
     </form>
   );
@@ -219,36 +219,12 @@ function ManualValidationForm() {
 
 ### Validation Timing Options Comparison
 
-| Option | When Validation Runs | Use Case |
-|--------|---------------------|----------|
-| `"onChange"` | Every keystroke/change | Real-time feedback, immediate error correction |
-| `"onBlur"` | When field loses focus | Less intrusive, validates completed fields |
-| `"onSubmit"` | Only on form submission | Traditional form behavior, minimal interruption |
-| `"manual"` | Only when `trigger()` called | Custom validation logic, conditional validation |
-
-### Legacy Validation Options
-
-For backwards compatibility, the original validation options are still supported:
-
-```tsx
-// Legacy approach (still works)
-const form = useForm({
-  validateOnChange: true,  // Same as validateOn: "onChange"
-  validateOnBlur: true,    // Same as validateOn: "onBlur"
-  validators: { onChange: schema, onBlur: schema },
-});
-
-// New approach (recommended)
-const form = useForm({
-  validateOn: "onChange",  // Cleaner, single option
-  validators: { onChange: schema },
-});
-```
-
-**Priority Order:**
-1. `validateOn` takes precedence if provided
-2. Falls back to `validateOnChange`/`validateOnBlur` for compatibility
-3. Always validates on submit regardless of settings
+| Option       | When Validation Runs         | Use Case                                        |
+| ------------ | ---------------------------- | ----------------------------------------------- |
+| `"onChange"` | Every keystroke/change       | Real-time feedback, immediate error correction  |
+| `"onBlur"`   | When field loses focus       | Less intrusive, validates completed fields      |
+| `"onSubmit"` | Only on form submission      | Traditional form behavior, minimal interruption |
+| `"manual"`   | Only when `trigger()` called | Custom validation logic, conditional validation |
 
 ## Core API
 
@@ -1414,10 +1390,6 @@ interface UseFormOptions<T> {
   // Field-specific validators
   fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
 
-  // Legacy validation options (still supported)
-  validateOnChange?: boolean;
-  validateOnBlur?: boolean;
-
   // Flexible validation timing
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
 
@@ -1427,31 +1399,6 @@ interface UseFormOptions<T> {
   // Form submission handler
   onSubmit?: (values: T) => void | Promise<void>;
 }
-```
-
-## Migration from v2
-
-The new useForm API is backward compatible, but here's how to migrate to the new features:
-
-```tsx
-// OLD (v2) - Still works
-const form = useForm({
-  schema: zodSchema,
-  initialValues: { email: "" },
-  validateOnChange: true,
-});
-
-// NEW (v3) - Enhanced capabilities
-const form = useForm({
-  validators: { onChange: zodSchema },
-  defaultValues: { email: "" },
-  fieldValidators: {
-    email: {
-      onChangeAsync: checkEmailAvailable,
-      asyncDebounceMs: 300,
-    },
-  },
-});
 ```
 
 ## Interactive Examples
@@ -1535,8 +1482,7 @@ function SignupForm() {
       },
     },
     defaultValues: { email: "", password: "", confirmPassword: "" },
-    validateOnChange: true,
-    validateOnBlur: true,
+    validateOn: "onChange",
   });
 
   const password = watch("password");

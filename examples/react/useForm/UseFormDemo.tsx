@@ -13,8 +13,7 @@ export function UseFormDemo() {
       age: undefined,
       bio: "",
     },
-    validateOnChange: true,
-    validateOnBlur: true,
+    validateOn: "onChange",
   });
 
   const handleFormSubmit = (data: User) => {

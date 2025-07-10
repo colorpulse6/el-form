@@ -30,8 +30,6 @@ export function useForm<T extends Record<string, any>>(
     defaultValues = {},
     validators = {},
     fieldValidators = {},
-    validateOnChange = false,
-    validateOnBlur = false,
     mode = "onSubmit",
     validateOn,
     onSubmit,
@@ -60,8 +58,6 @@ export function useForm<T extends Record<string, any>>(
     validators,
     fieldValidators,
     mode,
-    validateOnChange,
-    validateOnBlur,
     validateOn,
   });
 

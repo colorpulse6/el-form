@@ -22,9 +22,7 @@ export function useForm<T extends Record<string, any>>(
   const {
     schema,
     initialValues = {},
-    validateOnChange = false,
-    validateOnBlur = false,
-    validateOn,
+    validateOn = "onSubmit",
     onSubmit,
   } = options;
 
@@ -45,22 +43,14 @@ export function useForm<T extends Record<string, any>>(
   // Helper function to determine if validation should run
   const shouldValidate = useCallback(
     (eventType: "onChange" | "onBlur" | "onSubmit"): boolean => {
-      // New validateOn option takes precedence
-      if (validateOn) {
-        if (validateOn === "manual") return false;
-        if (validateOn === eventType) return true;
-        if (eventType === "onSubmit") return true; // Always validate on submit
-        return false;
-      }
-
-      // Fallback to legacy options
-      if (eventType === "onChange" && validateOnChange) return true;
-      if (eventType === "onBlur" && validateOnBlur) return true;
+      // validateOn option controls when validation runs
+      if (validateOn === "manual") return false;
+      if (validateOn === eventType) return true;
       if (eventType === "onSubmit") return true; // Always validate on submit
 
       return false;
     },
-    [validateOn, validateOnChange, validateOnBlur]
+    [validateOn]
   );
 
   const validate = useCallback(

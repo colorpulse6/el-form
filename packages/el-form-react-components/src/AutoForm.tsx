@@ -457,14 +457,12 @@ export function AutoForm<T extends Record<string, any>>({
   componentMap,
   validators,
   fieldValidators,
-  validateOnChange = true,
-  validateOnBlur = true,
+  validateOn = "onChange",
 }: AutoFormProps<T>) {
   // Create validator config for the form
   // If custom validators are provided, use them; otherwise use the schema
   const formValidators = validators || {
-    [validateOnChange ? "onChange" : "onSubmit"]: schema,
-    ...(validateOnBlur ? { onBlur: schema } : {}),
+    [validateOn === "manual" ? "onSubmit" : validateOn]: schema,
   };
 
   const formApi = useForm<T>({
@@ -473,8 +471,7 @@ export function AutoForm<T extends Record<string, any>>({
       | Record<keyof T, ValidatorConfig>
       | undefined,
     defaultValues: initialValues,
-    validateOnChange,
-    validateOnBlur,
+    validateOn,
   });
 
   const {

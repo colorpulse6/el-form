@@ -24,10 +24,6 @@ export interface UseFormOptions<T extends Record<string, any>> {
   // Field-level validator configurations
   fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
 
-  // Legacy validation mode options (still supported)
-  validateOnChange?: boolean;
-  validateOnBlur?: boolean;
-
   // New validation mode (more flexible)
   mode?: "onChange" | "onBlur" | "onSubmit" | "all";
 

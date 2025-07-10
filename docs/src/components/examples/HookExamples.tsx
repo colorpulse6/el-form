@@ -21,8 +21,7 @@ export const UseFormExample: React.FC = () => {
       age: 18,
       bio: "",
     },
-    validateOnChange: true,
-    validateOnBlur: true,
+    validateOn: "onChange",
   });
 
   const handleFormSubmit = (data: Record<string, any>) => {

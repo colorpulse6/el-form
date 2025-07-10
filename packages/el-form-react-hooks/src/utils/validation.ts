@@ -30,8 +30,6 @@ export interface ValidationManagerOptions<T extends Record<string, any>> {
   validators: ValidatorConfig;
   fieldValidators: Partial<Record<keyof T, ValidatorConfig>>;
   mode: "onChange" | "onBlur" | "onSubmit" | "all";
-  validateOnChange: boolean;
-  validateOnBlur: boolean;
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
 }
 
@@ -41,18 +39,11 @@ export interface ValidationManagerOptions<T extends Record<string, any>> {
 export function createValidationManager<T extends Record<string, any>>(
   options: ValidationManagerOptions<T>
 ): ValidationManager<T> {
-  const {
-    validationEngine,
-    validators,
-    fieldValidators,
-    mode,
-    validateOnChange,
-    validateOnBlur,
-    validateOn,
-  } = options;
+  const { validationEngine, validators, fieldValidators, mode, validateOn } =
+    options;
 
   return {
-    // Determine if validation should run based on mode and legacy options
+    // Determine if validation should run based on mode and validateOn option
     shouldValidate: (
       eventType: "onChange" | "onBlur" | "onSubmit"
     ): boolean => {
@@ -64,13 +55,9 @@ export function createValidationManager<T extends Record<string, any>>(
         return false;
       }
 
-      // Fallback to mode and legacy options
+      // Fallback to mode
       if (mode === "all") return true;
       if (mode === eventType) return true;
-
-      // Legacy support
-      if (eventType === "onChange" && validateOnChange) return true;
-      if (eventType === "onBlur" && validateOnBlur) return true;
       if (eventType === "onSubmit") return true; // Always validate on submit
 
       return false;
