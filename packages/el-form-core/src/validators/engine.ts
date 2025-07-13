@@ -8,7 +8,8 @@ import {
 import { SchemaAdapter } from "./adapters";
 
 export class ValidationEngine {
-  private debounceTimers: Map<string, NodeJS.Timeout> = new Map();
+  private debounceTimers: Map<string, ReturnType<typeof setTimeout>> =
+    new Map();
 
   /**
    * Validates a single field using the provided validator configuration
