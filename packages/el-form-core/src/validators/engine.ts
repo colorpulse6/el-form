@@ -7,9 +7,11 @@ import {
 } from "./types";
 import { SchemaAdapter } from "./adapters";
 
+// Framework-agnostic timer type that works in both browser and Node.js
+type Timer = number | any;
+
 export class ValidationEngine {
-  private debounceTimers: Map<string, ReturnType<typeof setTimeout>> =
-    new Map();
+  private debounceTimers: Map<string, Timer> = new Map();
 
   /**
    * Validates a single field using the provided validator configuration
