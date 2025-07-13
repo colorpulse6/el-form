@@ -131,7 +131,7 @@ function UserForm() {
 
 ### Validation Timing Control
 
-The new `validateOn` option provides fine-grained control over when validation occurs:
+The `validateOn` option provides fine-grained control over when validation occurs:
 
 ```tsx
 // Only validate on form submission
@@ -864,7 +864,7 @@ const { firstName, lastName } = watch(["firstName", "lastName"]);
 
 ## Form State Utilities Example
 
-The new Form State Utilities provide convenient methods for checking field and form state:
+The Form State Utilities provide convenient methods for checking field and form state:
 
 ```tsx
 function FormStateExample() {
@@ -1351,7 +1351,7 @@ function TypedForm() {
 
 ### Flexible Validation Timing
 
-The new `validateOn` option provides fine-grained control over when validation occurs:
+The `validateOn` option provides fine-grained control over when validation occurs:
 
 ```tsx
 // Only validate manually or on submit
@@ -1423,7 +1423,7 @@ function CustomSubmissionForm() {
 
 ### Programmatic Form Control
 
-The new advanced form control methods enable sophisticated form interactions:
+The advanced form control methods enable sophisticated form interactions:
 
 ```tsx
 function WizardForm() {
