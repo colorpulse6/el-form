@@ -6,6 +6,7 @@ import {
   FieldState,
   ResetOptions,
   SetFocusOptions,
+  FormSnapshot,
 } from "./types";
 import {
   setNestedValue,
@@ -30,9 +31,9 @@ export function useForm<T extends Record<string, any>>(
     defaultValues = {},
     validators = {},
     fieldValidators = {},
-    validateOnChange = false,
-    validateOnBlur = false,
     mode = "onSubmit",
+    validateOn,
+    onSubmit,
   } = options;
 
   // Core refs and state
@@ -58,8 +59,7 @@ export function useForm<T extends Record<string, any>>(
     validators,
     fieldValidators,
     mode,
-    validateOnChange,
-    validateOnBlur,
+    validateOn,
   });
 
   // Register field function - much cleaner now!
@@ -233,6 +233,42 @@ export function useForm<T extends Record<string, any>>(
     [formState.values]
   );
 
+  // setValues - Set multiple field values at once
+  const setValues = useCallback(
+    (values: Partial<T>) => {
+      Object.entries(values).forEach(([path, value]) => {
+        dirtyManager.updateFieldDirtyState(path, value, defaultValues);
+      });
+
+      setFormState((prev) => ({
+        ...prev,
+        values: { ...prev.values, ...values },
+        isDirty: dirtyFieldsRef.current.size > 0,
+      }));
+    },
+    [dirtyManager, defaultValues]
+  );
+
+  // resetValues - Reset form with new default values
+  const resetValues = useCallback(
+    (values?: Partial<T>) => {
+      const newValues = values ?? defaultValues;
+
+      // Clear dirty state since we're resetting
+      dirtyManager.clearDirtyState();
+
+      setFormState({
+        values: newValues,
+        errors: {},
+        touched: {},
+        isSubmitting: false,
+        isValid: false,
+        isDirty: false,
+      });
+    },
+    [defaultValues, dirtyManager]
+  );
+
   const getFieldState = useCallback(
     <Name extends keyof T>(name: Name): FieldState => ({
       isDirty: dirtyManager.checkFieldIsDirty(
@@ -360,6 +396,69 @@ export function useForm<T extends Record<string, any>>(
     []
   );
 
+  // Form State Utilities
+  const isFieldDirty = useCallback(
+    (name: string): boolean => {
+      return dirtyManager.checkFieldIsDirty(
+        name as keyof T,
+        formState.values[name as keyof T],
+        (defaultValues as any)[name]
+      );
+    },
+    [dirtyManager, formState.values, defaultValues]
+  );
+
+  const isFieldTouched = useCallback(
+    (name: string): boolean => {
+      return !!formState.touched[name as keyof T];
+    },
+    [formState.touched]
+  );
+
+  const isFieldValid = useCallback(
+    (name: string): boolean => {
+      return !formState.errors[name as keyof T];
+    },
+    [formState.errors]
+  );
+
+  const hasErrors = useCallback((): boolean => {
+    return Object.keys(formState.errors).length > 0;
+  }, [formState.errors]);
+
+  const getErrorCount = useCallback((): number => {
+    return Object.keys(formState.errors).length;
+  }, [formState.errors]);
+
+  // Bulk operations
+  const markAllTouched = useCallback((): void => {
+    setFormState((prev) => {
+      const newTouched: Partial<Record<keyof T, boolean>> = {};
+      Object.keys(prev.values).forEach((key) => {
+        newTouched[key as keyof T] = true;
+      });
+      return { ...prev, touched: newTouched };
+    });
+  }, []);
+
+  const markFieldTouched = useCallback((name: string): void => {
+    setFormState((prev) => {
+      const newTouched = name.includes(".")
+        ? setNestedValue(prev.touched, name, true)
+        : { ...prev.touched, [name]: true };
+      return { ...prev, touched: newTouched };
+    });
+  }, []);
+
+  const markFieldUntouched = useCallback((name: string): void => {
+    setFormState((prev) => {
+      const newTouched = name.includes(".")
+        ? setNestedValue(prev.touched, name, false)
+        : { ...prev.touched, [name]: false };
+      return { ...prev, touched: newTouched };
+    });
+  }, []);
+
   // Focus management
   const setFocus = useCallback(
     <Name extends keyof T>(name: Name, options?: SetFocusOptions) => {
@@ -434,6 +533,132 @@ export function useForm<T extends Record<string, any>>(
     [dirtyManager, defaultValues]
   );
 
+  // Advanced form control methods
+  const submit = useCallback(async (): Promise<void> => {
+    if (!onSubmit) {
+      console.warn("useForm: No onSubmit handler provided for submit()");
+      return;
+    }
+
+    setFormState((prev) => ({ ...prev, isSubmitting: true }));
+
+    try {
+      // Always validate before submitting
+      const { isValid, errors } = await validationManager.validateForm(
+        formState.values
+      );
+
+      setFormState((prev) => ({
+        ...prev,
+        errors,
+        isValid,
+      }));
+
+      if (isValid) {
+        await onSubmit(formState.values as T);
+      }
+    } finally {
+      setFormState((prev) => ({ ...prev, isSubmitting: false }));
+    }
+  }, [formState.values, validationManager, onSubmit]);
+
+  const submitAsync = useCallback(async (): Promise<
+    | { success: true; data: T }
+    | { success: false; errors: Partial<Record<keyof T, string>> }
+  > => {
+    setFormState((prev) => ({ ...prev, isSubmitting: true }));
+
+    try {
+      // Always validate before submitting
+      const { isValid, errors } = await validationManager.validateForm(
+        formState.values
+      );
+
+      setFormState((prev) => ({
+        ...prev,
+        errors,
+        isValid,
+      }));
+
+      if (isValid) {
+        // If onSubmit is provided, call it
+        if (onSubmit) {
+          await onSubmit(formState.values as T);
+        }
+        return { success: true, data: formState.values as T };
+      } else {
+        return { success: false, errors };
+      }
+    } finally {
+      setFormState((prev) => ({ ...prev, isSubmitting: false }));
+    }
+  }, [formState.values, validationManager, onSubmit]);
+
+  const canSubmit = useCallback((): boolean => {
+    // Check if form is valid and not currently submitting
+    return formState.isValid && !formState.isSubmitting;
+  }, [formState.isValid, formState.isSubmitting]);
+
+  // Form History & Persistence methods
+  const getSnapshot = useCallback((): FormSnapshot<T> => {
+    return {
+      values: { ...formState.values },
+      errors: { ...formState.errors },
+      touched: { ...formState.touched },
+      timestamp: Date.now(),
+      isDirty: formState.isDirty,
+    };
+  }, [formState]);
+
+  const restoreSnapshot = useCallback(
+    (snapshot: FormSnapshot<T>) => {
+      // Clear current dirty state tracking
+      dirtyManager.clearDirtyState();
+
+      // Recalculate dirty state based on restored values vs defaults
+      Object.entries(snapshot.values).forEach(([path, value]) => {
+        const defaultValue = getNestedValue(defaultValues, path);
+        if (value !== defaultValue) {
+          dirtyManager.updateFieldDirtyState(path, value, defaultValues);
+        }
+      });
+
+      setFormState({
+        values: { ...snapshot.values },
+        errors: { ...snapshot.errors },
+        touched: { ...snapshot.touched },
+        isSubmitting: false,
+        isValid: Object.keys(snapshot.errors).length === 0,
+        isDirty: snapshot.isDirty || dirtyFieldsRef.current.size > 0,
+      });
+    },
+    [dirtyManager, defaultValues]
+  );
+
+  const hasChanges = useCallback((): boolean => {
+    return formState.isDirty;
+  }, [formState.isDirty]);
+
+  const getChanges = useCallback((): Partial<T> => {
+    const changes: Partial<T> = {};
+
+    // Get all fields that are dirty
+    dirtyFieldsRef.current.forEach((fieldPath) => {
+      const currentValue = getNestedValue(formState.values, fieldPath);
+      const defaultValue = getNestedValue(defaultValues, fieldPath);
+
+      if (currentValue !== defaultValue) {
+        if (fieldPath.includes(".")) {
+          setNestedValue(changes, fieldPath, currentValue);
+        } else {
+          (changes as any)[fieldPath] = currentValue;
+        }
+      }
+    });
+
+    return changes;
+  }, [formState.values, defaultValues]);
+
   // Return the complete UseFormReturn interface - clean and modular!
   return {
     register,
@@ -441,11 +666,21 @@ export function useForm<T extends Record<string, any>>(
     formState,
     reset,
     setValue,
+    setValues,
     watch,
+    resetValues,
     getFieldState,
     isDirty,
     getDirtyFields,
     getTouchedFields,
+    isFieldDirty,
+    isFieldTouched,
+    isFieldValid,
+    hasErrors,
+    getErrorCount,
+    markAllTouched,
+    markFieldTouched,
+    markFieldUntouched,
     trigger,
     clearErrors,
     setError,
@@ -453,5 +688,12 @@ export function useForm<T extends Record<string, any>>(
     addArrayItem,
     removeArrayItem,
     resetField,
+    submit,
+    submitAsync,
+    canSubmit,
+    getSnapshot,
+    restoreSnapshot,
+    hasChanges,
+    getChanges,
   };
 }

@@ -79,9 +79,8 @@ export interface AutoFormProps<T extends Record<string, any>> {
   children?: (formApi: UseFormReturn<T>) => React.ReactNode;
   customErrorComponent?: React.ComponentType<AutoFormErrorProps>;
   componentMap?: ComponentMap;
-  // New validation options (optional for backward compatibility)
+  // New validation options
   validators?: ValidatorConfig;
   fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
-  validateOnChange?: boolean;
-  validateOnBlur?: boolean;
+  validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
 }

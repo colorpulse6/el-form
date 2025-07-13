@@ -16,6 +16,14 @@ export interface FormState<T extends Record<string, any>> {
   isDirty: boolean;
 }
 
+export interface FormSnapshot<T extends Record<string, any>> {
+  values: Partial<T>;
+  errors: Partial<Record<keyof T, string>>;
+  touched: Partial<Record<keyof T, boolean>>;
+  timestamp: number;
+  isDirty: boolean;
+}
+
 export interface UseFormOptions<T extends Record<string, any>> {
   defaultValues?: Partial<T>;
   validators?: ValidatorConfig;
@@ -24,12 +32,11 @@ export interface UseFormOptions<T extends Record<string, any>> {
   // Field-level validator configurations
   fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
 
-  // Legacy validation mode options (still supported)
-  validateOnChange?: boolean;
-  validateOnBlur?: boolean;
-
   // New validation mode (more flexible)
   mode?: "onChange" | "onBlur" | "onSubmit" | "all";
+
+  // Flexible validation timing
+  validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
 }
 
 export interface FieldState {
@@ -64,6 +71,7 @@ export interface UseFormReturn<T extends Record<string, any>> {
   // Basic form control
   reset: (options?: ResetOptions<T>) => void;
   setValue: (path: string, value: any) => void;
+  setValues: (values: Partial<T>) => void;
 
   // Watch system
   watch: {
@@ -72,11 +80,26 @@ export interface UseFormReturn<T extends Record<string, any>> {
     <Names extends keyof T>(names: Names[]): Pick<T, Names>; // Watch multiple fields
   };
 
+  // Reset utilities
+  resetValues: (values?: Partial<T>) => void;
+
   // Field state queries
   getFieldState: <Name extends keyof T>(name: Name) => FieldState;
   isDirty: <Name extends keyof T>(name?: Name) => boolean;
   getDirtyFields: () => Partial<Record<keyof T, boolean>>;
   getTouchedFields: () => Partial<Record<keyof T, boolean>>;
+
+  // Form State Utilities
+  isFieldDirty: (name: string) => boolean;
+  isFieldTouched: (name: string) => boolean;
+  isFieldValid: (name: string) => boolean;
+  hasErrors: () => boolean;
+  getErrorCount: () => number;
+
+  // Bulk operations
+  markAllTouched: () => void;
+  markFieldTouched: (name: string) => void;
+  markFieldUntouched: (name: string) => void;
 
   // Validation control
   trigger: {
@@ -97,6 +120,20 @@ export interface UseFormReturn<T extends Record<string, any>> {
   addArrayItem: (path: string, item: any) => void;
   removeArrayItem: (path: string, index: number) => void;
   resetField: <Name extends keyof T>(name: Name) => void;
+
+  // Advanced form control methods
+  submit: () => Promise<void>;
+  submitAsync: () => Promise<
+    | { success: true; data: T }
+    | { success: false; errors: Partial<Record<keyof T, string>> }
+  >;
+  canSubmit: () => boolean;
+
+  // Form History & Persistence
+  getSnapshot: () => FormSnapshot<T>;
+  restoreSnapshot: (snapshot: FormSnapshot<T>) => void;
+  hasChanges: () => boolean;
+  getChanges: () => Partial<T>;
 }
 
 // AutoForm types

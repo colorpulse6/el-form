@@ -459,8 +459,7 @@ export function AutoForm<T extends Record<string, any>>({
   const formApi = useForm<T>({
     schema,
     initialValues,
-    validateOnChange: true,
-    validateOnBlur: true,
+    validateOn: "onChange",
   });
 
   const {

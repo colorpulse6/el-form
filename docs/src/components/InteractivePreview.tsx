@@ -19,7 +19,7 @@ export const InteractivePreview: React.FC<{
             <div className="w-3 h-3 rounded-full bg-green-400"></div>
           </div>
           {title && (
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-100">
               {title}
             </span>
           )}
@@ -27,7 +27,7 @@ export const InteractivePreview: React.FC<{
         {code && (
           <button
             onClick={() => setShowCode(!showCode)}
-            className="text-xs bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded-md transition-colors duration-200 flex items-center gap-1.5"
+            className="text-xs bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded-md transition-colors duration-200 flex items-center gap-1.5 text-slate-700 dark:text-slate-100"
           >
             {showCode ? "👁️ Hide Code" : "📝 Show Code"}
           </button>

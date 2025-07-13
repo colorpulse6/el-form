@@ -38,7 +38,7 @@ function CustomNameField<T extends Record<string, any>>({
 function UserFormWithContext() {
   const form = useForm<UserForm>({
     schema: userSchema,
-    validateOnBlur: true,
+    validateOn: "onBlur",
   });
 
   const handleSubmit = (data: UserForm) => {
@@ -168,7 +168,7 @@ type UserWithAddressForm = z.infer<typeof userWithAddressSchema>;
 function UserFormWithAddress() {
   const form = useForm<UserWithAddressForm>({
     schema: userWithAddressSchema,
-    validateOnBlur: true,
+    validateOn: "onBlur",
   });
 
   const handleSubmit = (data: UserWithAddressForm) => {

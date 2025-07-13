@@ -226,14 +226,6 @@ select:focus {
 .navbar__title {
   font-weight: 700;
   font-size: 1.25rem;
-  background: linear-gradient(
-    to right,
-    var(--el-primary-600),
-    var(--el-primary-500)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
 }
 
 .navbar__link {

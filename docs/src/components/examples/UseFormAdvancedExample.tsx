@@ -144,8 +144,8 @@ export default function UseFormAdvancedExample() {
   const touchedFields = getTouchedFields();
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">
         🚀 Advanced useForm Example
       </h2>
 
@@ -156,42 +156,42 @@ export default function UseFormAdvancedExample() {
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   First Name
                 </label>
                 <input
                   {...register("firstName")}
                   type="text"
                   placeholder="Enter first name"
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
                     getFieldState("firstName").error
                       ? "border-red-500"
-                      : "border-gray-300"
+                      : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {getFieldState("firstName").error && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                     {getFieldState("firstName").error}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Last Name
                 </label>
                 <input
                   {...register("lastName")}
                   type="text"
                   placeholder="Enter last name"
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
                     getFieldState("lastName").error
                       ? "border-red-500"
-                      : "border-gray-300"
+                      : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {getFieldState("lastName").error && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                     {getFieldState("lastName").error}
                   </p>
                 )}
@@ -200,8 +200,8 @@ export default function UseFormAdvancedExample() {
 
             {/* Full Name Preview */}
             {fullName && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-blue-800 text-sm">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md">
+                <p className="text-blue-800 dark:text-blue-200 text-sm">
                   👋 Hello, <strong>{fullName}</strong>!
                 </p>
               </div>
@@ -209,7 +209,7 @@ export default function UseFormAdvancedExample() {
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Email
               </label>
               <div className="flex gap-2">
@@ -217,8 +217,10 @@ export default function UseFormAdvancedExample() {
                   {...register("email")}
                   type="email"
                   placeholder="Enter email address"
-                  className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    emailState.error ? "border-red-500" : "border-gray-300"
+                  className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                    emailState.error
+                      ? "border-red-500"
+                      : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 <button
@@ -231,10 +233,12 @@ export default function UseFormAdvancedExample() {
                 </button>
               </div>
               {emailState.error && (
-                <p className="text-red-500 text-xs mt-1">{emailState.error}</p>
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                  {emailState.error}
+                </p>
               )}
               {emailState.isDirty && !emailState.error && (
-                <p className="text-green-500 text-xs mt-1">
+                <p className="text-green-500 dark:text-green-400 text-xs mt-1">
                   ✅ Email format is valid
                 </p>
               )}
@@ -243,47 +247,49 @@ export default function UseFormAdvancedExample() {
             {/* Password Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Password
                 </label>
                 <input
                   {...register("password")}
                   type="password"
                   placeholder="Enter password"
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    passwordState.error ? "border-red-500" : "border-gray-300"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                    passwordState.error
+                      ? "border-red-500"
+                      : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {passwordState.error && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                     {passwordState.error}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Confirm Password
                 </label>
                 <input
                   {...register("confirmPassword")}
                   type="password"
                   placeholder="Confirm password"
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
                     confirmPasswordState.error
                       ? "border-red-500"
-                      : "border-gray-300"
+                      : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {confirmPasswordState.error && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                     {confirmPasswordState.error}
                   </p>
                 )}
                 {password &&
                   formState.values.confirmPassword &&
                   !confirmPasswordState.error && (
-                    <p className="text-green-500 text-xs mt-1">
+                    <p className="text-green-500 dark:text-green-400 text-xs mt-1">
                       ✅ Passwords match
                     </p>
                   )}
@@ -292,7 +298,7 @@ export default function UseFormAdvancedExample() {
 
             {/* Age Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Age
               </label>
               <input
@@ -300,14 +306,14 @@ export default function UseFormAdvancedExample() {
                 type="number"
                 min="18"
                 max="120"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
                   getFieldState("age").error
                     ? "border-red-500"
-                    : "border-gray-300"
+                    : "border-gray-300 dark:border-gray-600"
                 }`}
               />
               {getFieldState("age").error && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1">
                   {getFieldState("age").error}
                 </p>
               )}
@@ -321,7 +327,7 @@ export default function UseFormAdvancedExample() {
                   className="rounded"
                   {...register("newsletter")}
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-gray-200">
                   Subscribe to newsletter
                 </span>
               </label>
@@ -332,12 +338,12 @@ export default function UseFormAdvancedExample() {
                   className="rounded"
                   {...register("terms")}
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-gray-200">
                   I accept the terms and conditions *
                 </span>
               </label>
               {getFieldState("terms").error && (
-                <p className="text-red-500 text-xs">
+                <p className="text-red-500 dark:text-red-400 text-xs">
                   {getFieldState("terms").error}
                 </p>
               )}
@@ -385,34 +391,48 @@ export default function UseFormAdvancedExample() {
         <div className="lg:col-span-1">
           <div className="sticky top-6 space-y-4">
             {/* Form State */}
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold text-gray-800 mb-3">
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">
                 📊 Form State
               </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Valid:</span>
+                  <span className="text-gray-600 dark:text-gray-300">
+                    Valid:
+                  </span>
                   <span
                     className={
-                      formState.isValid ? "text-green-600" : "text-red-600"
+                      formState.isValid
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
                     }
                   >
                     {formState.isValid ? "✅ Yes" : "❌ No"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Dirty:</span>
+                  <span className="text-gray-600 dark:text-gray-300">
+                    Dirty:
+                  </span>
                   <span
-                    className={isDirty() ? "text-yellow-600" : "text-gray-600"}
+                    className={
+                      isDirty()
+                        ? "text-yellow-600 dark:text-yellow-400"
+                        : "text-gray-600 dark:text-gray-400"
+                    }
                   >
                     {isDirty() ? "📝 Yes" : "✨ Pristine"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Submitting:</span>
+                  <span className="text-gray-600 dark:text-gray-300">
+                    Submitting:
+                  </span>
                   <span
                     className={
-                      formState.isSubmitting ? "text-blue-600" : "text-gray-600"
+                      formState.isSubmitting
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-gray-600 dark:text-gray-400"
                     }
                   >
                     {formState.isSubmitting ? "⏳ Yes" : "⏹️ No"}
@@ -423,15 +443,15 @@ export default function UseFormAdvancedExample() {
 
             {/* Dirty Fields */}
             {Object.keys(dirtyFields).length > 0 && (
-              <div className="p-4 bg-yellow-50 rounded-lg">
-                <h3 className="font-semibold text-gray-800 mb-3">
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">
                   📝 Dirty Fields
                 </h3>
                 <div className="flex flex-wrap gap-1">
                   {Object.keys(dirtyFields).map((field) => (
                     <span
                       key={field}
-                      className="px-2 py-1 bg-yellow-200 text-yellow-800 rounded text-xs"
+                      className="px-2 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded text-xs"
                     >
                       {field}
                     </span>
@@ -442,15 +462,15 @@ export default function UseFormAdvancedExample() {
 
             {/* Touched Fields */}
             {Object.keys(touchedFields).length > 0 && (
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h3 className="font-semibold text-gray-800 mb-3">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">
                   👆 Touched Fields
                 </h3>
                 <div className="flex flex-wrap gap-1">
                   {Object.keys(touchedFields).map((field) => (
                     <span
                       key={field}
-                      className="px-2 py-1 bg-blue-200 text-blue-800 rounded text-xs"
+                      className="px-2 py-1 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded text-xs"
                     >
                       {field}
                     </span>
@@ -461,13 +481,13 @@ export default function UseFormAdvancedExample() {
 
             {/* Errors */}
             {Object.keys(formState.errors).length > 0 && (
-              <div className="p-4 bg-red-50 rounded-lg">
-                <h3 className="font-semibold text-gray-800 mb-3">
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">
                   ❌ Current Errors
                 </h3>
                 <div className="space-y-1 text-xs">
                   {Object.entries(formState.errors).map(([field, error]) => (
-                    <div key={field} className="text-red-700">
+                    <div key={field} className="text-red-700 dark:text-red-300">
                       <strong>{field}:</strong> {error}
                     </div>
                   ))}
@@ -476,18 +496,18 @@ export default function UseFormAdvancedExample() {
             )}
 
             {/* Watch Demo */}
-            <div className="p-4 bg-green-50 rounded-lg">
-              <h3 className="font-semibold text-gray-800 mb-3">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">
                 👀 Watch Demo
               </h3>
               <div className="space-y-2 text-xs">
-                <div>
+                <div className="text-gray-700 dark:text-gray-300">
                   <strong>First Name:</strong> {firstName || "(empty)"}
                 </div>
-                <div>
+                <div className="text-gray-700 dark:text-gray-300">
                   <strong>Email:</strong> {email || "(empty)"}
                 </div>
-                <div>
+                <div className="text-gray-700 dark:text-gray-300">
                   <strong>Password Length:</strong> {password?.length || 0}{" "}
                   chars
                 </div>
