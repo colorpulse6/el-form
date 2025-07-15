@@ -1,5 +1,5 @@
 ---
-sidebar_position: 8
+sidebar_position: 11
 ---
 
 import { InteractivePreview } from '@site/src/components';
@@ -435,3 +435,30 @@ test("validates email field", async () => {
   });
 });
 ```
+
+## Server Integration
+
+For server-side validation, mutations, and optimistic updates, consider using El Form's [React Query integration](./react-query.md). This provides:
+
+- Automatic error mapping from server responses
+- Built-in loading states and error handling
+- Optimistic updates with rollback on failure
+- Server-side validation patterns
+
+```tsx
+import { useApiForm } from "el-form-react-hooks";
+
+function ServerForm() {
+  const form = useApiForm({
+    schema: mySchema,
+    url: "/api/users",
+    method: "POST",
+  });
+
+  // Server errors automatically mapped to form fields
+  // Loading states, mutations, and error handling built-in
+  return <form onSubmit={form.handleSubmit}>...</form>;
+}
+```
+
+Learn more in the [React Query Integration](./react-query.md) guide.

@@ -70,13 +70,65 @@ function MyForm() {
         <span className="error">{formState.errors.age}</span>
       )}
 
-      <button type="submit" disabled={formState.isSubmitting}>
-        Submit
+      <button
+        type="submit"
+        disabled={formState.isSubmitting}
+        className="my-submit-button"
+      >
+        {formState.isSubmitting ? "Submitting..." : "Submit"}
       </button>
     </form>
   );
 }
 ```
+
+## ⚡ React Query Integration
+
+Enhanced hooks for server-side form handling with React Query mutations:
+
+```tsx
+import { useApiForm } from "el-form-react-hooks";
+
+function ServerForm() {
+  const form = useApiForm({
+    validators: { onChange: userSchema },
+    defaultValues: { name: "", email: "", age: 18 },
+    submitUrl: "/api/users",
+    submitMethod: "POST",
+    errorExtractor: "standard", // Automatically maps server errors to form fields
+    onSuccess: (data) => {
+      console.log("User created:", data);
+      form.reset();
+    },
+    onError: (error) => {
+      console.error("Failed to create user:", error);
+    },
+  });
+
+  return (
+    <form onSubmit={form.handleSubmit(() => form.submitWithMutation())}>
+      {/* Same form fields as above */}
+
+      <button
+        type="submit"
+        disabled={form.isSubmittingMutation || !form.formState.isValid}
+      >
+        {form.isSubmittingMutation ? "Creating..." : "Create User"}
+      </button>
+    </form>
+  );
+}
+```
+
+**React Query Features:**
+
+- 🔄 **Automatic error mapping** - Server validation errors → form field errors
+- 🎯 **Multiple error formats** - Standard, GraphQL, Zod, custom extractors
+- ⚡ **Optimistic updates** - Immediate UI feedback with rollback
+- 🛡️ **Server-side validation** - Validate before submission
+- 🔧 **Full mutation control** - Access to React Query mutation state
+
+[📖 **React Query Integration Guide**](./REACT_QUERY_INTEGRATION.md)
 
 ## 🛡️ Error Handling
 

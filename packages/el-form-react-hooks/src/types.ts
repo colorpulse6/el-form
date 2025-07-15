@@ -9,7 +9,7 @@ export interface FormContextValue<T extends Record<string, any>> {
 // UseForm types
 export interface FormState<T extends Record<string, any>> {
   values: Partial<T>;
-  errors: Partial<Record<keyof T, string>>;
+  errors: Partial<Record<keyof T | "root", string>>;
   touched: Partial<Record<keyof T, boolean>>;
   isSubmitting: boolean;
   isValid: boolean;
@@ -18,7 +18,7 @@ export interface FormState<T extends Record<string, any>> {
 
 export interface FormSnapshot<T extends Record<string, any>> {
   values: Partial<T>;
-  errors: Partial<Record<keyof T, string>>;
+  errors: Partial<Record<keyof T | "root", string>>;
   touched: Partial<Record<keyof T, boolean>>;
   timestamp: number;
   isDirty: boolean;
@@ -107,8 +107,8 @@ export interface UseFormReturn<T extends Record<string, any>> {
     <Name extends keyof T>(name: Name): Promise<boolean>; // Validate specific field
     <Names extends keyof T>(names: Names[]): Promise<boolean>; // Validate multiple fields
   };
-  clearErrors: (name?: keyof T) => void;
-  setError: <Name extends keyof T>(name: Name, error: string) => void;
+  clearErrors: (name?: keyof T | "root") => void;
+  setError: <Name extends keyof T | "root">(name: Name, error: string) => void;
 
   // Focus management
   setFocus: <Name extends keyof T>(
