@@ -82,3 +82,6 @@ export {
   type ValidationManager,
   type ValidationManagerOptions,
 } from "./validation";
+
+// Export debouncing utilities
+export { useDebounce } from "./useDebounce";

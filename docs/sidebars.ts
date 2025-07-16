@@ -12,6 +12,7 @@ const sidebars = {
       label: "useForm",
       items: ["useform", "field-types", "useform-arrays"],
     },
+    "react-query",
     "form-reusability",
     "error-handling",
     "advanced",

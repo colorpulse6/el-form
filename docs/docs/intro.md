@@ -18,6 +18,7 @@ El Form is a modern React form library that supports any validation approach - Z
 - ⚡ **Performance** - Optimized with debounced async validation and minimal re-renders
 - 🎨 **Customizable** - Flexible styling and component overrides
 - 🔄 **Reusable Components** - Multiple patterns for form component reuse
+- 🌐 **React Query Integration** - Server-side validation, mutations, and error mapping
 - 📦 **Lightweight** - Small bundle size with optional dependencies
 - 🔧 **Developer Experience** - Intuitive API with great TypeScript inference
 

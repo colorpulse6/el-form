@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 12
 ---
 
 import { InteractivePreview } from '@site/src/components';
@@ -522,5 +522,97 @@ function MultiStepForm() {
   );
 }
 ```
+
+## React Query Integration
+
+Seamlessly integrate with React Query for server-side validation and mutations:
+
+```tsx
+import { useApiForm } from "el-form-react-hooks";
+import { z } from "zod";
+
+const userSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  bio: z.string().optional(),
+});
+
+function UserProfileForm() {
+  const form = useApiForm({
+    schema: userSchema,
+    url: "/api/users",
+    method: "POST",
+    defaultValues: {
+      name: "",
+      email: "",
+      bio: "",
+    },
+  });
+
+  return (
+    <form onSubmit={form.handleSubmit}>
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="name">Name</label>
+          <input
+            id="name"
+            {...form.register("name")}
+            className="w-full p-2 border rounded"
+          />
+          {form.errors.name && (
+            <p className="text-red-500">{form.errors.name}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            {...form.register("email")}
+            className="w-full p-2 border rounded"
+          />
+          {form.errors.email && (
+            <p className="text-red-500">{form.errors.email}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="bio">Bio</label>
+          <textarea
+            id="bio"
+            {...form.register("bio")}
+            className="w-full p-2 border rounded"
+            rows={3}
+          />
+          {form.errors.bio && <p className="text-red-500">{form.errors.bio}</p>}
+        </div>
+
+        <button
+          type="submit"
+          disabled={form.isSubmitting}
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+        >
+          {form.isSubmitting ? "Saving..." : "Save Profile"}
+        </button>
+
+        {form.mutation.isError && (
+          <div className="p-3 bg-red-100 text-red-700 rounded">
+            Failed to save profile. Please try again.
+          </div>
+        )}
+
+        {form.mutation.isSuccess && (
+          <div className="p-3 bg-green-100 text-green-700 rounded">
+            Profile saved successfully!
+          </div>
+        )}
+      </div>
+    </form>
+  );
+}
+```
+
+For advanced patterns like optimistic updates and server-side validation, check out the [React Query Integration](./react-query.md) guide.
 
 These examples demonstrate various patterns and use cases for El Form. Each example is production-ready and shows different aspects of the library's capabilities.

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cookie&display=swap");
 
 /* Root variables for consistent theming */
 :root {
@@ -375,4 +376,170 @@ select:focus {
 [data-theme="dark"] .table-of-contents__link--active {
   color: var(--el-primary-300);
   background-color: rgba(59, 130, 246, 0.12);
+}
+
+/* Footer enhancements */
+.footer__links {
+  gap: 2rem;
+}
+
+.footer__title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: #f8fafc;
+}
+
+.footer__item {
+  margin-bottom: 0.5rem;
+}
+
+.footer__link-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+}
+
+.footer__link-item:hover {
+  color: var(--el-primary-300);
+  text-decoration: none;
+  transform: translateX(2px);
+}
+
+/* Add GitHub icon to footer links */
+.footer__link-item[href*="github"]:before {
+  content: "⭐";
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.footer__link-item[href*="github"]:hover:before {
+  opacity: 1;
+}
+
+/* Add Buy Me a Coffee icon to footer links */
+.footer__link-item[href*="buymeacoffee"]:before {
+  content: "☕";
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.footer__link-item[href*="buymeacoffee"]:hover:before {
+  opacity: 1;
+}
+
+/* Special styling for Buy Me a Coffee link */
+.footer__link-item[href*="buymeacoffee"] {
+  background: linear-gradient(135deg, #ffdd00, #fff2a1);
+  color: #000000;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #ffdd00;
+  box-shadow: 0 2px 6px rgba(255, 221, 0, 0.2);
+}
+
+.footer__link-item[href*="buymeacoffee"]:hover {
+  background: linear-gradient(135deg, #ffe500, #fff7b8);
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 221, 0, 0.4);
+}
+
+/* Alternative with SVG icon (uncomment to use instead of emoji) */
+/*
+.footer__link-item[href*="github"]:before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='%23cbd5e1' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.30.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  flex-shrink: 0;
+}
+*/
+
+/* Buy Me a Coffee button styling in navbar */
+.bmc-button {
+  display: inline-block;
+  width: 163px; /* Proportional width for 40px height */
+  height: 40px;
+  background-image: url("https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-decoration: none !important;
+}
+
+.bmc-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  text-decoration: none !important;
+}
+
+/* Buy Me a Coffee button styling in footer */
+.bmc-button-footer {
+  display: inline-block;
+  width: 180px; /* Larger for footer */
+  height: 50px;
+  background-image: url("https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-decoration: none !important;
+  margin-top: 0.5rem;
+}
+
+.bmc-button-footer:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  text-decoration: none !important;
+}
+
+/* Legacy styles - keeping for compatibility */
+.navbar a[href*="buymeacoffee"] {
+  transition: all 0.2s ease-in-out;
+}
+
+.navbar a[href*="buymeacoffee"]:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.navbar a[href*="buymeacoffee"] img {
+  max-height: 40px !important;
+  width: auto !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.navbar a[href*="buymeacoffee"]:hover img {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Ensure BMC button fits well in navbar */
+#bmc-widget-container iframe {
+  border-radius: 8px !important;
+  height: 40px !important;
+  max-height: 40px !important;
+}
+
+/* BMC button hover effect */
+#bmc-widget-container:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease-in-out;
 }

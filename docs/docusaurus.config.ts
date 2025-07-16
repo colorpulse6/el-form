@@ -138,6 +138,14 @@ const config: Config = {
             },
           ],
         },
+        {
+          title: "Support",
+          items: [
+            {
+              html: '<a href="https://www.buymeacoffee.com/jobtoast" target="_blank" rel="noopener noreferrer" class="bmc-button-footer" aria-label="Buy Me A Coffee"></a>',
+            },
+          ],
+        },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} El Form. Built with Docusaurus.`,
     },
