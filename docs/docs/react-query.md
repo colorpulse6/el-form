@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # React Query Integration
 
-El Form provides comprehensive React Query integration for seamless server-side form handling, automatic error mapping, and advanced mutation patterns.
+El Form provides comprehensive React Query integration for seamless server-side form handling, automatic error mapping, field validation, and advanced mutation patterns.
 
 ## Overview
 
@@ -15,6 +15,7 @@ The React Query integration enhances your forms with:
 - ⚡ **Optimistic updates** - Immediate UI feedback with rollback
 - 🛡️ **Server-side validation** - Validate before submission
 - 🔧 **Full mutation control** - Access to React Query mutation state
+- 🔍 **Real-time field validation** - Query-powered field validation with smart caching
 
 ## Installation
 
@@ -27,6 +28,59 @@ yarn add @tanstack/react-query el-form-react-hooks
 ```
 
 ## Quick Start
+
+### Real-time Field Validation
+
+Validate individual fields with React Query for real-time server-side validation:
+
+```tsx
+import { useForm, useFieldQuery } from "el-form-react-hooks";
+import { z } from "zod";
+
+const userSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Invalid email"),
+});
+
+function SignupForm() {
+  const form = useForm({
+    validators: { onChange: userSchema },
+    defaultValues: { username: "", email: "" },
+  });
+
+  // Real-time username availability checking
+  const usernameValidation = useFieldQuery({
+    value: form.watch("username"),
+    queryKey: (value) => ["username-check", value],
+    queryFn: async (value) => {
+      const response = await fetch(`/api/check-username?username=${value}`);
+      if (!response.ok) throw new Error("Check failed");
+      const data = await response.json();
+      return {
+        isValid: data.available,
+        error: data.available ? null : "Username is not available",
+        data: data,
+      };
+    },
+    enabled: (value) => typeof value === "string" && value.length >= 3,
+    debounceMs: 300, // Wait 300ms after typing stops
+  });
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <div>
+        <input
+          {...form.register("username")}
+          className={usernameValidation.isValid ? "valid" : "invalid"}
+        />
+        {usernameValidation.queryState.isPending && <span>Checking...</span>}
+        {usernameValidation.error && <span>{usernameValidation.error}</span>}
+        {usernameValidation.isValid && <span>✓ Available</span>}
+      </div>
+    </form>
+  );
+}
+```
 
 ### Simple API Form
 
@@ -601,4 +655,369 @@ const form = useMutationForm(formOptions, {
 });
 ```
 
-The React Query integration makes El Form a complete solution for modern React applications with robust server communication and excellent user experience patterns!
+## Field Validation with React Query
+
+El Form's field validation system provides real-time server-side validation using React Query's powerful caching and background sync capabilities.
+
+### Basic Field Validation
+
+Use `useFieldQuery` to add server-side validation to any form field:
+
+```tsx
+import { useForm, useFieldQuery } from "el-form-react-hooks";
+
+function UserForm() {
+  const form = useForm({
+    defaultValues: { username: "", email: "" },
+  });
+
+  const usernameValidation = useFieldQuery({
+    value: form.watch("username"),
+    queryKey: (value) => ["username-availability", value],
+    queryFn: async (value) => {
+      const response = await fetch(`/api/validate/username?value=${value}`);
+      const result = await response.json();
+      return {
+        isValid: result.available,
+        error: result.available ? null : result.message,
+        data: result,
+      };
+    },
+    enabled: (value) => value.length >= 3,
+    debounceMs: 300,
+  });
+
+  return (
+    <form>
+      <div>
+        <input {...form.register("username")} />
+        {usernameValidation.queryState.isPending && <span>Checking...</span>}
+        {usernameValidation.error && (
+          <span className="error">{usernameValidation.error}</span>
+        )}
+        {usernameValidation.isValid && (
+          <span className="success">✓ Available</span>
+        )}
+      </div>
+    </form>
+  );
+}
+```
+
+### Advanced Field Validation
+
+#### Multiple Validation Rules
+
+Combine multiple validation queries for complex fields:
+
+```tsx
+function EmailField() {
+  const form = useForm({ defaultValues: { email: "" } });
+  const emailValue = form.watch("email");
+
+  // Format validation
+  const formatValidation = useFieldQuery({
+    value: emailValue,
+    queryKey: (value) => ["email-format", value],
+    queryFn: async (value) => {
+      const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      return {
+        isValid,
+        error: isValid ? null : "Invalid email format",
+      };
+    },
+    enabled: (value) => value.length > 0,
+    debounceMs: 100,
+  });
+
+  // Availability validation (only if format is valid)
+  const availabilityValidation = useFieldQuery({
+    value: emailValue,
+    queryKey: (value) => ["email-availability", value],
+    queryFn: async (value) => {
+      const response = await fetch(`/api/validate/email?email=${value}`);
+      const result = await response.json();
+      return {
+        isValid: result.available,
+        error: result.available ? null : "Email already registered",
+        data: result,
+      };
+    },
+    enabled: (value) => formatValidation.isValid && value.length > 0,
+    debounceMs: 500,
+  });
+
+  const isValid = formatValidation.isValid && availabilityValidation.isValid;
+  const error = formatValidation.error || availabilityValidation.error;
+  const isPending =
+    formatValidation.queryState.isPending ||
+    availabilityValidation.queryState.isPending;
+
+  return (
+    <div>
+      <input {...form.register("email")} />
+      {isPending && <span>Validating...</span>}
+      {error && <span className="error">{error}</span>}
+      {isValid && <span className="success">✓ Valid</span>}
+    </div>
+  );
+}
+```
+
+#### Custom Validation Timing
+
+Control exactly when validation occurs:
+
+```tsx
+const passwordValidation = useFieldQuery({
+  value: form.watch("password"),
+  queryKey: (value) => ["password-strength", value],
+  queryFn: async (value) => {
+    const response = await fetch("/api/validate/password-strength", {
+      method: "POST",
+      body: JSON.stringify({ password: value }),
+    });
+    return response.json();
+  },
+  enabled: (value) => value.length >= 8,
+  debounceMs: 1000, // Wait 1 second after typing stops
+  validateOn: ["onChange"], // Only validate on change, not blur
+  queryOptions: {
+    staleTime: 5 * 60 * 1000, // Consider results fresh for 5 minutes
+    retry: 1, // Only retry once on failure
+  },
+});
+```
+
+### Field Validation Patterns
+
+#### Username Availability with Suggestions
+
+```tsx
+const usernameValidation = useFieldQuery({
+  value: form.watch("username"),
+  queryKey: (value) => ["username-check", value],
+  queryFn: async (value) => {
+    const response = await fetch(`/api/username/check?username=${value}`);
+    const data = await response.json();
+    return {
+      isValid: data.available,
+      error: data.available ? null : data.message,
+      data: data, // Contains suggestions array
+    };
+  },
+  enabled: (value) => value.length >= 3,
+  debounceMs: 300,
+});
+
+// Show suggestions when username is taken
+{
+  usernameValidation.error &&
+    usernameValidation.queryState.data?.suggestions && (
+      <div className="suggestions">
+        <p>Try these alternatives:</p>
+        {usernameValidation.queryState.data.suggestions.map((suggestion) => (
+          <button
+            key={suggestion}
+            onClick={() => form.setValue("username", suggestion)}
+          >
+            {suggestion}
+          </button>
+        ))}
+      </div>
+    );
+}
+```
+
+#### Domain-specific Validation
+
+```tsx
+// Validate business-specific rules
+const businessCodeValidation = useFieldQuery({
+  value: form.watch("businessCode"),
+  queryKey: (value) => ["business-code-validation", value],
+  queryFn: async (value) => {
+    const response = await fetch(`/api/validate/business-code?code=${value}`);
+    const result = await response.json();
+    return {
+      isValid: result.valid,
+      error: result.valid ? null : result.reason,
+      data: {
+        businessName: result.businessName,
+        location: result.location,
+        status: result.status,
+      },
+    };
+  },
+  enabled: (value) => /^[A-Z]{2}\d{6}$/.test(value), // Format: AB123456
+  debounceMs: 500,
+});
+
+// Show business details when valid
+{
+  businessCodeValidation.isValid && businessCodeValidation.queryState.data && (
+    <div className="business-info">
+      <p>Business: {businessCodeValidation.queryState.data.businessName}</p>
+      <p>Location: {businessCodeValidation.queryState.data.location}</p>
+    </div>
+  );
+}
+```
+
+### Integration with useForm
+
+#### Manual Integration
+
+```tsx
+function FormWithValidation() {
+  const form = useForm({ defaultValues: { username: "" } });
+
+  const usernameValidation = useFieldQuery({
+    value: form.watch("username"),
+    // ... validation config
+  });
+
+  const handleSubmit = (data) => {
+    // Check validation before submitting
+    if (!usernameValidation.isValid) {
+      form.setError("username", { message: usernameValidation.error });
+      return;
+    }
+
+    // Proceed with submission
+    submitForm(data);
+  };
+
+  return (
+    <form onSubmit={form.handleSubmit(handleSubmit)}>{/* Form fields */}</form>
+  );
+}
+```
+
+#### Progressive Enhancement
+
+```tsx
+// Start with client-side validation
+const form = useForm({
+  validators: { onChange: userSchema },
+  defaultValues: { username: "", email: "" },
+});
+
+// Add server-side validation for specific fields
+const usernameValidation = useFieldQuery({
+  // Server validation for username availability
+});
+
+const emailValidation = useFieldQuery({
+  // Server validation for email format and availability
+});
+
+// Submit with React Query mutation
+const mutation = useMutation({
+  mutationFn: submitUser,
+  onError: (error) => {
+    // Handle server errors that field validation missed
+  },
+});
+```
+
+### Field Validation API Reference
+
+#### useFieldQuery Options
+
+```tsx
+interface UseFieldQueryOptions<TData, TError> {
+  value: any; // Field value to validate
+  queryKey: (value: any) => readonly unknown[]; // React Query key
+  queryFn: (value: any) => Promise<TData>; // Validation function
+  enabled?: boolean | ((value: any) => boolean); // When to validate
+  debounceMs?: number; // Debounce delay (default: 300)
+  onSuccess?: (data: TData) => void; // Success callback
+  onError?: (error: TError) => void; // Error callback
+  queryOptions?: UseQueryOptions<TData>; // Additional React Query options
+}
+```
+
+#### useFieldQuery Return Value
+
+```tsx
+interface UseFieldQueryReturn<TData, TError> {
+  isValid: boolean; // Validation result
+  error: string | null; // Error message
+  revalidate: () => void; // Manual revalidation
+  queryState: {
+    // React Query state
+    isPending: boolean;
+    isError: boolean;
+    isSuccess: boolean;
+    error: TError | null;
+    data: TData | undefined;
+  };
+}
+```
+
+### Best Practices
+
+#### 1. Smart Debouncing
+
+```tsx
+// Fast validation for simple checks
+const formatCheck = useFieldQuery({
+  debounceMs: 100, // Quick format validation
+  // ...
+});
+
+// Slower validation for server calls
+const availabilityCheck = useFieldQuery({
+  debounceMs: 500, // Wait longer for server validation
+  // ...
+});
+```
+
+#### 2. Conditional Validation
+
+```tsx
+// Only validate when field has meaningful content
+const validation = useFieldQuery({
+  enabled: (value) => value.length >= 3 && /^[a-zA-Z0-9]+$/.test(value),
+  // ...
+});
+```
+
+#### 3. Caching Strategy
+
+```tsx
+const validation = useFieldQuery({
+  queryOptions: {
+    staleTime: 5 * 60 * 1000, // 5 minutes fresh
+    cacheTime: 10 * 60 * 1000, // 10 minutes in cache
+    retry: 1, // Limited retries for validation
+  },
+  // ...
+});
+```
+
+#### 4. Error Boundary Integration
+
+```tsx
+const validation = useFieldQuery({
+  onError: (error) => {
+    // Log validation errors for monitoring
+    console.error("Field validation failed:", error);
+
+    // Optionally report to error tracking
+    reportError("field-validation-error", { error, field: "username" });
+  },
+  // ...
+});
+```
+
+### Progressive Enhancement
+
+Field validation is designed to work with or without React Query:
+
+- **With React Query**: Full caching, background sync, and advanced query features
+- **Without React Query**: Basic validation with simplified state management
+- **Gradual Migration**: Add React Query when your app grows in complexity
+
+This ensures your forms work immediately and can be enhanced as needed.
