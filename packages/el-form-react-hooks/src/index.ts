@@ -14,6 +14,15 @@ export {
   useOptimisticForm,
 } from "./useApiForm";
 
+// Field validation with React Query
+export {
+  useFieldQuery,
+  useFieldTouched,
+  type UseFieldQueryOptions,
+  type UseFieldQueryReturn,
+  type FieldQueryValidationResult,
+} from "./validation";
+
 export type {
   UseFormOptions,
   UseFormReturn,
