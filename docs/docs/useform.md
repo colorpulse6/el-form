@@ -4,6 +4,7 @@ sidebar_position: 4
 
 import { InteractivePreview } from '@site/src/components';
 import { UseFormExample, SimpleAutoFormExample, UseFormAdvancedExample } from '@site/src/components/examples';
+import { Callout } from '@site/src/components/Callout';
 
 # useForm Hook
 
@@ -16,7 +17,9 @@ The `useForm` hook provides powerful, schema-agnostic form state management. It 
 11KB
 
 ```tsx
-import { useForm } from "el-form-react-hooks";
+// You can use either package - they're now identical:
+import { useForm } from "el-form-react-hooks";  // Hooks only
+import { useForm } from "el-form-react";        // Comprehensive package
 
 function ContactForm() {
   const { register, handleSubmit } = useForm({
@@ -1508,6 +1511,19 @@ interface UseFormOptions<T> {
 }
 ```
 
+## ⚠️ Important API Limitations
+
+<Callout type="error" title="Error Handling Limitations">
+The el-form `useForm` hook has the following limitations compared to React Hook Form:
+
+1. **No "root" errors**: `setError("root", message)` is not supported
+2. **No general error state**: `formState.errors.root` does not exist  
+3. **Field-only errors**: `setError` only accepts field names from your schema/form values
+4. **Limited nested access**: `watch('object.field')` support varies by field depth
+
+For general errors, consider adding an error field to your form schema instead.
+</Callout>
+
 ## Interactive Examples
 
 <InteractivePreview>
@@ -2086,3 +2102,23 @@ function useServerPersistence(formKey: string) {
   return { saveToServer, loadFromServer };
 }
 ```
+
+## Package Options
+
+<Callout type="info" title="Choose Your Package">
+El Form provides flexible packaging options:
+
+**For comprehensive usage:**
+```tsx
+import { useForm, AutoForm } from "el-form-react";
+// Includes both hooks and components in one package
+```
+
+**For selective usage:**
+```tsx
+import { useForm } from "el-form-react-hooks";        // Hooks only
+import { AutoForm } from "el-form-react-components";  // Components only
+```
+
+All packages use the same API - choose based on your bundle size preferences.
+</Callout>

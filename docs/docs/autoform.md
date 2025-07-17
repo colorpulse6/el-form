@@ -270,7 +270,7 @@ function CustomErrorComponent({ errors, touched }) {
 | `fieldValidators`      | `Record<string, ValidatorConfig>` | Field-specific validators                      |
 | `layout`               | `"grid" \| "flex"`                | Form layout mode                               |
 | `columns`              | `number`                          | Grid columns (1-12)                            |
-| `initialValues`        | `Partial<T>`                      | Initial form values                            |
+| `defaultValues`        | `Partial<T>`                      | Initial form values                            |
 | `validateOnChange`     | `boolean`                         | Validate on input change                       |
 | `validateOnBlur`       | `boolean`                         | Validate on field blur                         |
 | `customErrorComponent` | `Component`                       | Custom error display component                 |
