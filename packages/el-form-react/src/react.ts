@@ -1,4 +1,3 @@
 // React-specific exports
-export * from "./AutoForm";
-export * from "./useForm";
-export * from "./types";
+export * from "el-form-react-hooks";
+export * from "el-form-react-components";

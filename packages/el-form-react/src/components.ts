@@ -1,10 +1,2 @@
-// Export UI components that require styling
-export { AutoForm } from "./AutoForm";
-export type {
-  AutoFormProps,
-  AutoFormErrorProps,
-  AutoFormFieldProps,
-  AutoFormFieldConfig,
-  ComponentMap,
-  FieldType,
-} from "./types";
+// Re-export everything from el-form-react-components
+export * from "el-form-react-components";

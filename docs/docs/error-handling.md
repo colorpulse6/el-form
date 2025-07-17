@@ -714,7 +714,10 @@ function CompleteErrorExample() {
           } else {
             // Note: el-form-react-hooks doesn't support 'root' errors
             // Consider adding a general error state field to your schema instead
-            console.error("Registration failed:", errorData.message || "Registration failed");
+            console.error(
+              "Registration failed:",
+              errorData.message || "Registration failed"
+            );
           }
           return;
         }

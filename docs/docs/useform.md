@@ -18,8 +18,8 @@ The `useForm` hook provides powerful, schema-agnostic form state management. It 
 
 ```tsx
 // You can use either package - they're now identical:
-import { useForm } from "el-form-react-hooks";  // Hooks only
-import { useForm } from "el-form-react";        // Comprehensive package
+import { useForm } from "el-form-react-hooks"; // Hooks only
+import { useForm } from "el-form-react"; // Comprehensive package
 
 function ContactForm() {
   const { register, handleSubmit } = useForm({
@@ -1517,7 +1517,7 @@ interface UseFormOptions<T> {
 The el-form `useForm` hook has the following limitations compared to React Hook Form:
 
 1. **No "root" errors**: `setError("root", message)` is not supported
-2. **No general error state**: `formState.errors.root` does not exist  
+2. **No general error state**: `formState.errors.root` does not exist
 3. **Field-only errors**: `setError` only accepts field names from your schema/form values
 4. **Limited nested access**: `watch('object.field')` support varies by field depth
 
@@ -2109,15 +2109,17 @@ function useServerPersistence(formKey: string) {
 El Form provides flexible packaging options:
 
 **For comprehensive usage:**
+
 ```tsx
 import { useForm, AutoForm } from "el-form-react";
 // Includes both hooks and components in one package
 ```
 
 **For selective usage:**
+
 ```tsx
-import { useForm } from "el-form-react-hooks";        // Hooks only
-import { AutoForm } from "el-form-react-components";  // Components only
+import { useForm } from "el-form-react-hooks"; // Hooks only
+import { AutoForm } from "el-form-react-components"; // Components only
 ```
 
 All packages use the same API - choose based on your bundle size preferences.
