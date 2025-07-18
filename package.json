@@ -16,8 +16,16 @@
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
     "changeset": "changeset",
+    "changeset:add": "changeset add",
+    "changeset:status": "changeset status",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish",
     "version-packages": "changeset version",
-    "release": "pnpm build:packages && changeset publish"
+    "release": "pnpm build:packages && changeset publish",
+    "release:check": "pnpm build:packages && changeset publish --dry-run",
+    "release:full": "pnpm changeset:version && pnpm release",
+    "release:interactive": "./scripts/release.sh",
+    "publish": "pnpm release"
   },
   "dependencies": {
     "el-form-core": "workspace:^",
