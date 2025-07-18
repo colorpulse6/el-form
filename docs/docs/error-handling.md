@@ -11,11 +11,11 @@ import { Callout } from '@site/src/components/Callout';
 <Callout type="warning" title="Error Handling Approach">
 El Form handles errors differently from React Hook Form:
 
-- **No "root" errors**: Use dedicated error fields in your schema instead of `setError("root", message)`
-- **Field-specific errors**: All errors must map to actual form fields
-- **Consistent API**: All el-form packages (`el-form-react`, `el-form-react-hooks`, etc.) use the same error handling approach
+- **No "root" errors**: Use `setError("generalError", message)` instead of `setError("root", message)`
+- **Field-specific errors**: All errors are managed through `setError(fieldName, message)` and displayed via `formState.errors`
+- **Consistent API**: All el-form packages use the same error handling approach
 
-For general errors, add an error field like `generalError` to your form values.
+**For general errors:** Simply use `setError("generalError", message)` and display with `formState.errors.generalError`
 </Callout>
 
 El Form provides comprehensive error handling capabilities with built-in validation, manual error setting, and customizable error displays. This guide covers all aspects of error management in your forms.
@@ -279,16 +279,20 @@ Handle server-side validation and API errors seamlessly:
 
 ### API Error Integration
 
+El Form makes it simple to handle both field-specific and general errors using the same `setError` method:
+
 ```tsx
 import { useForm } from "el-form-react-hooks";
 
 function RegistrationForm() {
-  const { register, handleSubmit, setError, formState } = useForm({
+  const { register, handleSubmit, setError, clearErrors, formState } = useForm({
     validators: { onChange: registrationSchema },
-    defaultValues: { email: "", password: "", generalError: "" },
+    defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = async (data) => {
+    clearErrors("generalError"); // Clear previous general errors
+
     try {
       const response = await fetch("/api/register", {
         method: "POST",
@@ -307,7 +311,7 @@ function RegistrationForm() {
           return;
         }
 
-        // Handle general error using a dedicated field
+        // Handle general error - just use setError with any field name
         if (errorData.message) {
           setError("generalError", errorData.message);
         }
@@ -333,10 +337,93 @@ function RegistrationForm() {
         <p className="error">{formState.errors.password}</p>
       )}
 
-      {/* Display general errors using a dedicated field */}
+      {/* Display general errors using form state */}
       {formState.errors.generalError && (
         <div className="general-error">
           <p>{formState.errors.generalError}</p>
+        </div>
+      )}
+
+      <button type="submit" disabled={formState.isSubmitting}>
+        {formState.isSubmitting ? "Registering..." : "Register"}
+      </button>
+    </form>
+  );
+}
+```
+
+### Alternative: Using Schema Field
+
+If you want the error field to be part of your schema validation:
+
+```tsx
+import { useForm } from "el-form-react-hooks";
+import { z } from "zod";
+
+// Add a submission error field to your schema
+const registrationSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  submissionError: z.string().optional(), // Dedicated field for general errors
+});
+
+function RegistrationFormWithErrorField() {
+  const { register, handleSubmit, setError, clearErrors, formState } = useForm({
+    validators: { onChange: registrationSchema },
+    defaultValues: { email: "", password: "", submissionError: "" },
+  });
+
+  const onSubmit = async (data) => {
+    clearErrors("submissionError"); // Clear previous general errors
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        // Handle field-specific errors from server
+        if (errorData.fieldErrors) {
+          Object.entries(errorData.fieldErrors).forEach(([field, message]) => {
+            setError(field, message);
+          });
+          return;
+        }
+
+        // Handle general error using form field
+        if (errorData.message) {
+          setError("submissionError", errorData.message);
+        }
+      }
+
+      // Success
+      console.log("Registration successful!");
+    } catch (error) {
+      setError("submissionError", "Network error. Please try again.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Form fields */}
+      <input {...register("email")} placeholder="Email" />
+      {formState.errors.email && (
+        <p className="error">{formState.errors.email}</p>
+      )}
+
+      <input {...register("password")} type="password" placeholder="Password" />
+      {formState.errors.password && (
+        <p className="error">{formState.errors.password}</p>
+      )}
+
+      {/* Display general errors using form state */}
+      {formState.errors.submissionError && (
+        <div className="general-error">
+          <p>{formState.errors.submissionError}</p>
         </div>
       )}
 
@@ -712,21 +799,16 @@ function CompleteErrorExample() {
             );
             setFocus(Object.keys(errorData.fieldErrors)[0]);
           } else {
-            // Note: el-form-react-hooks doesn't support 'root' errors
-            // Consider adding a general error state field to your schema instead
-            console.error(
-              "Registration failed:",
-              errorData.message || "Registration failed"
-            );
+            // Handle general errors using setError
+            setError("general", errorData.message || "Registration failed");
           }
           return;
         }
 
         console.log("Registration successful!");
       } catch (error) {
-        // Note: el-form-react-hooks doesn't support 'root' errors
-        // Consider adding a general error state field to your schema instead
-        console.error("Network error. Please try again.");
+        // Handle network errors using setError
+        setError("general", "Network error. Please try again.");
       }
     },
     (errors) => {
@@ -777,8 +859,12 @@ function CompleteErrorExample() {
         )}
       </div>
 
-      {/* Note: formState.errors.root is not supported in el-form-react-hooks */}
-      {/* Consider adding a general error field to your schema instead */}
+      {/* Display general errors */}
+      {formState.errors.general && (
+        <div className="general-error">
+          <p className="error-message">{formState.errors.general}</p>
+        </div>
+      )}
 
       <button
         type="submit"
