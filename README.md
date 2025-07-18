@@ -1,211 +1,306 @@
 # ⚡ El Form - Modern React Form Library
 
-A **TypeScript-first React form library** with Zod validation, offering multiple powerful APIs and comprehensive form handling capabilities. Built for modern React applications with **type safety**, **flexibility**, and **developer experience** in mind.
+A **TypeScript-first React form library** with flexible validation support. Build forms with **AutoForm** for rapid development or **useForm** for complete control. El Form supports any validation approach - Zod, Yup, Valibot, custom functions, or no validation at all.
 
-## 🎯 **Core Features Overview**
+## 🎯 **Core Features**
 
-### ✅ **Dual API Architecture**
+### ✅ **Flexible Architecture**
 
-- **`<AutoForm>` Component**: Declarative, rapid prototyping
-- **`useForm` Hook**: Manual control, maximum flexibility
-- **Render Props Pattern**: Hybrid approach combining both APIs
-- **Single Package Import (React)**: Import both APIs from `@el-form/react` or the default `el-form` alias
+- **AutoForm Component**: Auto-generated forms from schemas
+- **useForm Hook**: Manual control with React Hook Form-style API
+- **Multiple Validation**: Zod, Yup, custom functions, or no validation
+- **Modular Packages**: Install only what you need
 
-### ✅ **Advanced Form Management**
+### ✅ **Modern Form Management**
 
-- **React-Hook-Form Style API**: Familiar `register()`, `handleSubmit()`, `formState`, `reset()`
+- **Schema-Agnostic**: Works with any validation library or custom functions
 - **Real-time Validation**: Configurable validation on change/blur/submit
-- **TypeScript Integration**: Full type safety with Zod schema validation
-- **Form State Tracking**: Complete state management including `isDirty` detection
+- **TypeScript Integration**: Full type safety with excellent inference
+- **Form State Tracking**: Complete state management including dirty detection
+- **Performance Optimized**: Minimal re-renders and debounced validation
 
-### ✅ **Layout & Styling System**
+### ✅ **Component Reusability**
 
-- **Tailwind CSS v4 Integration**: Modern, responsive design system
-- **Grid/Flex Layouts**: Flexible layout options with 1-12 column grid system
-- **Type-safe Grid System**: `GridColumns` union type for strict column validation
-- **Responsive Design**: Mobile-first responsive layouts throughout
+- **Context Pattern**: FormProvider and useFormContext for nested components
+- **Form Passing**: Explicit form instances for better testability
+- **Hybrid Pattern**: Components that work with both approaches
+- **Type-Safe Field Names**: Generic constraints for field validation
 
-### ✅ **Error Handling System**
+### ✅ **Styling & Layout**
 
-- **Built-in Error Components**: Professional default error styling
-- **Custom Error Components**: Full customization with `AutoFormErrorProps` interface
-- **Multiple Error Styles**: 6+ different error component examples included
-- **Error State Management**: Comprehensive error and touched state tracking
-- **Manual Error Control**: Set/clear errors programmatically with `setError` and `clearErrors`
-- **Async Error Handling**: Server-side validation and API error integration
-- **Real-time Validation**: Debounced validation with external services
+- **Tailwind CSS**: Modern utility-first styling (optional)
+- **Grid/Flex Layouts**: Flexible responsive layouts
+- **Custom Components**: Override any component with your own
+- **Error Components**: Multiple error display patterns included
 
 ### 📦 **Package Structure**
 
-- `@el-form/react` – React-specific package containing `useForm` and `AutoForm` sources under `packages/react`
-- `el-form` – Alias to the React package (default)
-- Future frameworks will have their own packages (e.g., `@el-form/vue`)
+- `el-form-react-hooks` – Core form management hooks and utilities
+- `el-form-react-components` – AutoForm and pre-built components
+- `el-form-react` – Combined package with both hooks and components
+- `el-form-core` – Framework-agnostic validation engine
 
 ---
 
-## 🚀 **API Reference & Usage**
+## � **Quick Start**
 
-### **API #1: AutoForm Component (Declarative)**
+### Installation
 
-Perfect for **rapid prototyping** and **consistent forms** across your app.
+For form hooks and manual control:
+
+```bash
+npm install el-form-react-hooks
+```
+
+For auto-generated forms with styling:
+
+```bash
+npm install el-form-react-components
+```
+
+For everything in one package:
+
+```bash
+npm install el-form-react
+```
+
+### **AutoForm: Rapid Development**
+
+Generate complete forms from schemas in seconds:
 
 ```tsx
-import { AutoForm } from "el-form";
+import { AutoForm } from "el-form-react-components";
 import { z } from "zod";
 
 const userSchema = z.object({
   firstName: z.string().min(1, "First name required"),
-  lastName: z.string().min(1, "Last name required"),
   email: z.string().email("Invalid email address"),
   age: z.number().min(18, "Must be 18 or older"),
 });
 
-<AutoForm
-  schema={userSchema}
-  fields={[
-    { name: "firstName", type: "text", colSpan: 6, placeholder: "First name" },
-    { name: "lastName", type: "text", colSpan: 6, placeholder: "Last name" },
-    { name: "email", type: "email", colSpan: 12, placeholder: "Email address" },
-    { name: "age", type: "number", colSpan: 12, placeholder: "Your age" },
-  ]}
-  layout="grid"
-  columns={12}
-  onSubmit={(data) => console.log("✅ Valid data:", data)}
-  onError={(errors) => console.log("❌ Validation errors:", errors)}
-  customErrorComponent={MyCustomErrorComponent} // Optional
-/>;
+function UserForm() {
+  return (
+    <AutoForm
+      schema={userSchema}
+      onSubmit={(data) => console.log("✅ Valid data:", data)}
+      onError={(errors) => console.log("❌ Validation errors:", errors)}
+    />
+  );
+}
 ```
 
 **AutoForm Benefits:**
 
-- ✅ **Minimal code required** - Define fields and schema, done
-- ✅ **Automatic layout** - Grid/flex layouts with responsive design
+- ✅ **Zero boilerplate** - Define schema, get complete form
+- ✅ **Automatic layout** - Responsive grid/flex layouts
 - ✅ **Built-in styling** - Professional Tailwind CSS styling
-- ✅ **Error handling** - Automatic error display with customization options
-- ✅ **Type safety** - Full TypeScript support with strict column validation
+- ✅ **Error handling** - Automatic error display with customization
+- ✅ **Type safety** - Full TypeScript support
 
-### **API #2: useForm Hook (Manual Control)**
+### **useForm: Maximum Control**
 
-For **maximum flexibility** and **custom designs**.
+Build custom forms with complete flexibility:
 
 ```tsx
-import { useForm } from "el-form";
+import { useForm } from "el-form-react-hooks";
+import { z } from "zod";
 
-const { register, handleSubmit, formState, reset } = useForm({
-  schema: userSchema,
-  initialValues: { firstName: "", email: "" },
-  validateOnChange: true,
-  validateOnBlur: true,
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
 });
 
-// Access form state
-console.log(formState.isValid); // Boolean
-console.log(formState.isDirty); // Boolean - tracks if form has changed
-console.log(formState.errors); // Error object
-console.log(formState.touched); // Touched fields
-console.log(formState.isSubmitting); // Submission state
+function LoginForm() {
+  const { register, handleSubmit, formState } = useForm({
+    validators: { onChange: schema },
+    defaultValues: { email: "", password: "" },
+  });
 
-<form
-  onSubmit={handleSubmit(
-    (data) => console.log("Valid:", data),
-    (errors) => console.log("Errors:", errors)
-  )}
->
-  <input
-    {...register("firstName")}
-    placeholder="First name"
-    className="border p-2 rounded"
-  />
-  <input
-    {...register("email")}
-    type="email"
-    placeholder="Email"
-    className="border p-2 rounded"
-  />
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      {formState.errors.email && (
+        <span className="error">{formState.errors.email}</span>
+      )}
 
-  {formState.errors.firstName && (
-    <span className="text-red-500">{formState.errors.firstName}</span>
-  )}
+      <input {...register("password")} type="password" placeholder="Password" />
+      {formState.errors.password && (
+        <span className="error">{formState.errors.password}</span>
+      )}
 
-  <button
-    type="submit"
-    disabled={formState.isSubmitting}
-    className="bg-blue-500 text-white p-2 rounded"
-  >
-    {formState.isSubmitting ? "Submitting..." : "Submit"}
-  </button>
-
-  <button type="button" onClick={reset}>
-    Reset
-  </button>
-</form>;
+      <button type="submit" disabled={formState.isSubmitting}>
+        {formState.isSubmitting ? "Signing in..." : "Sign In"}
+      </button>
+    </form>
+  );
+}
 ```
 
 **useForm Benefits:**
 
-- ✅ **Full control over rendering** - Design exactly what you need
-- ✅ **Custom styling & layouts** - No constraints on design
+- ✅ **Complete design control** - Build exactly what you need
+- ✅ **React Hook Form API** - Familiar `register()`, `handleSubmit()` patterns
 - ✅ **Advanced field logic** - Complex validation and interaction patterns
-- ✅ **React-Hook-Form familiar** - Same API patterns developers know
-- ✅ **isDirty state tracking** - Know when form has been modified
+- ✅ **Performance optimized** - Minimal re-renders and efficient updates## 🔧 **Validation Approaches**
 
-### **API #3: Render Props Pattern (Hybrid)**
+El Form is **validation-agnostic** and supports multiple approaches:
 
-Combines **declarative AutoForm** with **access to form state**.
+### Schema Validation
 
 ```tsx
-<AutoForm schema={userSchema} fields={fields} onSubmit={handleSubmit}>
-  {({ formState, register, reset }) => (
-    <div className="space-y-4">
-      {/* Custom form state display */}
-      <div className="p-4 bg-gray-100 rounded">
-        <h3>Form Debug Info:</h3>
-        <p>Valid: {formState.isValid ? "✅" : "❌"}</p>
-        <p>Dirty: {formState.isDirty ? "📝" : "🆕"}</p>
-        <p>Submitting: {formState.isSubmitting ? "⏳" : "✋"}</p>
-      </div>
+import { z } from "zod";
+import { useForm } from "el-form-react-hooks";
 
-      {/* Custom controls */}
-      <button onClick={reset}>Custom Reset Button</button>
-    </div>
-  )}
-</AutoForm>
+const schema = z.object({
+  email: z.string().email("Invalid email"),
+  age: z.number().min(18, "Must be 18+"),
+});
+
+const form = useForm({
+  validators: { onChange: schema },
+});
 ```
 
-### **Error Handling**
-
-El Form provides comprehensive error management for both automatic and manual scenarios:
-
-#### **Automatic Error Handling**
+### Custom Functions
 
 ```tsx
-// Schema-based validation with custom messages
+const customValidator = (values) => {
+  const errors = {};
+  if (!values.email?.includes("@")) {
+    errors.email = "Invalid email";
+  }
+  return { errors, isValid: Object.keys(errors).length === 0 };
+};
+
+const form = useForm({
+  validators: { onSubmit: customValidator },
+});
+```
+
+### Multiple Libraries
+
+```tsx
+import * as yup from "yup";
+import { valibot as v } from "valibot";
+
+// Yup schema
+const yupSchema = yup.object({
+  name: yup.string().required(),
+});
+
+// Valibot schema
+const valibotSchema = v.object({
+  name: v.string([v.minLength(1)]),
+});
+
+// Both work with useForm!
+```
+
+### No Validation
+
+```tsx
+// Sometimes you just need form state management
+const form = useForm({
+  defaultValues: { name: "", email: "" },
+  // No validators needed!
+});
+```
+
+## 🎨 **Component Reusability**
+
+El Form offers three patterns for building reusable form components:
+
+### Context Pattern
+
+```tsx
+import { FormProvider, useFormContext } from "el-form-react-hooks";
+
+function FormField({ name, label }) {
+  const { register, formState } = useFormContext();
+  return (
+    <div>
+      <label>{label}</label>
+      <input {...register(name)} />
+      {formState.errors[name] && <span>{formState.errors[name]}</span>}
+    </div>
+  );
+}
+
+function App() {
+  const form = useForm({ defaultValues: { email: "" } });
+
+  return (
+    <FormProvider form={form}>
+      <form onSubmit={form.handleSubmit(console.log)}>
+        <FormField name="email" label="Email Address" />
+      </form>
+    </FormProvider>
+  );
+}
+```
+
+### Form Passing Pattern
+
+```tsx
+function FormField({ name, label, form }) {
+  const { register, formState } = form;
+  return (
+    <div>
+      <label>{label}</label>
+      <input {...register(name)} />
+      {formState.errors[name] && <span>{formState.errors[name]}</span>}
+    </div>
+  );
+}
+
+// Usage: pass form explicitly
+<FormField name="email" label="Email" form={form} />;
+```
+
+### Hybrid Pattern
+
+```tsx
+function FormField({ name, label, form }) {
+  // Use passed form or fall back to context
+  const contextForm = useFormContext();
+  const activeForm = form || contextForm;
+
+  // Works with both patterns!
+}
+```
+
+## 🛡️ **Error Handling**
+
+El Form provides flexible error management that works with any validation approach:
+
+### **Automatic Error Display**
+
+```tsx
+import { AutoForm } from "el-form-react-components";
+import { z } from "zod";
+
 const userSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain uppercase, lowercase, and number"
-    ),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 <AutoForm
   schema={userSchema}
   onSubmit={(data) => console.log("Success:", data)}
   onError={(errors) => console.log("Validation failed:", errors)}
-  customErrorComponent={CustomErrorComponent} // Optional
 />;
 ```
 
-#### **Manual Error Control**
+### **Manual Error Control**
 
 ```tsx
-const { setError, clearErrors, formState } = useForm({ schema });
+const { setError, clearErrors, formState } = useForm();
 
 // Set field-specific errors
-setError("email", "This email is already registered");
+setError("email", "This email is already taken");
+
+// Set general errors
+setError("general", "Something went wrong. Please try again.");
 
 // Clear specific or all errors
 clearErrors("email"); // Clear one field
@@ -221,13 +316,13 @@ const handleSubmit = async (data) => {
         setError(field, message);
       });
     } else {
-      setError("root", "Something went wrong. Please try again.");
+      setError("general", "Submission failed. Please try again.");
     }
   }
 };
 ```
 
-#### **Custom Error Components**
+### **Custom Error Components**
 
 ```tsx
 const CustomErrorComponent: React.FC<AutoFormErrorProps> = ({
@@ -254,17 +349,23 @@ const CustomErrorComponent: React.FC<AutoFormErrorProps> = ({
     </div>
   );
 };
+
+<AutoForm
+  schema={schema}
+  customErrorComponent={CustomErrorComponent}
+  onSubmit={handleSubmit}
+/>;
 ```
 
-#### **Real-time Validation**
+### **Real-time Validation**
 
 ```tsx
-const { register, watch, setError, clearErrors } = useForm({ schema });
+const { register, watch, setError, clearErrors } = useForm();
 const email = watch("email");
 
 // Debounced server validation
 useEffect(() => {
-  if (!email) return;
+  if (!email || !z.string().email().safeParse(email).success) return;
 
   const timeoutId = setTimeout(async () => {
     try {
@@ -277,7 +378,7 @@ useEffect(() => {
         clearErrors("email");
       }
     } catch (error) {
-      console.warn("Validation failed:", error);
+      console.warn("Email validation failed:", error);
     }
   }, 500);
 
@@ -293,36 +394,37 @@ Run `pnpm dev` and test these features in the live demo:
 
 ### **Core Form Functionality**
 
-- [ ] **AutoForm renders** with proper field layouts
-- [ ] **useForm hook** provides working register functions
-- [ ] **Form validation** shows errors on invalid inputs
-- [ ] **Form submission** works with valid data
+- [ ] **Schema-agnostic validation** works with Zod, Yup, Valibot, custom functions, or no validation
+- [ ] **AutoForm component** creates forms declaratively from schemas
+- [ ] **useForm hook** provides manual form control with state management
+- [ ] **Form submission** handles valid data and prevents invalid submissions
 - [ ] **Form reset** clears all fields and errors
-- [ ] **isDirty state** updates when form is modified
+- [ ] **Component reusability** supports Context, Form Passing, and Hybrid patterns
 
-### **Layout System**
+### **Field Types & Validation**
 
-- [ ] **Grid layout** with 1-12 column system works
-- [ ] **Flex layout** renders properly
-- [ ] **colSpan** properties work correctly (1-12 values)
-- [ ] **Responsive design** works on mobile/desktop
-- [ ] **Tailwind styling** renders modern UI
+- [ ] **Text inputs** render with proper validation
+- [ ] **Email/password fields** have appropriate input types
+- [ ] **Number inputs** handle numeric validation
+- [ ] **Textarea components** support multi-line text
+- [ ] **Select dropdowns** work with option arrays
+- [ ] **Array fields** support dynamic form sections
 
 ### **Error Handling**
 
-- [ ] **Default error component** displays validation errors
-- [ ] **Custom error components** can be substituted
-- [ ] **5+ different error styles** work (elegant, minimal, dark, playful, toast)
-- [ ] **Error state updates** in real-time during typing
-- [ ] **Field-level errors** show inline validation
+- [ ] **Automatic error display** shows validation failures from any schema library
+- [ ] **Custom error components** can replace default styling
+- [ ] **Real-time validation** updates errors on input change
+- [ ] **API error integration** handles server-side validation
+- [ ] **General error handling** manages form-level errors with setError("general", message)
 
 ### **Advanced Features**
 
-- [ ] **Render props pattern** provides access to form state
-- [ ] **TypeScript types** provide proper intellisense
-- [ ] **Schema validation** works with Zod schemas
-- [ ] **Real-time validation** on change/blur events
-- [ ] **Form state debugging** shows current state
+- [ ] **Form state management** tracks values, errors, touched fields
+- [ ] **TypeScript integration** provides proper type inference for any validation library
+- [ ] **Performance optimization** minimizes unnecessary re-renders
+- [ ] **Conditional rendering** shows/hides fields based on form state
+- [ ] **Custom field components** integrate seamlessly
 
 ### **Demo Applications**
 
@@ -352,39 +454,64 @@ pnpm build
 ### **Project Structure**
 
 ```
-src/
-├── index.ts              # Main library exports
-├── useForm.ts            # Core form hook with isDirty logic
-├── AutoForm.tsx          # Declarative form component
-├── types.ts              # TypeScript definitions & GridColumns
-├── testApp/              # Comprehensive demo suite
-│   ├── App.tsx           # Main demo application
-│   ├── AutoFormDemo.tsx  # AutoForm API demo
-│   ├── UseFormDemo.tsx   # useForm hook demo
-│   ├── RenderPropDemo.tsx # Render props demo
-│   ├── ErrorComponentDemo.tsx # Error component showcase
-│   ├── ApiComparison.tsx # Feature comparison
-│   └── userSchema.ts     # Zod schema for demos
-└── utils/
-    └── index.ts          # Utility functions
+packages/
+├── el-form-core/              # Core validation utilities
+│   ├── src/
+│   │   ├── index.ts           # Main exports
+│   │   ├── validation.ts      # Schema-agnostic validation
+│   │   ├── utils.ts           # Utility functions
+│   │   └── validators/        # Built-in validators
+│   └── package.json
+├── el-form-react-hooks/       # React hooks package
+│   ├── src/
+│   │   ├── index.ts           # Main exports
+│   │   ├── useForm.ts         # Core form hook
+│   │   ├── FormContext.tsx    # Context for form sharing
+│   │   └── utils/             # Hook utilities
+│   └── package.json
+├── el-form-react-components/  # React components package
+│   ├── src/
+│   │   ├── index.ts           # Main exports
+│   │   ├── AutoForm.tsx       # Declarative form component
+│   │   ├── FieldComponents.tsx # Field component library
+│   │   └── types.ts           # Component types
+│   └── package.json
+├── el-form-react/             # Unified React package
+│   ├── src/
+│   │   ├── index.ts           # Re-exports all React functionality
+│   │   ├── components.ts      # Component exports
+│   │   ├── hooks.ts           # Hook exports
+│   │   └── styles.css         # Default styles
+│   └── package.json
+docs/                          # Documentation site
+├── docs/                      # Markdown documentation
+├── src/                       # Docusaurus components
+└── build/                     # Generated site
 ```
 
-### **Key Dependencies**
+### **Package Dependencies**
 
 ```json
 {
   "peerDependencies": {
-    "react": "^18.0.0",
-    "zod": "^3.0.0"
+    "react": "^18.0.0"
+  },
+  "optionalDependencies": {
+    "zod": "^3.0.0",
+    "yup": "^1.0.0",
+    "valibot": "^0.30.0"
   },
   "devDependencies": {
     "tailwindcss": "^4.1.8",
     "@tailwindcss/postcss": "^4.1.8",
     "typescript": "^5.0.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "@changesets/cli": "^2.0.0"
   }
 }
 ```
+
+**Note:** Validation libraries are optional - El Form works with any validation approach or none at all.
 
 ---
 
@@ -426,23 +553,55 @@ const MyErrorComponent: React.FC<AutoFormErrorProps> = ({
 
 ## 🔧 **Advanced Configuration**
 
-### **Schema Validation**
+### **Schema-Agnostic Validation**
+
+El Form works with any validation library or approach:
 
 ```tsx
+// With Zod
 import { z } from "zod";
+const zodSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(8, "Password must be 8+ characters"),
+});
 
-const advancedSchema = z
-  .object({
-    email: z.string().email("Invalid email"),
-    password: z.string().min(8, "Password must be 8+ characters"),
-    confirmPassword: z.string(),
-    age: z.number().min(18).max(120),
-    bio: z.string().optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+// With Yup
+import * as yup from "yup";
+const yupSchema = yup.object({
+  email: yup.string().email("Invalid email").required(),
+  password: yup.string().min(8, "Password must be 8+ characters").required(),
+});
+
+// With Valibot
+import * as v from "valibot";
+const valibotSchema = v.object({
+  email: v.pipe(v.string(), v.email("Invalid email")),
+  password: v.pipe(
+    v.string(),
+    v.minLength(8, "Password must be 8+ characters")
+  ),
+});
+
+// With custom validation
+const customValidation = (data: any) => {
+  const errors: Record<string, string> = {};
+  if (!data.email?.includes("@")) {
+    errors.email = "Invalid email";
+  }
+  if (!data.password || data.password.length < 8) {
+    errors.password = "Password must be 8+ characters";
+  }
+  return Object.keys(errors).length > 0 ? errors : null;
+};
+
+// Without validation (just form state management)
+<AutoForm
+  onSubmit={(data) => console.log("Submit:", data)}
+  fields={[
+    { name: "email", type: "email", label: "Email" },
+    { name: "password", type: "password", label: "Password" },
+  ]}
+/>;
 ```
 
 ### **Field Configuration**
@@ -454,14 +613,21 @@ const fields = [
     type: "email" as const,
     label: "Email Address",
     placeholder: "Enter your email",
-    colSpan: 12 as GridColumns,
+    required: true,
   },
   {
     name: "bio",
     type: "textarea" as const,
     label: "Biography",
     placeholder: "Tell us about yourself",
-    colSpan: 12 as GridColumns,
+    rows: 4,
+  },
+  {
+    name: "age",
+    type: "number" as const,
+    label: "Age",
+    min: 18,
+    max: 120,
   },
 ];
 ```
@@ -478,16 +644,19 @@ MIT License - see LICENSE file for details.
 
 This form library is **production-ready** with comprehensive features including:
 
-- ✅ **Dual APIs** for different use cases
-- ✅ **TypeScript-first** development
-- ✅ **Modern UI** with Tailwind CSS v4
-- ✅ **Flexible error handling** with custom components
-- ✅ **Advanced form state** including isDirty tracking
-- ✅ **Comprehensive demos** and documentation
+- ✅ **Schema-agnostic validation** - Works with Zod, Yup, Valibot, custom functions, or no validation
+- ✅ **Flexible APIs** - AutoForm for rapid development, useForm for custom control
+- ✅ **TypeScript-first** - Full type safety with any validation library
+- ✅ **Component reusability** - Context, Form Passing, and Hybrid patterns
+- ✅ **Modern error handling** - Automatic display with customizable components
+- ✅ **Performance optimized** - Minimal re-renders and efficient state management
 
 **Perfect for:**
 
-- Rapid prototyping with AutoForm
-- Custom form designs with useForm
+- Rapid prototyping with schema-driven forms
+- Custom form designs with full control
 - Enterprise applications requiring type safety
-- Modern React applications with Tailwind CSS
+- Modern React applications with any validation approach
+- Teams wanting consistent form patterns across projects
+
+**Get started:** `npm install el-form-react` and see the [documentation](https://el-form.dev) for examples and guides.
