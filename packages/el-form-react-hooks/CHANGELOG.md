@@ -1,5 +1,13 @@
 # el-form-react-hooks
 
+## 3.1.1
+
+### Patch Changes
+
+- 394f74f: Update docs
+- Updated dependencies [394f74f]
+  - el-form-core@1.0.5
+
 ## 3.1.0
 
 ### Minor Changes
