@@ -14,7 +14,7 @@ Explore advanced form patterns and techniques with El Form.
 Create forms that adapt based on user input. Fields appear and disappear dynamically based on selections.
 
 ```tsx
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react-components";
 import { z } from "zod";
 
 const baseSchema = z.object({
@@ -76,7 +76,7 @@ _Try selecting different account types to see how the form adapts with different
 Break complex forms into manageable steps while preserving data between steps.
 
 ```tsx
-import { AutoForm } from "el-form/react";
+import { AutoForm } from "el-form-react-components";
 import { z } from "zod";
 
 const steps = [
@@ -136,7 +136,7 @@ function MultiStepForm() {
         schema={steps[currentStep].schema}
         fields={getFieldsForStep(currentStep)}
         onSubmit={handleStepSubmit}
-        initialValues={formData}
+        defaultValues={formData}
       />
 
       {/* Navigation */}
@@ -315,7 +315,7 @@ function ConnectedForm() {
     <AutoForm
       schema={schema}
       fields={fields}
-      initialValues={formData}
+      defaultValues={formData}
       onSubmit={setFormData}
     />
   );
