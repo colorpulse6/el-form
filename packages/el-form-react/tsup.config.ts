@@ -11,5 +11,12 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  external: ["react", "react-dom", "zod", "el-form"],
+  external: [
+    "react", 
+    "react-dom", 
+    "zod", 
+    "el-form-core", 
+    "el-form-react-hooks", 
+    "el-form-react-components"
+  ],
 });
