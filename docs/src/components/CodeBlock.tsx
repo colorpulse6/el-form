@@ -30,7 +30,7 @@ export const CodeBlock: React.FC<{
           </div>
           <button
             onClick={copyToClipboard}
-            className="text-xs bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-sm"
+            className="text-xs bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded-md transition-colors duration-200 flex items-center gap-1.5 shadow-sm text-slate-700 dark:text-slate-200"
           >
             {copied ? "✓ Copied!" : "📋 Copy"}
           </button>

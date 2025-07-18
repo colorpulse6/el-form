@@ -9,7 +9,7 @@ export const FeatureCard: React.FC<{
 }> = ({ icon, title, description, className = "" }) => {
   return (
     <div
-      className={`group p-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ${className}`}
+      className={`group p-6 rounded-xl border border-slate-200 dark:border-slate-700 dark:from-slate-800 dark:to-slate-900 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 ${className}`}
     >
       <div className="flex items-center mb-4">
         <div className="mr-4 text-2xl p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
