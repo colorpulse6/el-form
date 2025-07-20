@@ -15,7 +15,8 @@ This document provides a systematic approach to testing all features of the `el-
 | **Validation**          | All validation modes and types          | 🔴 Critical | ✅ Yes            |
 | **State Management**    | Form state, dirty/touched tracking      | 🔴 Critical | ✅ Yes            |
 | **Form Control**        | Value setting, errors, reset            | 🟡 High     | ✅ Yes            |
-| **Advanced Features**   | Watch, submission, arrays               | 🟡 High     | ✅ Partially      |
+| **Advanced Features**   | Watch, submission, arrays, files        | 🟡 High     | ✅ Partially      |
+| **File Upload Support** | File inputs, validation, preview        | � High      | ✅ Yes            |
 | **Context Integration** | FormProvider, reusability patterns      | 🟢 Medium   | ✅ Yes            |
 | **Performance**         | Optimization, edge cases                | 🟢 Medium   | ✅ Yes            |
 
@@ -694,9 +695,152 @@ _Test Together: Complex data structure handling_
 
 ---
 
-## 🛡️ **Category 9: Edge Cases & Error Handling**
+## � **Category 9: File Upload Support**
 
-### **9.1 Error Boundaries & Edge Cases**
+### **9.1 File Input Registration**
+
+_Test Together: Basic file input handling_
+
+- [ ] **register() function for file inputs**
+
+  - Detects `type="file"` automatically
+  - Returns `files` property instead of `value`
+  - Handles single file selection
+  - Handles multiple file selection (`multiple` attribute)
+
+- [ ] **File object access**
+
+  - Returns `FileList` object for multiple files
+  - Returns single `File` object for single files
+  - Provides access to file properties (name, size, type, lastModified)
+  - Handles empty file selection (null/undefined)
+
+- [ ] **File state management**
+
+  - File selection updates form state
+  - File removal clears form state
+  - File replacement updates existing selection
+  - Files persist through form operations
+
+### **9.2 File Validation**
+
+_Test Together: File validation scenarios_
+
+- [ ] **File type validation**
+
+  - Accept attribute validation
+  - MIME type checking
+  - File extension validation
+  - Custom file type validators
+
+- [ ] **File size validation**
+
+  - Maximum file size limits
+  - Minimum file size limits
+  - Total size limits for multiple files
+  - Human-readable size error messages
+
+- [ ] **File count validation**
+
+  - Maximum number of files
+  - Minimum number of files
+  - Single file enforcement
+  - Multiple file count limits
+
+- [ ] **File content validation**
+
+  - File reading for content validation
+  - Image dimension validation
+  - File header validation
+  - Async file content checks
+
+### **9.3 File Operations**
+
+_Test Together: File manipulation methods_
+
+- [ ] **addFile(name, file) method**
+
+  - Add file to existing selection
+  - Append to multiple file inputs
+  - Validate before adding
+  - Update form state correctly
+
+- [ ] **removeFile(name, index) method**
+
+  - Remove specific file by index
+  - Remove all files
+  - Update indices correctly
+  - Maintain file order
+
+- [ ] **replaceFile(name, index, file) method**
+
+  - Replace specific file
+  - Validate replacement file
+  - Maintain other files
+  - Update form state
+
+- [ ] **clearFiles(name) method**
+
+  - Clear all selected files
+  - Reset file input state
+  - Update form validation
+  - Trigger change events
+
+### **9.4 File Preview & Management**
+
+_Test Together: File display utilities_
+
+- [ ] **getFilePreview(file) utility**
+
+  - Generate image previews
+  - Handle different file types
+  - Base64 data URL generation
+  - Preview cleanup on file removal
+
+- [ ] **getFileInfo(file) utility**
+
+  - Format file size display
+  - Extract file metadata
+  - File type categorization
+  - Upload progress tracking
+
+- [ ] **File drag & drop support**
+
+  - Drop zone integration
+  - Drag over visual feedback
+  - File type filtering on drop
+  - Multiple file drop handling
+
+### **9.5 File Upload Integration**
+
+_Test Together: Upload workflow_
+
+- [ ] **File upload progress tracking**
+
+  - Upload progress percentage
+  - Individual file progress
+  - Batch upload progress
+  - Error handling during upload
+
+- [ ] **Upload state management**
+
+  - isUploading state tracking
+  - Upload completion status
+  - Upload error states
+  - Retry upload functionality
+
+- [ ] **File upload utilities**
+
+  - FormData preparation
+  - Multipart form encoding
+  - Upload cancellation
+  - Upload resume support
+
+---
+
+## �🛡️ **Category 10: Edge Cases & Error Handling**
+
+### **10.1 Error Boundaries & Edge Cases**
 
 _Test Together: Robustness testing_
 
@@ -734,7 +878,7 @@ _Test Together: Robustness testing_
   - State cleanup
   - Event handler cleanup
 
-### **9.2 Integration Testing**
+### **10.2 Integration Testing**
 
 _Test Together: Real-world scenarios_
 
@@ -799,11 +943,13 @@ _Test Together: Real-world scenarios_
 
    - Form Control (4.1, 4.2, 4.3)
    - Advanced Features (5.1, 5.2)
+   - File Upload Support (9.1, 9.2, 9.3)
 
 3. **🟢 Medium Priority** (Test Last)
+   - File Upload Utilities (9.4, 9.5)
    - Context Integration (7.1, 7.2)
    - Performance (8.1, 8.2)
-   - Edge Cases (9.1, 9.2)
+   - Edge Cases (10.1, 10.2)
 
 ### **Test Data Preparation**
 
