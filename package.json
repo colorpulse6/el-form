@@ -8,7 +8,7 @@
   ],
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "test-app": "pnpm --filter el-form-testing-app dev",
     "docs:dev": "pnpm --filter el-form-docs dev",
     "build": "pnpm -r run build",
     "build:packages": "pnpm --filter './packages/*' run build",

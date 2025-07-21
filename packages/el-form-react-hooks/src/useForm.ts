@@ -20,10 +20,6 @@ import {
   createValidationManager,
 } from "./utils";
 
-/**
- * Clean, refactored useForm hook - now ~200 lines instead of 693!
- * Utilities extracted to separate files for better maintainability
- */
 export function useForm<T extends Record<string, any>>(
   options: UseFormOptions<T>
 ): UseFormReturn<T> {
