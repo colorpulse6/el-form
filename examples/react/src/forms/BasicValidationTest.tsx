@@ -3,7 +3,11 @@ import { useState } from "react";
 import z from "zod";
 
 const basicSchema = z.object({
-  name: z.string().nonempty({ message: "Name is required" }),
+  name: z
+    .string()
+    .nonempty({ message: "Name is required" })
+    .min(2, "Name must be at least 2 characters")
+    .max(20, "Name must be no more than 20 characters"),
   email: z.string().email("Invalid email format"),
   age: z.number().min(18, "Must be 18 or older").max(100, "Must be under 100"),
 });
