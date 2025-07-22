@@ -206,6 +206,7 @@ export class SchemaAdapter {
         const path = err.path.join(".") || "form";
         errors[path] = err.message;
       });
+
       return { isValid: false, errors };
     }
 

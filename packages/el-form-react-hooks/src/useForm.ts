@@ -20,10 +20,6 @@ import {
   createValidationManager,
 } from "./utils";
 
-/**
- * Clean, refactored useForm hook - now ~200 lines instead of 693!
- * Utilities extracted to separate files for better maintainability
- */
 export function useForm<T extends Record<string, any>>(
   options: UseFormOptions<T>
 ): UseFormReturn<T> {
@@ -34,14 +30,13 @@ export function useForm<T extends Record<string, any>>(
     mode = "onSubmit",
     validateOn,
     onSubmit,
-  } = options;
-
-  // Core refs and state
+  } = options; // Core refs and state
   const validationEngine = useRef(new ValidationEngine());
   const fieldRefs = useRef<
     Map<keyof T, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   >(new Map());
   const dirtyFieldsRef = useRef<Set<string>>(new Set());
+  const formStateRef = useRef<FormState<T>>();
 
   const [formState, setFormState] = useState<FormState<T>>({
     values: defaultValues,
@@ -51,6 +46,9 @@ export function useForm<T extends Record<string, any>>(
     isValid: false,
     isDirty: false,
   });
+
+  // Keep ref current
+  formStateRef.current = formState;
 
   // Create utility managers
   const dirtyManager = createDirtyStateManager<T>(dirtyFieldsRef);
@@ -66,7 +64,8 @@ export function useForm<T extends Record<string, any>>(
   const register = useCallback(
     (name: string) => {
       const fieldName = name as keyof T;
-      const fieldValue = getNestedValue(formState.values, name) ?? "";
+      const fieldValue =
+        getNestedValue(formStateRef.current?.values || {}, name) ?? "";
       const isCheckbox = typeof fieldValue === "boolean";
 
       const baseProps = {
@@ -103,23 +102,47 @@ export function useForm<T extends Record<string, any>>(
           });
 
           // Use extracted validation utility
-          if (validationManager.shouldValidate("onChange")) {
+          const shouldValidateResult =
+            validationManager.shouldValidate("onChange");
+
+          if (shouldValidateResult) {
+            const updatedValues = name.includes(".")
+              ? setNestedValue(formState.values, name, value)
+              : { ...formState.values, [name]: value };
+
             const result = await validationManager.validateField(
               fieldName,
               value,
-              formState.values,
+              updatedValues,
               "onChange"
             );
-            if (!result.isValid) {
-              setFormState((prev) => ({
+
+            // Always update form state with validation results
+            setFormState((prev) => {
+              const newErrors = { ...prev.errors };
+
+              if (!result.isValid && Object.keys(result.errors).length > 0) {
+                // Set new errors
+                Object.assign(newErrors, result.errors);
+              } else {
+                // Clear errors for this field if validation passed
+                if (newErrors[fieldName]) {
+                  delete newErrors[fieldName];
+                }
+              }
+
+              const isFormValid = Object.values(newErrors).every(
+                (error) => !error
+              );
+
+              return {
                 ...prev,
-                errors: { ...prev.errors, ...result.errors },
-                isValid: false,
-              }));
-            }
+                errors: newErrors,
+                isValid: isFormValid,
+              };
+            });
           }
         },
-
         onBlur: async (_e: React.FocusEvent<any>) => {
           setFormState((prev) => {
             const newTouched = name.includes(".")
@@ -129,10 +152,11 @@ export function useForm<T extends Record<string, any>>(
           });
 
           if (validationManager.shouldValidate("onBlur")) {
+            const currentState = formStateRef.current!;
             const result = await validationManager.validateField(
               fieldName,
-              formState.values[fieldName],
-              formState.values,
+              currentState.values[fieldName],
+              currentState.values,
               "onBlur"
             );
             if (!result.isValid) {
@@ -150,7 +174,7 @@ export function useForm<T extends Record<string, any>>(
         ? { ...baseProps, checked: Boolean(fieldValue) }
         : { ...baseProps, value: fieldValue || "" };
     },
-    [formState.values, defaultValues, dirtyManager, validationManager]
+    [defaultValues, dirtyManager, validationManager]
   );
 
   // Handle submit - simplified

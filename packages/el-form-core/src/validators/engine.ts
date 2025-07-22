@@ -60,11 +60,14 @@ export class ValidationEngine {
 
     const context = { value: values };
 
+    let result;
     if (event.isAsync) {
-      return this.validateFormAsync(validator, context, config, event);
+      result = await this.validateFormAsync(validator, context, config, event);
     } else {
-      return this.validateFormSync(validator, context);
+      result = this.validateFormSync(validator, context);
     }
+
+    return result;
   }
 
   /**
