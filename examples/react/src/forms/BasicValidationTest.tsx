@@ -11,7 +11,7 @@ const basicSchema = z.object({
   email: z.string().email("Invalid email format"),
   age: z.number().min(18, "Must be 18 or older").max(100, "Must be under 100"),
   phone: z.string().regex(/^\d{10}$/, "Phone must be exactly 10 digits"),
-  terms: z.boolean().refine(val => val === true, "You must accept terms"),
+  terms: z.boolean().refine((val) => val === true, "You must accept terms"),
 });
 
 export function BasicValidationTest() {
@@ -27,7 +27,10 @@ export function BasicValidationTest() {
   return (
     <div className="form-section">
       <h2>🔹 Basic Validation Test</h2>
-      <p>Schema: name (required), email (valid email), age (18-100), phone (10 digits), terms (required)</p>
+      <p>
+        Schema: name (required), email (valid email), age (18-100), phone (10
+        digits), terms (required)
+      </p>
 
       <div className="form-state">
         <strong>Form State:</strong>
@@ -80,11 +83,7 @@ export function BasicValidationTest() {
 
         <div className="form-group">
           <label>Phone *</label>
-          <input
-            {...register("phone")}
-            type="tel"
-            placeholder="1234567890"
-          />
+          <input {...register("phone")} type="tel" placeholder="1234567890" />
           {formState.errors.phone && (
             <span className="error">{formState.errors.phone}</span>
           )}

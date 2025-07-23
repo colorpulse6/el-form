@@ -74,7 +74,7 @@ export function useForm<T extends Record<string, any>>(
           // Enhanced value extraction with automatic type coercion
           const value = (() => {
             if (isCheckbox) return e.target.checked;
-            if (e.target.type === 'number') {
+            if (e.target.type === "number") {
               const num = e.target.valueAsNumber;
               // Use valueAsNumber if it's a valid number, otherwise fall back to string
               return isNaN(num) ? e.target.value : num;
