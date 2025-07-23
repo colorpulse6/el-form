@@ -71,7 +71,16 @@ export function useForm<T extends Record<string, any>>(
       const baseProps = {
         name,
         onChange: async (e: React.ChangeEvent<any>) => {
-          const value = isCheckbox ? e.target.checked : e.target.value;
+          // Enhanced value extraction with automatic type coercion
+          const value = (() => {
+            if (isCheckbox) return e.target.checked;
+            if (e.target.type === 'number') {
+              const num = e.target.valueAsNumber;
+              // Use valueAsNumber if it's a valid number, otherwise fall back to string
+              return isNaN(num) ? e.target.value : num;
+            }
+            return e.target.value;
+          })();
 
           // Use extracted utility for dirty state
           dirtyManager.updateFieldDirtyState(name, value, defaultValues);
