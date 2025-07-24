@@ -31,7 +31,8 @@ const basicSchema = z
           yearsExperience: z
             .number()
             .min(0, "Years must be 0 or more")
-            .max(50, "Years must be 50 or less"),
+            .max(50, "Years must be 50 or less")
+            .optional(),
         })
       )
       .min(1, "At least one skill is required"),

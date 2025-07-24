@@ -71,13 +71,15 @@ export function useForm<T extends Record<string, any>>(
       const baseProps = {
         name,
         onChange: async (e: React.ChangeEvent<any>) => {
-          // Enhanced value extraction with automatic type coercion
           const value = (() => {
             if (isCheckbox) return e.target.checked;
             if (e.target.type === "number") {
               const num = e.target.valueAsNumber;
-              // Use valueAsNumber if it's a valid number, otherwise fall back to string
-              return isNaN(num) ? e.target.value : num;
+              // Handle empty number inputs - return undefined instead of empty string
+              if (isNaN(num)) {
+                return e.target.value === "" ? undefined : e.target.value;
+              }
+              return num;
             }
             return e.target.value;
           })();
