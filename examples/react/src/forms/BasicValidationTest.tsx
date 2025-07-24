@@ -21,6 +21,10 @@ const basicSchema = z
     role: z.enum(["admin", "user", "moderator"], {
       errorMap: () => ({ message: "Please select a valid role" }),
     }),
+    // Conditional fields that will be shown/hidden based on watch values
+    adminCode: z.string().optional().or(z.literal("")),
+    company: z.string().optional().or(z.literal("")),
+    seniorDetails: z.string().optional().or(z.literal("")),
     skills: z
       .array(
         z.object({
@@ -32,6 +36,19 @@ const basicSchema = z
             .number()
             .min(0, "Years must be 0 or more")
             .max(50, "Years must be 50 or less")
+            .optional(),
+          projects: z
+            .array(
+              z.object({
+                name: z.string().min(1, "Project name is required"),
+                duration: z
+                  .number()
+                  .min(1, "Duration must be at least 1 month")
+                  .max(120, "Duration must be less than 120 months")
+                  .optional(),
+              })
+            )
+            .min(1, "At least one project is required for each skill")
             .optional(),
         })
       )
@@ -65,13 +82,35 @@ export function BasicValidationTest() {
       website: "",
       password: "",
       confirmPassword: "",
-      role: "user" as const,
-      skills: [{ name: "", level: "beginner" as const, yearsExperience: 0 }],
+      role: "user",
+      adminCode: "",
+      company: "",
+      seniorDetails: "",
+      skills: [
+        {
+          name: "",
+          level: "beginner" as const,
+          yearsExperience: 0,
+          projects: [{ name: "", duration: 1 }],
+        },
+      ],
       terms: false,
     },
   });
 
   const watchedValues = watch();
+
+  // Watch specific fields for conditional rendering
+  const currentRole = watch("role");
+  const currentAge = watch("age");
+  const currentSkills = watch("skills");
+
+  // Conditional logic
+  const showAdminCode = currentRole === "admin";
+  const showCompanyField = currentAge >= 25;
+  const hasAdvancedSkill = currentSkills?.some(
+    (skill: any) => skill.level === "advanced"
+  );
 
   return (
     <div className="form-section">
@@ -80,6 +119,11 @@ export function BasicValidationTest() {
         Schema: name (required), email (valid email), age (18-100), phone (10
         digits), website (optional URL), password + confirm (8+ chars, must
         match), role (enum), skills (array of objects), terms (required)
+      </p>
+      <p>
+        <strong>🎯 Watch Function Testing:</strong> Admin Code (shows when
+        role=admin), Company (shows when age≥25), Senior Details (shows when any
+        skill=advanced)
       </p>
 
       <div className="form-state">
@@ -189,6 +233,48 @@ export function BasicValidationTest() {
           )}
         </div>
 
+        {/* Conditional field: Admin Code - only shows when role is admin */}
+        {showAdminCode && (
+          <div
+            className="form-group"
+            style={{
+              backgroundColor: "#e8f5e8",
+              padding: "1rem",
+              borderRadius: "4px",
+            }}
+          >
+            <label>Admin Code (conditional - shows when role=admin)</label>
+            <input
+              {...register("adminCode")}
+              placeholder="Enter admin verification code"
+            />
+            {formState.errors.adminCode && (
+              <span className="error">{formState.errors.adminCode}</span>
+            )}
+          </div>
+        )}
+
+        {/* Conditional field: Company - only shows when age >= 25 */}
+        {showCompanyField && (
+          <div
+            className="form-group"
+            style={{
+              backgroundColor: "#e8f0ff",
+              padding: "1rem",
+              borderRadius: "4px",
+            }}
+          >
+            <label>Company (conditional - shows when age ≥ 25)</label>
+            <input
+              {...register("company")}
+              placeholder="Enter your company name"
+            />
+            {formState.errors.company && (
+              <span className="error">{formState.errors.company}</span>
+            )}
+          </div>
+        )}
+
         <div className="form-group">
           <label>Skills *</label>
           <div
@@ -202,90 +288,251 @@ export function BasicValidationTest() {
               <div
                 key={index}
                 style={{
-                  marginBottom: "1rem",
+                  marginBottom: "1.5rem",
                   padding: "1rem",
                   backgroundColor: "#f5f5f5",
                   borderRadius: "4px",
-                  display: "flex",
-                  gap: "0.5rem",
-                  alignItems: "flex-start",
+                  border: "2px solid #ddd",
                 }}
               >
-                <div style={{ flex: 1 }}>
-                  <input
-                    {...register(`skills.${index}.name`)}
-                    placeholder="Skill name (e.g., React, TypeScript)"
-                    style={{ width: "100%", marginBottom: "0.5rem" }}
-                  />
-                  {formState.errors[
-                    `skills.${index}.name` as keyof typeof formState.errors
-                  ] && (
-                    <span className="error">
-                      {
-                        formState.errors[
-                          `skills.${index}.name` as keyof typeof formState.errors
-                        ]
-                      }
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <select
-                    {...register(`skills.${index}.level`)}
-                    style={{ width: "100%", marginBottom: "0.5rem" }}
-                  >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                  {formState.errors[
-                    `skills.${index}.level` as keyof typeof formState.errors
-                  ] && (
-                    <span className="error">
-                      {
-                        formState.errors[
-                          `skills.${index}.level` as keyof typeof formState.errors
-                        ]
-                      }
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <input
-                    {...register(`skills.${index}.yearsExperience`)}
-                    type="number"
-                    placeholder="Years of experience"
-                    style={{ width: "100%", marginBottom: "0.5rem" }}
-                  />
-                  {formState.errors[
-                    `skills.${index}.yearsExperience` as keyof typeof formState.errors
-                  ] && (
-                    <span className="error">
-                      {
-                        formState.errors[
-                          `skills.${index}.yearsExperience` as keyof typeof formState.errors
-                        ]
-                      }
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => removeArrayItem("skills", index)}
+                {/* Skill Header */}
+                <div
                   style={{
-                    backgroundColor: "#dc3545",
-                    color: "white",
-                    padding: "0.5rem",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
+                    display: "flex",
+                    gap: "0.5rem",
+                    alignItems: "flex-start",
+                    marginBottom: "1rem",
                   }}
                 >
-                  Remove
-                </button>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: "0.9rem", fontWeight: "bold" }}>
+                      Skill Name
+                    </label>
+                    <input
+                      {...register(`skills.${index}.name`)}
+                      placeholder="Skill name (e.g., React, TypeScript)"
+                      style={{ width: "100%", marginBottom: "0.5rem" }}
+                    />
+                    {formState.errors[
+                      `skills.${index}.name` as keyof typeof formState.errors
+                    ] && (
+                      <span className="error">
+                        {
+                          formState.errors[
+                            `skills.${index}.name` as keyof typeof formState.errors
+                          ]
+                        }
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: "0.9rem", fontWeight: "bold" }}>
+                      Level
+                    </label>
+                    <select
+                      {...register(`skills.${index}.level`)}
+                      style={{ width: "100%", marginBottom: "0.5rem" }}
+                    >
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                    {formState.errors[
+                      `skills.${index}.level` as keyof typeof formState.errors
+                    ] && (
+                      <span className="error">
+                        {
+                          formState.errors[
+                            `skills.${index}.level` as keyof typeof formState.errors
+                          ]
+                        }
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: "0.9rem", fontWeight: "bold" }}>
+                      Years Experience
+                    </label>
+                    <input
+                      {...register(`skills.${index}.yearsExperience`)}
+                      type="number"
+                      placeholder="Years of experience"
+                      style={{ width: "100%", marginBottom: "0.5rem" }}
+                    />
+                    {formState.errors[
+                      `skills.${index}.yearsExperience` as keyof typeof formState.errors
+                    ] && (
+                      <span className="error">
+                        {
+                          formState.errors[
+                            `skills.${index}.yearsExperience` as keyof typeof formState.errors
+                          ]
+                        }
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => removeArrayItem("skills", index)}
+                    style={{
+                      backgroundColor: "#dc3545",
+                      color: "white",
+                      padding: "0.5rem",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      height: "fit-content",
+                      marginTop: "1.5rem",
+                    }}
+                  >
+                    Remove Skill
+                  </button>
+                </div>
+
+                {/* Projects Array (nested array) */}
+                <div
+                  style={{
+                    backgroundColor: "#e8f4fd",
+                    padding: "1rem",
+                    borderRadius: "4px",
+                    border: "1px dashed #007acc",
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "bold",
+                      marginBottom: "0.5rem",
+                      display: "block",
+                    }}
+                  >
+                    Projects using this skill:
+                  </label>
+
+                  {skill.projects?.map((project: any, projectIndex: number) => (
+                    <div
+                      key={projectIndex}
+                      style={{
+                        display: "flex",
+                        gap: "0.5rem",
+                        alignItems: "flex-start",
+                        marginBottom: "0.5rem",
+                        padding: "0.5rem",
+                        backgroundColor: "white",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      <div style={{ flex: 2 }}>
+                        <input
+                          {...register(
+                            `skills.${index}.projects.${projectIndex}.name`
+                          )}
+                          placeholder="Project name (e.g., E-commerce App)"
+                          style={{ width: "100%" }}
+                        />
+                        {formState.errors[
+                          `skills.${index}.projects.${projectIndex}.name` as keyof typeof formState.errors
+                        ] && (
+                          <span
+                            className="error"
+                            style={{ fontSize: "0.8rem" }}
+                          >
+                            {
+                              formState.errors[
+                                `skills.${index}.projects.${projectIndex}.name` as keyof typeof formState.errors
+                              ]
+                            }
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ flex: 1 }}>
+                        <input
+                          {...register(
+                            `skills.${index}.projects.${projectIndex}.duration`
+                          )}
+                          type="number"
+                          placeholder="Duration (months)"
+                          style={{ width: "100%" }}
+                        />
+                        {formState.errors[
+                          `skills.${index}.projects.${projectIndex}.duration` as keyof typeof formState.errors
+                        ] && (
+                          <span
+                            className="error"
+                            style={{ fontSize: "0.8rem" }}
+                          >
+                            {
+                              formState.errors[
+                                `skills.${index}.projects.${projectIndex}.duration` as keyof typeof formState.errors
+                              ]
+                            }
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeArrayItem(
+                            `skills.${index}.projects`,
+                            projectIndex
+                          )
+                        }
+                        style={{
+                          backgroundColor: "#ffc107",
+                          color: "#000",
+                          padding: "0.25rem 0.5rem",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addArrayItem(`skills.${index}.projects`, {
+                        name: "",
+                        duration: 1,
+                      })
+                    }
+                    style={{
+                      backgroundColor: "#17a2b8",
+                      color: "white",
+                      padding: "0.25rem 0.5rem",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    + Add Project
+                  </button>
+
+                  {formState.errors[
+                    `skills.${index}.projects` as keyof typeof formState.errors
+                  ] && (
+                    <div
+                      className="error"
+                      style={{ marginTop: "0.5rem", fontSize: "0.8rem" }}
+                    >
+                      {
+                        formState.errors[
+                          `skills.${index}.projects` as keyof typeof formState.errors
+                        ]
+                      }
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
 
@@ -296,6 +543,7 @@ export function BasicValidationTest() {
                   name: "",
                   level: "beginner",
                   yearsExperience: 0,
+                  projects: [{ name: "", duration: 1 }],
                 })
               }
               style={{
@@ -318,6 +566,32 @@ export function BasicValidationTest() {
               )}
           </div>
         </div>
+
+        {/* Conditional field: Senior Details - only shows when any skill level is advanced */}
+        {hasAdvancedSkill && (
+          <div
+            className="form-group"
+            style={{
+              backgroundColor: "#fff3cd",
+              padding: "1rem",
+              borderRadius: "4px",
+            }}
+          >
+            <label>
+              Senior Level Details (conditional - shows when any skill is
+              advanced)
+            </label>
+            <textarea
+              {...register("seniorDetails")}
+              placeholder="Describe your senior-level experience and leadership..."
+              rows={3}
+              style={{ width: "100%", resize: "vertical" }}
+            />
+            {formState.errors.seniorDetails && (
+              <span className="error">{formState.errors.seniorDetails}</span>
+            )}
+          </div>
+        )}
 
         <div className="form-group">
           <label>
