@@ -1,6 +1,6 @@
 {
   "name": "el-form-react-hooks",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "React hooks for form management powered by Zod validation",
   "author": "Nichalas Barnes",
   "license": "MIT",
@@ -34,8 +34,7 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
-    "prepublishOnly": "pnpm run build"
+    "dev": "tsup --watch"
   },
   "dependencies": {
     "el-form-core": "workspace:^"
