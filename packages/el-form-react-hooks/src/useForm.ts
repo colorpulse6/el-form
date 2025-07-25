@@ -76,6 +76,9 @@ export function useForm<T extends Record<string, any>>(
             if (e.target.type === "number") {
               const num = e.target.valueAsNumber;
               // Handle empty number inputs - return undefined instead of empty string
+              // This ensures that empty inputs for number fields are treated as `undefined`,
+              // which is consistent with how optional fields are typically handled in forms
+              // and prevents Zod validation errors for empty optional number fields.
               if (isNaN(num)) {
                 return e.target.value === "" ? undefined : e.target.value;
               }

@@ -607,7 +607,7 @@ export function BasicValidationTest() {
           )}
         </div>
 
-        <button type="submit" disabled={formState.isSubmitting}>
+        <button type="submit" disabled={!canSubmit() || formState.isSubmitting}>
           {formState.isSubmitting ? "Submitting..." : "Submit"}
         </button>
 
