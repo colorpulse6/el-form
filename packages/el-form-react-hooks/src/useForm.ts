@@ -47,6 +47,9 @@ export function useForm<T extends Record<string, any>>(
     isDirty: false,
   });
 
+  // Compute canSubmit directly as a derived value
+  const canSubmit = formState.isValid && !formState.isSubmitting;
+
   // Keep ref current
   formStateRef.current = formState;
 
@@ -71,7 +74,21 @@ export function useForm<T extends Record<string, any>>(
       const baseProps = {
         name,
         onChange: async (e: React.ChangeEvent<any>) => {
-          const value = isCheckbox ? e.target.checked : e.target.value;
+          const value = (() => {
+            if (isCheckbox) return e.target.checked;
+            if (e.target.type === "number") {
+              const num = e.target.valueAsNumber;
+              // Handle empty number inputs - return undefined instead of empty string
+              // This ensures that empty inputs for number fields are treated as `undefined`,
+              // which is consistent with how optional fields are typically handled in forms
+              // and prevents Zod validation errors for empty optional number fields.
+              if (isNaN(num)) {
+                return e.target.value === "" ? undefined : e.target.value;
+              }
+              return num;
+            }
+            return e.target.value;
+          })();
 
           // Use extracted utility for dirty state
           dirtyManager.updateFieldDirtyState(name, value, defaultValues);
@@ -617,11 +634,6 @@ export function useForm<T extends Record<string, any>>(
       setFormState((prev) => ({ ...prev, isSubmitting: false }));
     }
   }, [formState.values, validationManager, onSubmit]);
-
-  const canSubmit = useCallback((): boolean => {
-    // Check if form is valid and not currently submitting
-    return formState.isValid && !formState.isSubmitting;
-  }, [formState.isValid, formState.isSubmitting]);
 
   // Form History & Persistence methods
   const getSnapshot = useCallback((): FormSnapshot<T> => {
