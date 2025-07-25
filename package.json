@@ -20,12 +20,12 @@
     "changeset:status": "changeset status",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
-    "version-packages": "changeset version",
-    "release": "pnpm build:packages && changeset publish",
-    "release:check": "pnpm build:packages && changeset publish --dry-run",
-    "release:full": "pnpm changeset:version && pnpm release",
-    "release:interactive": "./scripts/release.sh",
-    "publish": "pnpm release"
+    "release:prepare": "pnpm lint && pnpm test && pnpm build:packages",
+    "release:check": "pnpm release:prepare && changeset publish --dry-run",
+    "release": "pnpm release:prepare && changeset publish",
+    "release:version": "pnpm changeset:version && git add . && git commit -m 'chore: version packages'",
+    "release:full": "pnpm release:version && pnpm release && git push origin main",
+    "release:interactive": "./scripts/release.sh"
   },
   "dependencies": {
     "el-form-core": "workspace:^",
