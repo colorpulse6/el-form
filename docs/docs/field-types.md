@@ -8,7 +8,24 @@ The `useForm` hook automatically handles value extraction for different input ty
 
 ## Number Inputs
 
-When you use `type="number"`, `useForm` will automatically convert the input's string value to a `number`. If the input is empty, it will be treated as `undefined`.
+When you use `type="number"`, `useForm` automatically handles type conversion for you:
+
+- **Valid numbers**: Automatically converted from string to number
+- **Empty inputs**: Treated as `undefined` (not empty string)
+- **Invalid inputs**: Remain as string for validation to handle
+
+This means you don't need to use `z.coerce.number()` in your Zod schemas - the form library handles the conversion automatically and in a way that's compatible with optional number fields.
+
+```tsx
+// ✅ This works automatically - no z.coerce needed
+const schema = z.object({
+  age: z.number().min(18).optional(), // Empty input = undefined, not validation error
+  requiredAge: z.number().min(18), // Required number field
+});
+
+// The form handles type conversion automatically
+<input type="number" {...register("age")} />;
+```
 
 ## Checkbox Inputs
 

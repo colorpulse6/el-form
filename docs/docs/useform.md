@@ -791,20 +791,22 @@ const areValid = await trigger(["email", "password"]);
 
 ## Advanced Form Control Methods
 
-### canSubmit()
+### canSubmit
 
-Check if the form is in a submittable state (valid and not submitting).
+A boolean that indicates if the form is in a submittable state (valid and not currently submitting).
 
 ```tsx
 const { canSubmit } = useForm();
 
-// Check if form can be submitted
-const isSubmittable = canSubmit();
-
-// Use in UI
-<button type="submit" disabled={!canSubmit()}>
+// Use directly in UI - no function call needed
+<button type="submit" disabled={!canSubmit}>
   Submit
 </button>;
+
+// Or check the value
+if (canSubmit) {
+  console.log("Form is ready to submit");
+}
 ```
 
 ### submit()
@@ -1416,8 +1418,8 @@ function CustomSubmissionForm() {
         Custom Submit
       </button>
 
-      <button type="submit" disabled={!canSubmit()}>
-        {canSubmit() ? "Submit" : "Fix Errors First"}
+      <button type="submit" disabled={!canSubmit}>
+        {canSubmit ? "Submit" : "Fix Errors First"}
       </button>
     </form>
   );
@@ -1472,7 +1474,7 @@ function WizardForm() {
         </div>
       )}
 
-      <button onClick={handleNext} disabled={currentStep === 3 && !canSubmit()}>
+      <button onClick={handleNext} disabled={currentStep === 3 && !canSubmit}>
         {currentStep === 3 ? "Submit" : "Next"}
       </button>
     </div>

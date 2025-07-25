@@ -328,6 +328,65 @@ Migration is straightforward:
 - Use `useForm` instead of `useFormik`
 - Similar validation and submission patterns
 
+## Developer Experience
+
+### Why is canSubmit a boolean instead of a function?
+
+El Form provides `canSubmit` as a computed boolean property for better developer experience:
+
+```tsx
+const { canSubmit } = useForm({ schema });
+
+// Good - Direct boolean usage
+<button disabled={!canSubmit}>Submit</button>;
+
+// No need to call a function every render
+// <button disabled={!canSubmit()}>Submit</button>
+```
+
+This approach:
+
+- Reduces function calls in your JSX
+- Makes the API more intuitive
+- Follows React patterns for computed state
+
+### How does automatic type coercion work?
+
+El Form automatically handles type conversion for number inputs:
+
+```tsx
+const schema = z.object({
+  age: z.number(), // No need for z.coerce.number()
+});
+
+// Empty input → undefined (validation can catch required fields)
+// "25" → 25 (automatic conversion to number)
+// "abc" → "abc" (invalid, let Zod validation handle it)
+```
+
+Benefits:
+
+- No need to manually use `z.coerce.number()`
+- Empty inputs don't become `0` unexpectedly
+- Cleaner schema definitions
+- Better user experience with number fields
+
+### Why don't I need z.coerce for numbers?
+
+El Form handles number input coercion automatically:
+
+```tsx
+// You write:
+const schema = z.object({
+  price: z.number().min(0),
+});
+
+// El Form automatically converts valid number strings to numbers
+// Invalid inputs are left as strings for Zod to validate
+```
+
+This eliminates the need for manual coercion in most cases while maintaining type safety.
+
 ## Troubleshooting
 
 ### Form validation isn't working
