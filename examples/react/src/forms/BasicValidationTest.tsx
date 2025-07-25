@@ -137,7 +137,7 @@ export function BasicValidationTest() {
         <br />
         Dirty: {formState.isDirty ? "✅" : "❌"}
         <br />
-        Can Submit: {canSubmit() ? "✅" : "❌"}
+        Can Submit: {canSubmit ? "✅" : "❌"}
       </div>
 
       <form
@@ -607,7 +607,7 @@ export function BasicValidationTest() {
           )}
         </div>
 
-        <button type="submit" disabled={!canSubmit() || formState.isSubmitting}>
+        <button type="submit" disabled={!canSubmit || formState.isSubmitting}>
           {formState.isSubmitting ? "Submitting..." : "Submit"}
         </button>
 

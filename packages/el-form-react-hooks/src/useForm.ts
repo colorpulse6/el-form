@@ -47,6 +47,9 @@ export function useForm<T extends Record<string, any>>(
     isDirty: false,
   });
 
+  // Compute canSubmit directly as a derived value
+  const canSubmit = formState.isValid && !formState.isSubmitting;
+
   // Keep ref current
   formStateRef.current = formState;
 
@@ -631,11 +634,6 @@ export function useForm<T extends Record<string, any>>(
       setFormState((prev) => ({ ...prev, isSubmitting: false }));
     }
   }, [formState.values, validationManager, onSubmit]);
-
-  const canSubmit = useCallback((): boolean => {
-    // Check if form is valid and not currently submitting
-    return formState.isValid && !formState.isSubmitting;
-  }, [formState.isValid, formState.isSubmitting]);
 
   // Form History & Persistence methods
   const getSnapshot = useCallback((): FormSnapshot<T> => {

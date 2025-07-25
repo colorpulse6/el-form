@@ -127,7 +127,7 @@ export interface UseFormReturn<T extends Record<string, any>> {
     | { success: true; data: T }
     | { success: false; errors: Partial<Record<keyof T, string>> }
   >;
-  canSubmit: () => boolean;
+  canSubmit: boolean;
 
   // Form History & Persistence
   getSnapshot: () => FormSnapshot<T>;
