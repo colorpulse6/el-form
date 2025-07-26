@@ -42,21 +42,22 @@ jobs:
       - name: Build packages
         run: pnpm run build:packages
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: pnpm release:publish
-          title: "chore: release packages"
-          commit: "chore: release packages"
+      - name: Version packages
+        run: pnpm changeset:version
+
+      - name: Commit version changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git diff --staged --quiet || git commit -m "chore: version packages [skip ci]"
+          git push
+
+      - name: Publish to npm
+        run: pnpm changeset:publish
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm with provenance
-        if: steps.changesets.outputs.published == 'true'
+      - name: Success notification
         run: |
           echo "📦 Packages published successfully!"
-          echo "Published packages: ${{ steps.changesets.outputs.publishedPackages }}"
-        env:
-          NPM_CONFIG_PROVENANCE: true
