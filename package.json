@@ -22,6 +22,7 @@
     "changeset:publish": "changeset publish",
     "release:prepare": "pnpm lint && pnpm test && pnpm build:packages",
     "release:check": "pnpm release:prepare && changeset publish --dry-run",
+    "release:publish": "pnpm build:packages && changeset publish",
     "release": "pnpm release:prepare && changeset publish",
     "release:version": "pnpm changeset:version && git add . && git commit -m 'chore: version packages'",
     "release:full": "pnpm release:version && pnpm release && git push origin main",
