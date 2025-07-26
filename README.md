@@ -1,5 +1,12 @@
 # ⚡ El Form - Modern React Form Library
 
+[![npm version](https://badge.fury.io/js/el-form-react.svg)](https://badge.fury.io/js/el-form-react)
+[![npm downloads](https://img.shields.io/npm/dm/el-form-react.svg)](https://www.npmjs.com/package/el-form-react)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/el-form-react)](https://bundlephobia.com/package/el-form-react)
+
 A **TypeScript-first React form library** with flexible validation support. Build forms with **AutoForm** for rapid development or **useForm** for complete control. El Form supports any validation approach - Zod, Yup, Valibot, custom functions, or no validation at all.
 
 ## 🎯 **Core Features**
