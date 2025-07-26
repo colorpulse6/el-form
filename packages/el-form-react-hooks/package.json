@@ -1,6 +1,6 @@
 {
   "name": "el-form-react-hooks",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "description": "TypeScript-first React form hooks with flexible validation - supports Zod, Yup, Valibot, custom functions, or no validation. Modern form state management with useForm hook.",
   "author": "Nichalas Barnes",
   "license": "MIT",
