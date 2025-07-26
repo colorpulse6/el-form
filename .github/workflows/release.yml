@@ -46,7 +46,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: pnpm changeset:publish --access public
+          publish: pnpm changeset:publish
           title: "Version Packages"
           commit: "Version Packages"
           createGithubReleases: true
