@@ -42,20 +42,16 @@ jobs:
       - name: Build packages
         run: pnpm run build:packages
 
-      - name: Version packages
-        run: pnpm changeset:version
-
-      - name: Commit version changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git diff --staged --quiet || git commit -m "chore: version packages [skip ci]"
-          git push
-
-      - name: Publish to npm
-        run: pnpm changeset:publish
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset:publish
+          title: "Version Packages"
+          commit: "Version Packages"
+          createGithubReleases: true
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Success notification
