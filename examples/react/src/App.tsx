@@ -7,7 +7,7 @@ function App() {
       <h1>🧪 El Form Validation Testing</h1>
       <p>Testing various validation scenarios and error handling</p>
 
-      {/* <BasicValidationTest /> */}
+      <BasicValidationTest />
       <FormHistoryTest />
     </div>
   );
