@@ -1,0 +1,122 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out this form as completely as possible.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight Checklist
+      description: Please ensure you've completed the following before submitting your bug report
+      options:
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+        - label: I have read the documentation
+          required: true
+        - label: I can reproduce this bug consistently
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the bug...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide the exact steps to reproduce this bug
+      placeholder: |
+        1. Create a form with...
+        2. Set validation to...
+        3. Submit the form...
+        4. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Example
+      description: Please provide a minimal code example that reproduces the issue
+      render: typescript
+      placeholder: |
+        import { useForm } from 'el-form-react';
+
+        // Your code here...
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: El Form Version
+      description: What version of el-form are you using?
+      placeholder: "e.g., 3.3.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package(s) are affected?
+      multiple: true
+      options:
+        - el-form-core
+        - el-form-react
+        - el-form-react-hooks
+        - el-form-react-components
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Please provide information about your environment
+      placeholder: |
+        - OS: [e.g., macOS 14.0]
+        - Browser: [e.g., Chrome 119]
+        - Node.js: [e.g., 18.17.0]
+        - React: [e.g., 18.2.0]
+        - TypeScript: [e.g., 5.2.0]
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: Any additional information that might help us understand the issue
+    validations:
+      required: false

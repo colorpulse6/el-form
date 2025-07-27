@@ -25,11 +25,13 @@
 
     "baseUrl": ".",
     "paths": {
-      "el-form": ["./packages/el-form/src/index.ts"],
-      "el-form/react": ["./packages/el-form/src/react.ts"],
-      "el-form/core": ["./packages/el-form/src/core.ts"]
+      "el-form-core": ["./packages/el-form-core/src/index.ts"],
+      "el-form-react": ["./packages/el-form-react/src/index.ts"],
+      "el-form-react-hooks": ["./packages/el-form-react-hooks/src/index.ts"],
+      "el-form-react-components": [
+        "./packages/el-form-react-components/src/index.ts"
+      ]
     }
   },
-  "include": ["packages/*/src", "examples/*/src", "src/index.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["packages/*/src", "examples/*/src"]
 }

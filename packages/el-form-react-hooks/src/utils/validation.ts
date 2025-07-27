@@ -55,6 +55,12 @@ export function createValidationManager<T extends Record<string, any>>(
         return false;
       }
 
+      // Smart validation: if validators has the specific event, enable it regardless of mode
+      const hasValidatorForEvent = validators && (validators as any)[eventType];
+      if (hasValidatorForEvent) {
+        return true;
+      }
+
       // Fallback to mode
       if (mode === "all") return true;
       if (mode === eventType) return true;

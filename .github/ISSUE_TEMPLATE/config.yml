@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://colorpulse6.github.io/el-form/
+    about: Check the documentation for guides and API reference
+  - name: 💬 Discussions
+    url: https://github.com/colorpulse6/el-form/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🔒 Security Issues
+    url: https://github.com/colorpulse6/el-form/security/advisories/new
+    about: Report security vulnerabilities privately

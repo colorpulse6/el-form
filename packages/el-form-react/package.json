@@ -1,7 +1,7 @@
 {
   "name": "el-form-react",
-  "version": "3.1.1",
-  "description": "React form components and hooks powered by Zod validation",
+  "version": "3.3.2",
+  "description": "Complete React form library - useForm hooks + AutoForm components with flexible validation (Zod, Yup, Valibot, custom). TypeScript-first with modern form management.",
   "author": "Nichalas Barnes",
   "license": "MIT",
   "repository": {
@@ -9,17 +9,36 @@
     "url": "https://github.com/colorpulse6/el-form"
   },
   "homepage": "https://colorpulse6.github.io/el-form/",
+  "bugs": {
+    "url": "https://github.com/colorpulse6/el-form/issues"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/colorpulse6"
+  },
   "keywords": [
     "react",
     "form",
+    "forms",
     "validation",
     "zod",
+    "yup",
+    "valibot",
     "typescript",
     "hooks",
     "components",
     "autoform",
+    "useform",
     "type-safe",
-    "schema-validation"
+    "schema-validation",
+    "form-library",
+    "form-management",
+    "react-hook-form",
+    "form-builder",
+    "schema-first",
+    "modern-forms",
+    "typescript-forms",
+    "declarative-forms"
   ],
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -48,8 +67,7 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
-    "prepublishOnly": "pnpm run build"
+    "dev": "tsup --watch"
   },
   "dependencies": {
     "el-form-core": "workspace:^",
