@@ -15,8 +15,6 @@ export interface FormState<T extends Record<string, any>> {
   isSubmitting: boolean;
   isValid: boolean;
   isDirty: boolean;
-  // File previews for each field
-  filePreview: Partial<Record<keyof T, string | null>>;
 }
 
 export interface FormSnapshot<T extends Record<string, any>> {
@@ -151,6 +149,9 @@ export interface UseFormReturn<T extends Record<string, any>> {
   clearFiles: (name: string) => void;
   getFileInfo: (file: File) => import("./utils/fileUtils").FileInfo;
   getFilePreview: (file: File) => Promise<string | null>;
+
+  // File previews (separate from formState)
+  filePreview: Partial<Record<keyof T, string | null>>;
 }
 
 // AutoForm types

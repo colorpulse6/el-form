@@ -50,8 +50,12 @@ export function useForm<T extends Record<string, any>>(
     isSubmitting: false,
     isValid: false,
     isDirty: false,
-    filePreview: {},
   });
+
+  // Separate state for file previews
+  const [filePreview, setFilePreview] = useState<
+    Partial<Record<keyof T, string | null>>
+  >({});
 
   // Compute canSubmit directly as a derived value
   const canSubmit = formState.isValid && !formState.isSubmitting;
@@ -164,13 +168,17 @@ export function useForm<T extends Record<string, any>>(
             ? setNestedValue(prev.values, name, value)
             : { ...prev.values, [name]: value };
 
-          const newFilePreview = { ...prev.filePreview };
-          if (preview !== undefined) {
-            newFilePreview[fieldName] = preview;
-          } else if (!value) {
-            // Clear preview if no file
-            delete newFilePreview[fieldName];
-          }
+          // Update file preview separately
+          setFilePreview((prevPreviews) => {
+            const newFilePreview = { ...prevPreviews };
+            if (preview !== undefined) {
+              newFilePreview[fieldName] = preview;
+            } else if (!value) {
+              // Clear preview if no file
+              delete newFilePreview[fieldName];
+            }
+            return newFilePreview;
+          });
 
           let newErrors = { ...prev.errors };
 
@@ -188,7 +196,6 @@ export function useForm<T extends Record<string, any>>(
             ...prev,
             values: newValues,
             errors: newErrors,
-            filePreview: newFilePreview,
             isDirty: dirtyFieldsRef.current.size > 0,
           };
         });
@@ -413,8 +420,10 @@ export function useForm<T extends Record<string, any>>(
         isSubmitting: false,
         isValid: false,
         isDirty: options?.keepDirty ? formState.isDirty : false,
-        filePreview: {},
       });
+
+      // Clear file previews on reset
+      setFilePreview({});
     },
     [defaultValues, formState, dirtyManager]
   );
@@ -461,5 +470,6 @@ export function useForm<T extends Record<string, any>>(
     clearFiles,
     getFileInfo,
     getFilePreview,
+    filePreview,
   };
 }

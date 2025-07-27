@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useForm } from "el-form-react-hooks";
 
 interface FileFormData {
@@ -16,7 +15,7 @@ export default function FileUploadTest() {
     removeFile,
     clearFiles,
     getFileInfo,
-    getFilePreview,
+    filePreview,
   } = useForm<FileFormData>({
     defaultValues: {
       avatar: null,
@@ -25,8 +24,8 @@ export default function FileUploadTest() {
     },
   });
 
-  // No need for separate state - preview is now on formState!
-  const avatarPreview = formState.filePreview.avatar;
+  // File previews are automatically managed and separate from formState
+  const avatarPreview = filePreview.avatar;
 
   const onSubmit = (data: FileFormData) => {
     console.log("Form submitted:", data);

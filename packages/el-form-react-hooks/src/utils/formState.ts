@@ -66,7 +66,6 @@ export function createFormStateManager<T extends Record<string, any>>(
         isSubmitting: false,
         isValid: false,
         isDirty: false,
-        filePreview: {},
       });
     },
 
