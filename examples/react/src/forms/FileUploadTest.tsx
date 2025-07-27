@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useForm } from "el-form-react-hooks";
 
 interface FileFormData {
@@ -7,15 +8,17 @@ interface FileFormData {
 }
 
 export default function FileUploadTest() {
-  const { register, handleSubmit, formState, setValue } = useForm<FileFormData>(
-    {
+  const { register, handleSubmit, formState, setValue, getFilePreview } =
+    useForm<FileFormData>({
       defaultValues: {
         avatar: null,
         documents: [],
         name: "",
       },
-    }
-  );
+    });
+
+  // State for image preview
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   // Helper functions for file management
   const formatFileSize = (bytes: number): string => {
@@ -61,7 +64,24 @@ export default function FileUploadTest() {
 
   const clearFiles = (fieldName: string) => {
     setValue(fieldName, fieldName === "documents" ? [] : null);
+    if (fieldName === "avatar") {
+      setAvatarPreview(null);
+    }
   };
+
+  // Generate preview when avatar changes using our built-in getFilePreview
+  useEffect(() => {
+    const generatePreview = async () => {
+      if (formState.values.avatar && formState.values.avatar instanceof File) {
+        const preview = await getFilePreview(formState.values.avatar);
+        setAvatarPreview(preview);
+      } else {
+        setAvatarPreview(null);
+      }
+    };
+
+    generatePreview();
+  }, [formState.values.avatar, getFilePreview]);
 
   const onSubmit = (data: FileFormData) => {
     console.log("Form submitted:", data);
@@ -134,16 +154,40 @@ export default function FileUploadTest() {
             </p>
           )}
           {formState.values.avatar && (
-            <div className="mt-2 p-2 bg-gray-50 rounded">
-              <p className="text-sm">
-                Selected: {formState.values.avatar.name}
-              </p>
+            <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+              {/* Image Preview */}
+              {avatarPreview && (
+                <div className="mb-3">
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar preview"
+                    className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
+                  />
+                </div>
+              )}
+
+              {/* File Info */}
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-gray-700">
+                  📄 {formState.values.avatar.name}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Size: {getFileInfo(formState.values.avatar).formattedSize}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Type: {formState.values.avatar.type}
+                </p>
+                {getFileInfo(formState.values.avatar).isImage && (
+                  <p className="text-xs text-green-600">✓ Image file</p>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => clearFiles("avatar")}
-                className="text-red-500 text-sm hover:underline"
+                className="mt-2 text-red-500 text-sm hover:underline"
               >
-                Clear avatar
+                🗑️ Clear avatar
               </button>
             </div>
           )}
@@ -170,28 +214,42 @@ export default function FileUploadTest() {
           {/* Display selected documents */}
           {formState.values.documents &&
             formState.values.documents.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {Array.from(formState.values.documents).map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded"
-                  >
-                    <span className="text-sm">{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile("documents", index)}
-                      className="text-red-500 text-sm hover:underline"
+              <div className="mt-3 space-y-2">
+                <p className="text-sm font-medium text-gray-700">
+                  📁 Selected Files ({formState.values.documents.length})
+                </p>
+                {Array.from(formState.values.documents).map((file, index) => {
+                  const fileInfo = getFileInfo(file);
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border"
                     >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700">
+                          📄 {file.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {fileInfo.formattedSize} •{" "}
+                          {file.type || "Unknown type"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile("documents", index)}
+                        className="ml-2 text-red-500 text-sm hover:bg-red-50 px-2 py-1 rounded"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  );
+                })}
                 <button
                   type="button"
                   onClick={() => clearFiles("documents")}
                   className="text-red-500 text-sm hover:underline"
                 >
-                  Clear all documents
+                  🗑️ Clear all documents
                 </button>
               </div>
             )}
