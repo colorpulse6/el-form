@@ -43,9 +43,7 @@
     }
   },
   "files": [
-    "dist",
-    "README.md",
-    "CHANGELOG.md"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",

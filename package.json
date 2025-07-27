@@ -19,7 +19,7 @@
     "changeset:add": "changeset add",
     "changeset:status": "changeset status",
     "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish --access public",
+    "changeset:publish": "changeset publish",
     "release:prepare": "pnpm lint && pnpm test && pnpm build:packages",
     "release:check": "pnpm release:prepare && changeset publish --dry-run",
     "release:publish": "pnpm build:packages && changeset publish",

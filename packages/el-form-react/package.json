@@ -63,8 +63,7 @@
   },
   "files": [
     "dist",
-    "src/styles.css",
-    "README.md"
+    "src/styles.css"
   ],
   "scripts": {
     "build": "tsup",
