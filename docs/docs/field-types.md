@@ -75,11 +75,10 @@ const preview = await getFilePreview(file); // Returns data URL or null
 const avatarPreview = formState.filePreview.avatar; // Auto-generated preview
 ```
 
-### File Input Example
+### Basic File Input Example
 
 ```tsx
-import { useState, useEffect } from "react";
-import { useForm } from "el-form";
+import { useForm } from "el-form-react-hooks";
 
 interface FileFormData {
   avatar: File | null;
@@ -87,14 +86,14 @@ interface FileFormData {
   name: string;
 }
 
-function FileUploadForm() {
+function BasicFileUploadForm() {
   const {
     register,
     handleSubmit,
     formState,
     getFileInfo,
-    getFilePreview,
     clearFiles,
+    filePreview,
   } = useForm<FileFormData>({
     defaultValues: {
       avatar: null,
@@ -102,21 +101,6 @@ function FileUploadForm() {
       name: "",
     },
   });
-
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-
-  // Generate preview when avatar changes
-  useEffect(() => {
-    const generatePreview = async () => {
-      if (formState.values.avatar) {
-        const preview = await getFilePreview(formState.values.avatar);
-        setAvatarPreview(preview);
-      } else {
-        setAvatarPreview(null);
-      }
-    };
-    generatePreview();
-  }, [formState.values.avatar, getFilePreview]);
 
   return (
     <form onSubmit={handleSubmit((data) => console.log(data))}>
@@ -132,8 +116,8 @@ function FileUploadForm() {
         {/* Show preview and file info */}
         {formState.values.avatar && (
           <div>
-            {avatarPreview && (
-              <img src={avatarPreview} alt="Preview" width="100" />
+            {filePreview.avatar && (
+              <img src={filePreview.avatar} alt="Preview" width="100" />
             )}
             <p>File: {getFileInfo(formState.values.avatar).formattedSize}</p>
             <button type="button" onClick={() => clearFiles("avatar")}>
@@ -166,7 +150,362 @@ function FileUploadForm() {
 }
 ```
 
-> **Note**: File upload support is currently in beta. Advanced features like drag & drop, file validation, and upload progress tracking are coming soon.
+## File Validation
+
+El Form provides comprehensive file validation with both preset validators for common use cases and the ability to create custom validators for specific requirements.
+
+### Preset File Validators
+
+Use built-in validators for common file types:
+
+```tsx
+import { useForm } from "el-form-react-hooks";
+import { fileValidators } from "el-form-core";
+
+function ValidatedFileForm() {
+  const { register, handleSubmit, formState } = useForm({
+    defaultValues: {
+      avatar: null,
+      documents: [],
+      gallery: [],
+    },
+    fieldValidators: {
+      // Avatar: JPEG/PNG, max 2MB, single file
+      avatar: { onChange: fileValidators.avatar },
+
+      // Documents: PDF/Word/Text, max 10MB each
+      documents: { onChange: fileValidators.document },
+
+      // Gallery: Images, max 5MB each, up to 10 files
+      gallery: { onChange: fileValidators.gallery },
+    },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <div>
+        <label>Profile Picture</label>
+        <input type="file" accept="image/*" {...register("avatar")} />
+        {formState.errors.avatar && (
+          <p className="error">{formState.errors.avatar}</p>
+        )}
+      </div>
+
+      <div>
+        <label>Documents</label>
+        <input
+          type="file"
+          multiple
+          accept=".pdf,.doc,.txt"
+          {...register("documents")}
+        />
+        {formState.errors.documents && (
+          <p className="error">{formState.errors.documents}</p>
+        )}
+      </div>
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+**Available Preset Validators:**
+
+- **`fileValidators.avatar`** - Profile pictures (JPEG/PNG, max 2MB, single file)
+- **`fileValidators.image`** - General images (JPEG/PNG/GIF/WebP, max 5MB)
+- **`fileValidators.document`** - Documents (PDF/Word/Text, max 10MB)
+- **`fileValidators.gallery`** - Image galleries (max 10 images, 5MB each)
+- **`fileValidators.video`** - Videos (MP4/WebM/MOV, max 50MB)
+- **`fileValidators.audio`** - Audio files (MP3/WAV/OGG, max 20MB)
+
+### Custom File Validators
+
+Create validators with specific requirements:
+
+```tsx
+import { fileValidator } from "el-form-core";
+
+function CustomValidationForm() {
+  const { register, formState } = useForm({
+    defaultValues: {
+      resume: null,
+      portfolio: [],
+      presentations: [],
+    },
+    fieldValidators: {
+      // Custom resume validator
+      resume: {
+        onChange: fileValidator({
+          acceptedTypes: ["application/pdf"],
+          maxSize: 5 * 1024 * 1024, // 5MB
+          maxFiles: 1,
+        }),
+      },
+
+      // Custom portfolio validator
+      portfolio: {
+        onChange: fileValidator({
+          acceptedTypes: ["image/jpeg", "image/png", "image/gif"],
+          maxSize: 3 * 1024 * 1024, // 3MB each
+          maxFiles: 8,
+          minFiles: 2, // Require at least 2 images
+        }),
+      },
+
+      // Custom presentation validator
+      presentations: {
+        onChange: fileValidator({
+          acceptedExtensions: ["ppt", "pptx", "pdf"],
+          maxSize: 25 * 1024 * 1024, // 25MB each
+          maxFiles: 5,
+        }),
+      },
+    },
+  });
+
+  return (
+    <form>
+      <div>
+        <label>Resume (PDF only, max 5MB)</label>
+        <input type="file" accept=".pdf" {...register("resume")} />
+        {formState.errors.resume && (
+          <p className="error">{formState.errors.resume}</p>
+        )}
+      </div>
+
+      <div>
+        <label>Portfolio (2-8 images, max 3MB each)</label>
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          {...register("portfolio")}
+        />
+        {formState.errors.portfolio && (
+          <p className="error">{formState.errors.portfolio}</p>
+        )}
+      </div>
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+### File Validation Options
+
+When creating custom file validators, you can specify:
+
+```tsx
+fileValidator({
+  // Size limits
+  maxSize: 5 * 1024 * 1024, // Maximum file size in bytes (5MB)
+  minSize: 1024, // Minimum file size in bytes (1KB)
+
+  // File count limits (for multiple files)
+  maxFiles: 10, // Maximum number of files
+  minFiles: 2, // Minimum number of files
+
+  // File type restrictions
+  acceptedTypes: [
+    // MIME types
+    "image/jpeg",
+    "image/png",
+    "application/pdf",
+  ],
+
+  acceptedExtensions: [
+    // File extensions
+    "jpg",
+    "jpeg",
+    "png",
+    "pdf",
+  ],
+});
+```
+
+### Real-World Validation Examples
+
+#### Job Application Form
+
+```tsx
+function JobApplicationForm() {
+  const { register, handleSubmit, formState, filePreview } = useForm({
+    defaultValues: {
+      resume: null,
+      coverLetter: null,
+      portfolio: [],
+      references: [],
+    },
+    fieldValidators: {
+      resume: {
+        onChange: fileValidator({
+          acceptedTypes: ["application/pdf"],
+          maxSize: 5 * 1024 * 1024,
+          maxFiles: 1,
+        }),
+      },
+      coverLetter: {
+        onChange: fileValidator({
+          acceptedTypes: ["application/pdf", "text/plain"],
+          maxSize: 2 * 1024 * 1024,
+          maxFiles: 1,
+        }),
+      },
+      portfolio: {
+        onChange: fileValidator({
+          acceptedTypes: ["image/jpeg", "image/png", "application/pdf"],
+          maxSize: 10 * 1024 * 1024,
+          maxFiles: 5,
+          minFiles: 1,
+        }),
+      },
+    },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <div>
+        <label>Resume (Required - PDF, max 5MB)</label>
+        <input type="file" accept=".pdf" {...register("resume")} />
+        {formState.errors.resume && (
+          <p className="error">{formState.errors.resume}</p>
+        )}
+      </div>
+
+      <div>
+        <label>Cover Letter (PDF or Text, max 2MB)</label>
+        <input type="file" accept=".pdf,.txt" {...register("coverLetter")} />
+        {formState.errors.coverLetter && (
+          <p className="error">{formState.errors.coverLetter}</p>
+        )}
+      </div>
+
+      <div>
+        <label>Portfolio (1-5 files: Images or PDFs, max 10MB each)</label>
+        <input
+          type="file"
+          multiple
+          accept="image/*,.pdf"
+          {...register("portfolio")}
+        />
+        {formState.errors.portfolio && (
+          <p className="error">{formState.errors.portfolio}</p>
+        )}
+
+        {/* Show portfolio previews */}
+        {formState.values.portfolio?.map((file, index) => (
+          <div key={index}>
+            📎 {file.name} ({getFileInfo(file).formattedSize})
+          </div>
+        ))}
+      </div>
+
+      <button type="submit" disabled={!formState.isValid}>
+        Submit Application
+      </button>
+    </form>
+  );
+}
+```
+
+#### User Profile Form
+
+```tsx
+function UserProfileForm() {
+  const { register, handleSubmit, formState, filePreview } = useForm({
+    defaultValues: {
+      profilePicture: null,
+      backgroundImage: null,
+      documents: [],
+    },
+    fieldValidators: {
+      profilePicture: { onChange: fileValidators.avatar },
+      backgroundImage: {
+        onChange: fileValidator({
+          acceptedTypes: ["image/jpeg", "image/png"],
+          maxSize: 8 * 1024 * 1024, // 8MB for high-res backgrounds
+          maxFiles: 1,
+        }),
+      },
+      documents: { onChange: fileValidators.document },
+    },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <div>
+        <label>Profile Picture</label>
+        <input type="file" accept="image/*" {...register("profilePicture")} />
+        {filePreview.profilePicture && (
+          <img src={filePreview.profilePicture} alt="Profile" width="100" />
+        )}
+        {formState.errors.profilePicture && (
+          <p className="error">{formState.errors.profilePicture}</p>
+        )}
+      </div>
+
+      <div>
+        <label>Background Image (High Resolution)</label>
+        <input type="file" accept="image/*" {...register("backgroundImage")} />
+        {formState.errors.backgroundImage && (
+          <p className="error">{formState.errors.backgroundImage}</p>
+        )}
+      </div>
+
+      <button type="submit">Update Profile</button>
+    </form>
+  );
+}
+```
+
+### Error Handling
+
+File validation errors appear automatically in `formState.errors` and can be displayed like any other validation error:
+
+```tsx
+// Error messages are user-friendly and specific
+{
+  formState.errors.avatar && (
+    <div className="error-message">
+      {formState.errors.avatar}
+      {/* Examples of error messages:
+        "File size must be less than 2.00 MB"
+        "File type image/gif is not allowed" 
+        "Maximum 1 files allowed"
+    */}
+    </div>
+  );
+}
+```
+
+### Common Validation Scenarios
+
+```tsx
+// Large file uploads (videos, archives)
+const largeFileValidator = fileValidator({
+  maxSize: 100 * 1024 * 1024, // 100MB
+  acceptedTypes: ["video/mp4", "application/zip"],
+});
+
+// Strict image requirements
+const strictImageValidator = fileValidator({
+  acceptedTypes: ["image/jpeg", "image/png"],
+  maxSize: 1 * 1024 * 1024, // 1MB
+  minSize: 50 * 1024, // 50KB minimum
+});
+
+// Document collection
+const documentCollectionValidator = fileValidator({
+  acceptedExtensions: ["pdf", "doc", "docx", "txt"],
+  maxFiles: 20,
+  minFiles: 1,
+  maxSize: 15 * 1024 * 1024, // 15MB each
+});
+```
+
+> **Note**: File validation works seamlessly with the existing validation system. Combine file validators with other field validators, schema validation, and custom validation functions for comprehensive form validation.
 
 ## Example
 
