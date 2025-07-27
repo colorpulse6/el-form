@@ -1,4 +1,5 @@
 import { useForm } from "el-form-react-hooks";
+import { fileValidators } from "el-form-core";
 
 interface FileFormData {
   avatar: File | null;
@@ -21,6 +22,11 @@ export default function FileUploadTest() {
       avatar: null,
       documents: [],
       name: "",
+    },
+    // File validation using preset validators
+    fieldValidators: {
+      avatar: { onChange: fileValidators.avatar },
+      documents: { onChange: fileValidators.document },
     },
   });
 

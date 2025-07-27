@@ -5,7 +5,12 @@ import {
   UseFormReturn,
   ResetOptions,
 } from "./types";
-import { setNestedValue, getNestedValue, ValidationEngine } from "el-form-core";
+import {
+  setNestedValue,
+  getNestedValue,
+  ValidationEngine,
+  createFileValidator,
+} from "el-form-core";
 import {
   createDirtyStateManager,
   createValidationManager,
@@ -18,8 +23,6 @@ import {
   createArrayOperationsManager,
   getFileInfo,
   getFilePreview,
-  validateFile,
-  validateFiles,
 } from "./utils";
 
 export function useForm<T extends Record<string, any>>(
@@ -130,24 +133,23 @@ export function useForm<T extends Record<string, any>>(
         name: string,
         value: File | FileList | null
       ) => {
-        // File-specific validation
+        // File-specific validation using el-form-core
         const fileValidationOptions =
           fileValidators && fieldName in fileValidators
             ? (fileValidators as any)[fieldName]
             : undefined;
         if (fileValidationOptions && value) {
-          let validationError: string | null = null;
-
-          if (value instanceof File) {
-            validationError = validateFile(value, fileValidationOptions);
-          } else if (value instanceof FileList) {
-            validationError = validateFiles(value, fileValidationOptions);
-          }
+          const fileValidator = createFileValidator(fileValidationOptions);
+          const validationError = fileValidator({
+            value,
+            fieldName: fieldName as string,
+            values: formState.values as Record<string, any>,
+          });
 
           if (validationError) {
             setFormState((prev) => ({
               ...prev,
-              errors: { ...prev.errors, [fieldName]: validationError! },
+              errors: { ...prev.errors, [fieldName]: validationError },
               isValid: false,
             }));
             return;
