@@ -10,86 +10,59 @@ import {
 export { setNestedValue, getNestedValue, removeArrayItem, parseZodErrors };
 
 // Re-export array helpers
-export { addArrayItemReact } from "./arrayHelpers";
+export * from "./arrayHelpers";
 
 /**
  * Efficient equality comparison utilities
  */
-export { shallowEqual, deepEqual } from "./equality";
+export * from "./equality";
 
 /**
  * Dirty state management utilities
  */
-export { createDirtyStateManager, type DirtyStateManager } from "./dirtyState";
+export * from "./dirtyState";
 
 /**
  * Validation management utilities
  */
-export {
-  createValidationManager,
-  type ValidationManager,
-  type ValidationManagerOptions,
-} from "./validation";
+export * from "./validation";
 
 /**
  * Field operations utilities
  */
-export {
-  createFieldOperationsManager,
-  type FieldOperationsManager,
-  type FieldOperationsOptions,
-} from "./fieldOperations";
+export * from "./fieldOperations";
 
 /**
  * Form state management utilities
  */
-export {
-  createFormStateManager,
-  type FormStateManager,
-  type FormStateOptions,
-} from "./formState";
+export * from "./formState";
 
 /**
  * Submit operations utilities
  */
-export {
-  createSubmitOperationsManager,
-  type SubmitOperationsManager,
-  type SubmitOperationsOptions,
-} from "./submitOperations";
+export * from "./submitOperations";
 
 /**
  * Error management utilities
  */
-export {
-  createErrorManagementManager,
-  type ErrorManagementManager,
-  type ErrorManagementOptions,
-} from "./errorManagement";
+export * from "./errorManagement";
 
 /**
  * Form history utilities
  */
-export {
-  createFormHistoryManager,
-  type FormHistoryManager,
-  type FormHistoryOptions,
-} from "./formHistory";
+export * from "./formHistory";
 
 /**
  * Focus management utilities
  */
-export {
-  createFocusManager,
-  type FocusManager,
-  type FocusManagementOptions,
-} from "./focusManagement";
+export * from "./focusManagement";
 
 /**
  * Array operations utilities
  */
-export {
-  createArrayOperationsManager,
-  type ArrayOperationsManager,
-  type ArrayOperationsOptions,
-} from "./arrayOperations";
+export * from "./arrayOperations";
+
+/**
+ * File utilities
+ */
+export * from "./fileUtils";

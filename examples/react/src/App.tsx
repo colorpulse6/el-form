@@ -1,14 +1,16 @@
-import { BasicValidationTest } from "./forms/BasicValidationTest";
-import { FormHistoryTest } from "./forms/FormHistoryTest";
+// import { BasicValidationTest } from "./forms/BasicValidationTest";
+// import { FormHistoryTest } from "./forms/FormHistoryTest";
+import FileUploadTest from "./forms/FileUploadTest";
 
 function App() {
   return (
     <div className="container">
       <h1>🧪 El Form Validation Testing</h1>
       <p>Testing various validation scenarios and error handling</p>
-
+      {/* 
       <BasicValidationTest />
-      <FormHistoryTest />
+      <FormHistoryTest /> */}
+      <FileUploadTest />
     </div>
   );
 }

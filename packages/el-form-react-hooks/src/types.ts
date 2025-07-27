@@ -1,4 +1,5 @@
 import { ValidatorConfig } from "el-form-core";
+import { FileValidationOptions } from "./utils/fileUtils";
 
 // Form Context types
 export interface FormContextValue<T extends Record<string, any>> {
@@ -32,6 +33,9 @@ export interface UseFormOptions<T extends Record<string, any>> {
   // Field-level validator configurations
   fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
 
+  // File-specific validation
+  fileValidators?: Partial<Record<keyof T, FileValidationOptions>>;
+
   // New validation mode (more flexible)
   mode?: "onChange" | "onBlur" | "onSubmit" | "all";
 
@@ -61,7 +65,11 @@ export interface UseFormReturn<T extends Record<string, any>> {
     name: string;
     onChange: (e: React.ChangeEvent<any>) => void;
     onBlur: (e: React.FocusEvent<any>) => void;
-  } & ({ checked: boolean; value?: never } | { value: any; checked?: never });
+  } & (
+    | { checked: boolean; value?: never; files?: never }
+    | { value: any; checked?: never; files?: never }
+    | { files: FileList | File | File[] | null; value?: never; checked?: never }
+  );
   handleSubmit: (
     onValid: (data: T) => void,
     onError?: (errors: Record<keyof T, string>) => void
@@ -134,6 +142,13 @@ export interface UseFormReturn<T extends Record<string, any>> {
   restoreSnapshot: (snapshot: FormSnapshot<T>) => void;
   hasChanges: () => boolean;
   getChanges: () => Partial<T>;
+
+  // File-specific methods
+  addFile: (name: string, file: File) => void;
+  removeFile: (name: string, index?: number) => void;
+  clearFiles: (name: string) => void;
+  getFileInfo: (file: File) => import("./utils/fileUtils").FileInfo;
+  getFilePreview: (file: File) => Promise<string | null>;
 }
 
 // AutoForm types

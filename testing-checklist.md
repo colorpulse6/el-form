@@ -757,7 +757,7 @@ _Test Together: Complex data structure handling_
 
 ---
 
-## � **Category 9: File Upload Support**
+## 📁 **Category 9: File Upload Support**
 
 ### **9.1 File Input Registration**
 
@@ -900,7 +900,7 @@ _Test Together: Upload workflow_
 
 ---
 
-## �🛡️ **Category 10: Edge Cases & Error Handling**
+## 🛡️ **Category 10: Edge Cases & Error Handling**
 
 ### **10.1 Error Boundaries & Edge Cases**
 
