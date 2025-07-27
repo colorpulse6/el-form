@@ -15,6 +15,8 @@ export interface FormState<T extends Record<string, any>> {
   isSubmitting: boolean;
   isValid: boolean;
   isDirty: boolean;
+  // File previews for each field
+  filePreview: Partial<Record<keyof T, string | null>>;
 }
 
 export interface FormSnapshot<T extends Record<string, any>> {

@@ -50,6 +50,7 @@ export function useForm<T extends Record<string, any>>(
     isSubmitting: false,
     isValid: false,
     isDirty: false,
+    filePreview: {},
   });
 
   // Compute canSubmit directly as a derived value
@@ -149,6 +150,12 @@ export function useForm<T extends Record<string, any>>(
           }
         }
 
+        // Generate preview for single file
+        let preview: string | null = null;
+        if (value instanceof File) {
+          preview = await getFilePreview(value);
+        }
+
         // Use extracted utility for dirty state
         dirtyManager.updateFieldDirtyState(name, value, defaultValues);
 
@@ -156,6 +163,14 @@ export function useForm<T extends Record<string, any>>(
           const newValues = name.includes(".")
             ? setNestedValue(prev.values, name, value)
             : { ...prev.values, [name]: value };
+
+          const newFilePreview = { ...prev.filePreview };
+          if (preview !== undefined) {
+            newFilePreview[fieldName] = preview;
+          } else if (!value) {
+            // Clear preview if no file
+            delete newFilePreview[fieldName];
+          }
 
           let newErrors = { ...prev.errors };
 
@@ -173,6 +188,7 @@ export function useForm<T extends Record<string, any>>(
             ...prev,
             values: newValues,
             errors: newErrors,
+            filePreview: newFilePreview,
             isDirty: dirtyFieldsRef.current.size > 0,
           };
         });
@@ -397,6 +413,7 @@ export function useForm<T extends Record<string, any>>(
         isSubmitting: false,
         isValid: false,
         isDirty: options?.keepDirty ? formState.isDirty : false,
+        filePreview: {},
       });
     },
     [defaultValues, formState, dirtyManager]

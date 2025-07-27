@@ -8,80 +8,25 @@ interface FileFormData {
 }
 
 export default function FileUploadTest() {
-  const { register, handleSubmit, formState, setValue, getFilePreview } =
-    useForm<FileFormData>({
-      defaultValues: {
-        avatar: null,
-        documents: [],
-        name: "",
-      },
-    });
-
-  // State for image preview
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-
-  // Helper functions for file management
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
-  const getFileExtension = (fileName: string): string => {
-    return fileName.slice(((fileName.lastIndexOf(".") - 1) >>> 0) + 2);
-  };
-
-  const getFileInfo = (file: File) => ({
-    name: file.name,
-    size: file.size,
-    type: file.type,
-    lastModified: file.lastModified,
-    formattedSize: formatFileSize(file.size),
-    isImage: file.type.startsWith("image/"),
-    extension: getFileExtension(file.name),
+  const {
+    register,
+    handleSubmit,
+    formState,
+    addFile,
+    removeFile,
+    clearFiles,
+    getFileInfo,
+    getFilePreview,
+  } = useForm<FileFormData>({
+    defaultValues: {
+      avatar: null,
+      documents: [],
+      name: "",
+    },
   });
 
-  const addFile = (fieldName: string, file: File) => {
-    if (fieldName === "documents") {
-      const current = formState.values.documents || [];
-      setValue("documents", [...current, file]);
-    } else {
-      setValue(fieldName, file);
-    }
-  };
-
-  const removeFile = (fieldName: string, index?: number) => {
-    if (fieldName === "documents" && typeof index === "number") {
-      const current = formState.values.documents || [];
-      const updated = current.filter((_, i) => i !== index);
-      setValue("documents", updated);
-    } else {
-      setValue(fieldName, null);
-    }
-  };
-
-  const clearFiles = (fieldName: string) => {
-    setValue(fieldName, fieldName === "documents" ? [] : null);
-    if (fieldName === "avatar") {
-      setAvatarPreview(null);
-    }
-  };
-
-  // Generate preview when avatar changes using our built-in getFilePreview
-  useEffect(() => {
-    const generatePreview = async () => {
-      if (formState.values.avatar && formState.values.avatar instanceof File) {
-        const preview = await getFilePreview(formState.values.avatar);
-        setAvatarPreview(preview);
-      } else {
-        setAvatarPreview(null);
-      }
-    };
-
-    generatePreview();
-  }, [formState.values.avatar, getFilePreview]);
+  // No need for separate state - preview is now on formState!
+  const avatarPreview = formState.filePreview.avatar;
 
   const onSubmit = (data: FileFormData) => {
     console.log("Form submitted:", data);
@@ -103,21 +48,21 @@ export default function FileUploadTest() {
     }
   };
 
-  const handleAddFile = (fieldName: string) => {
-    // Create a mock file for testing
-    const mockFile = new File(["test content"], "test.txt", {
+  // Demo function to show addFile in action
+  const handleAddMockFile = () => {
+    const mockFile = new File(["Mock file content"], "demo-file.txt", {
       type: "text/plain",
       lastModified: Date.now(),
     });
-    addFile(fieldName, mockFile);
+    addFile("documents", mockFile);
   };
 
   return (
     <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md">
       <h2 className="text-2xl font-bold mb-4">File Upload Test (Beta)</h2>
       <p className="text-sm text-gray-600 mb-4">
-        Testing basic file input support. File validation and advanced features
-        coming soon.
+        Testing basic file input support including the <code>addFile()</code>{" "}
+        method.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -253,6 +198,20 @@ export default function FileUploadTest() {
                 </button>
               </div>
             )}
+        </div>
+
+        {/* Demo addFile button */}
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={handleAddMockFile}
+            className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
+          >
+            🧪 Test addFile() - Add Mock Document
+          </button>
+          <p className="text-xs text-gray-500 text-center">
+            This demonstrates programmatically adding files
+          </p>
         </div>
 
         {/* Submit button */}
