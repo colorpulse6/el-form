@@ -24,7 +24,8 @@ const applicationSchema = z.object({
   coverLetter: z
     .instanceof(File)
     .refine(
-      (file) => file.size <= 2 * 1024 * 1024,
+      //   (file) => file.size <= 2 * 1024 * 1024,
+      (file) => file.size <= 1,
       "File must be less than 2MB"
     )
     .optional(),
@@ -50,35 +51,29 @@ const applicationSchema = z.object({
 type ApplicationFormData = z.infer<typeof applicationSchema>;
 
 export default function ZodFileValidationTest() {
-  const {
-    register,
-    handleSubmit,
-    formState,
-    filePreview,
-    getFileInfo,
-    clearFiles,
-  } = useForm<ApplicationFormData>({
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      resume: null as any, // Type assertion needed for Zod compatibility
-      coverLetter: undefined,
-      portfolio: [],
-    },
+  const { register, handleSubmit, formState, getFileInfo, clearFiles } =
+    useForm<ApplicationFormData>({
+      defaultValues: {
+        firstName: "",
+        lastName: "",
+        email: "",
+        resume: undefined,
+        coverLetter: undefined,
+        portfolio: [],
+      },
 
-    // Method 1: Pure Zod schema validation (ideal approach)
-    validators: {
-      onChange: applicationSchema.partial(), // Partial for progressive validation
-      onSubmit: applicationSchema, // Full validation on submit
-    },
+      // Method 1: Pure Zod schema validation (ideal approach)
+      validators: {
+        onChange: applicationSchema.partial(), // Partial for progressive validation
+        onSubmit: applicationSchema, // Full validation on submit
+      },
 
-    // Method 2: Hybrid approach - Zod for basic fields, fileValidators for advanced file rules
-    // fieldValidators: {
-    //   resume: { onChange: fileValidators.document },
-    //   portfolio: { onChange: fileValidators.gallery },
-    // },
-  });
+      // Method 2: Hybrid approach - Zod for basic fields, fileValidators for advanced file rules
+      // fieldValidators: {
+      //   resume: { onChange: fileValidators.document },
+      //   portfolio: { onChange: fileValidators.gallery },
+      // },
+    });
 
   const onSubmit = (data: ApplicationFormData) => {
     console.log("✅ Form submitted successfully:", data);

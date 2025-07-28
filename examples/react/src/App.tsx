@@ -15,58 +15,100 @@ function App() {
       <h1>🧪 El Form Testing Suite</h1>
       <p>Comprehensive testing of el-form features and capabilities</p>
 
-      {/* Test selector */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        <button
-          onClick={() => setCurrentTest("basic")}
-          className={`px-4 py-2 rounded text-sm ${
-            currentTest === "basic"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
-        >
-          📁 Basic File Upload
-        </button>
-        <button
-          onClick={() => setCurrentTest("advanced")}
-          className={`px-4 py-2 rounded text-sm ${
-            currentTest === "advanced"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
-        >
-          🔧 Advanced File Validation
-        </button>
-        <button
-          onClick={() => setCurrentTest("zod")}
-          className={`px-4 py-2 rounded text-sm ${
-            currentTest === "zod"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
-        >
-          📋 Zod Schema Validation
-        </button>
-        <button
-          onClick={() => setCurrentTest("validation")}
-          className={`px-4 py-2 rounded text-sm ${
-            currentTest === "validation"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
-        >
-          ✅ Basic Validation Test
-        </button>
-        <button
-          onClick={() => setCurrentTest("history")}
-          className={`px-4 py-2 rounded text-sm ${
-            currentTest === "history"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
-        >
-          🕰️ Form History Test
-        </button>
+      {/* Test selector tabs */}
+      <div style={{ borderBottom: "1px solid #e5e7eb", marginBottom: "24px" }}>
+        <nav style={{ display: "flex", gap: "32px" }}>
+          <button
+            onClick={() => setCurrentTest("basic")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "basic"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color: currentTest === "basic" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            📁 Basic File Upload
+          </button>
+          <button
+            onClick={() => setCurrentTest("advanced")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "advanced"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color: currentTest === "advanced" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            🔧 Advanced File Validation
+          </button>
+          <button
+            onClick={() => setCurrentTest("zod")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "zod"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color: currentTest === "zod" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            📋 Zod Schema Validation
+          </button>
+          <button
+            onClick={() => setCurrentTest("validation")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "validation"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color: currentTest === "validation" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            ✅ Basic Validation Test
+          </button>
+          <button
+            onClick={() => setCurrentTest("history")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "history"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color: currentTest === "history" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            🕰️ Form History Test
+          </button>
+        </nav>
       </div>
 
       {currentTest === "basic" && <FileUploadTest />}
