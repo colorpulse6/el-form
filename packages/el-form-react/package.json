@@ -1,6 +1,6 @@
 {
   "name": "el-form-react",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "description": "Complete React form library - useForm hooks + AutoForm components with flexible validation (Zod, Yup, Valibot, custom). TypeScript-first with modern form management.",
   "author": "Nichalas Barnes",
   "license": "MIT",
