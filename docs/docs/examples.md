@@ -2,9 +2,6 @@
 sidebar_position: 6
 ---
 
-import { InteractivePreview } from '@site/src/components';
-import { RegistrationFormExample, ContactFormExample, ProfileFormExample } from '@site/src/components/examples';
-
 # Examples
 
 Explore practical examples of El Form in action.
@@ -91,9 +88,9 @@ function RegistrationForm() {
 
 ### Try it out:
 
-<InteractivePreview title="Registration Form Example">
-  <RegistrationFormExample />
-</InteractivePreview>
+:::info Interactive Example
+This example shows a complete registration form with validation. To try it out, check the `/examples/react` directory in the repository.
+:::
 
 ## Contact Form
 
@@ -101,9 +98,9 @@ A simple contact form with dropdown selections:
 
 ### Try it out:
 
-<InteractivePreview title="Contact Form Example">
-  <ContactFormExample />
-</InteractivePreview>
+:::info Interactive Example
+This example demonstrates a contact form with different field types. To try it out, check the `/examples/react` directory in the repository.
+:::
 
 ## Profile Form
 
@@ -111,9 +108,9 @@ A comprehensive profile form with arrays and various field types:
 
 ### Try it out:
 
-<InteractivePreview title="Profile Form Example">
-  <ProfileFormExample />
-</InteractivePreview>
+:::info Interactive Example
+This example shows a user profile form with nested objects and complex validation. To try it out, check the `/examples/react` directory in the repository.
+:::
 
 ## Contact Form with Custom Styling
 
