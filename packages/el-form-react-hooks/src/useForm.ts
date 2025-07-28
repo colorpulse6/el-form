@@ -5,7 +5,12 @@ import {
   UseFormReturn,
   ResetOptions,
 } from "./types";
-import { setNestedValue, getNestedValue, ValidationEngine } from "el-form-core";
+import {
+  setNestedValue,
+  getNestedValue,
+  ValidationEngine,
+  createFileValidator,
+} from "el-form-core";
 import {
   createDirtyStateManager,
   createValidationManager,
@@ -16,6 +21,8 @@ import {
   createFormHistoryManager,
   createFocusManager,
   createArrayOperationsManager,
+  getFileInfo,
+  getFilePreview,
 } from "./utils";
 
 export function useForm<T extends Record<string, any>>(
@@ -25,6 +32,7 @@ export function useForm<T extends Record<string, any>>(
     defaultValues = {},
     validators = {},
     fieldValidators = {},
+    fileValidators = {},
     mode = "onSubmit",
     validateOn,
     onSubmit,
@@ -46,6 +54,11 @@ export function useForm<T extends Record<string, any>>(
     isValid: false,
     isDirty: false,
   });
+
+  // Separate state for file previews
+  const [filePreview, setFilePreview] = useState<
+    Partial<Record<keyof T, string | null>>
+  >({});
 
   // Compute canSubmit directly as a derived value
   const canSubmit = formState.isValid && !formState.isSubmitting;
@@ -114,10 +127,111 @@ export function useForm<T extends Record<string, any>>(
         getNestedValue(formStateRef.current?.values || {}, name) ?? "";
       const isCheckbox = typeof fieldValue === "boolean";
 
+      // Note: File input detection will be done via event.target.type in onChange
+
+      const handleFileChange = async (
+        name: string,
+        value: File | FileList | File[] | null
+      ) => {
+        // File-specific validation using el-form-core
+        const fileValidationOptions =
+          fileValidators && fieldName in fileValidators
+            ? (fileValidators as any)[fieldName]
+            : undefined;
+        if (fileValidationOptions && value) {
+          const fileValidator = createFileValidator(fileValidationOptions);
+          const validationError = fileValidator({
+            value,
+            fieldName: fieldName as string,
+            values: formState.values as Record<string, any>,
+          });
+
+          if (validationError) {
+            setFormState((prev) => ({
+              ...prev,
+              errors: { ...prev.errors, [fieldName]: validationError },
+              isValid: false,
+            }));
+            return;
+          }
+        }
+
+        // Generate preview for single file
+        let preview: string | null = null;
+        if (value instanceof File) {
+          preview = await getFilePreview(value);
+        }
+
+        // Use extracted utility for dirty state
+        dirtyManager.updateFieldDirtyState(name, value, defaultValues);
+
+        // Calculate new values first
+        const newValues = name.includes(".")
+          ? setNestedValue(formState.values, name, value)
+          : { ...formState.values, [name]: value };
+
+        // Update file preview separately
+        setFilePreview((prevPreviews) => {
+          const newFilePreview = { ...prevPreviews };
+          if (preview !== undefined) {
+            newFilePreview[fieldName] = preview;
+          } else if (!value) {
+            // Clear preview if no file
+            delete newFilePreview[fieldName];
+          }
+          return newFilePreview;
+        });
+
+        let newErrors = { ...formState.errors };
+
+        // Clear field error
+        if (name.includes(".")) {
+          const nestedError = getNestedValue(newErrors, name);
+          if (nestedError) {
+            newErrors = setNestedValue(newErrors, name, undefined);
+          }
+        } else {
+          delete newErrors[fieldName];
+        }
+
+        // Run Zod validation if configured
+        if (validationManager.shouldValidate("onChange")) {
+          const validationResult = await validationManager.validateField(
+            fieldName,
+            value,
+            newValues,
+            "onChange"
+          );
+
+          if (!validationResult.isValid) {
+            newErrors = { ...newErrors, ...validationResult.errors };
+          }
+        }
+
+        setFormState((prev) => ({
+          ...prev,
+          values: newValues,
+          errors: newErrors,
+          isDirty: dirtyFieldsRef.current.size > 0,
+        }));
+      };
+
       const baseProps = {
         name,
         onChange: async (e: React.ChangeEvent<any>) => {
           const value = (() => {
+            // Handle file inputs
+            if (e.target.type === "file") {
+              const files = e.target.files;
+              const fileValue = e.target.multiple
+                ? Array.from(files || []) // Convert FileList to array for multiple
+                : files?.[0] || null; // Single File or null
+
+              // Handle file change separately
+              handleFileChange(name, fileValue);
+              return; // Don't continue with regular value processing
+            }
+
             if (isCheckbox) return e.target.checked;
             if (e.target.type === "number") {
               const num = e.target.valueAsNumber;
@@ -132,6 +246,9 @@ export function useForm<T extends Record<string, any>>(
             }
             return e.target.value;
           })();
+
+          // Skip regular processing for file inputs as it's handled above
+          if (e.target.type === "file") return;
 
           // Use extracted utility for dirty state
           dirtyManager.updateFieldDirtyState(name, value, defaultValues);
@@ -230,11 +347,76 @@ export function useForm<T extends Record<string, any>>(
         },
       };
 
+      // Return different props for file inputs based on the current value type
+      const currentValue = getNestedValue(formState.values, name);
+      if (
+        currentValue instanceof File ||
+        currentValue instanceof FileList ||
+        (Array.isArray(currentValue) &&
+          currentValue.length > 0 &&
+          currentValue[0] instanceof File)
+      ) {
+        return {
+          ...baseProps,
+          files: currentValue,
+        };
+      }
+
       return isCheckbox
         ? { ...baseProps, checked: Boolean(fieldValue) }
         : { ...baseProps, value: fieldValue || "" };
     },
-    [defaultValues, dirtyManager, validationManager]
+    [
+      defaultValues,
+      dirtyManager,
+      validationManager,
+      fileValidators,
+      formState.values,
+    ]
+  );
+
+  // File management methods
+  const addFile = useCallback(
+    (name: string, file: File) => {
+      const currentValue = getNestedValue(formState.values, name);
+
+      if (currentValue instanceof FileList || Array.isArray(currentValue)) {
+        // Add to existing files
+        const newFiles = [...Array.from(currentValue), file];
+        formStateManager.setValue(name, newFiles);
+      } else {
+        // Replace single file or set new file
+        formStateManager.setValue(name, file);
+      }
+    },
+    [formStateManager, formState.values]
+  );
+
+  const removeFile = useCallback(
+    (name: string, index?: number) => {
+      const currentValue = getNestedValue(formState.values, name);
+
+      if (
+        typeof index === "number" &&
+        (currentValue instanceof FileList || Array.isArray(currentValue))
+      ) {
+        // Remove specific file by index
+        const files = Array.from(currentValue);
+        files.splice(index, 1);
+        formStateManager.setValue(name, files);
+      } else {
+        // Clear all files
+        formStateManager.setValue(name, null);
+      }
+    },
+    [formStateManager, formState.values]
+  );
+
+  const clearFiles = useCallback(
+    (name: string) => {
+      formStateManager.setValue(name, null);
+    },
+    [formStateManager]
   );
 
   // Reset form - simplified with dirty manager
@@ -254,6 +436,9 @@ export function useForm<T extends Record<string, any>>(
         isValid: false,
         isDirty: options?.keepDirty ? formState.isDirty : false,
       });
+
+      // Clear file previews on reset
+      setFilePreview({});
     },
     [defaultValues, formState, dirtyManager]
   );
@@ -294,5 +479,12 @@ export function useForm<T extends Record<string, any>>(
     restoreSnapshot: formHistory.restoreSnapshot,
     hasChanges: formHistory.hasChanges,
     getChanges: formHistory.getChanges,
+    // File-specific methods
+    addFile,
+    removeFile,
+    clearFiles,
+    getFileInfo,
+    getFilePreview,
+    filePreview,
   };
 }

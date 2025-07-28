@@ -10,22 +10,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "el-form-core": "workspace:^",
+    "el-form-react-components": "workspace:^",
+    "el-form-react-hooks": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zod": "^3.22.4",
-    "el-form-react-hooks": "workspace:^",
-    "el-form-react-components": "workspace:^",
-    "el-form-core": "workspace:^"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.11",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.21",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
   }

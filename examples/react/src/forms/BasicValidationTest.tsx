@@ -412,90 +412,92 @@ export function BasicValidationTest() {
                     Projects using this skill:
                   </label>
 
-                  {skill.projects?.map((project: any, projectIndex: number) => (
-                    <div
-                      key={projectIndex}
-                      style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        alignItems: "flex-start",
-                        marginBottom: "0.5rem",
-                        padding: "0.5rem",
-                        backgroundColor: "white",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      <div style={{ flex: 2 }}>
-                        <input
-                          {...register(
-                            `skills.${index}.projects.${projectIndex}.name`
-                          )}
-                          placeholder="Project name (e.g., E-commerce App)"
-                          style={{ width: "100%" }}
-                        />
-                        {formState.errors[
-                          `skills.${index}.projects.${projectIndex}.name` as keyof typeof formState.errors
-                        ] && (
-                          <span
-                            className="error"
-                            style={{ fontSize: "0.8rem" }}
-                          >
-                            {
-                              formState.errors[
-                                `skills.${index}.projects.${projectIndex}.name` as keyof typeof formState.errors
-                              ]
-                            }
-                          </span>
-                        )}
-                      </div>
-
-                      <div style={{ flex: 1 }}>
-                        <input
-                          {...register(
-                            `skills.${index}.projects.${projectIndex}.duration`
-                          )}
-                          type="number"
-                          placeholder="Duration (months)"
-                          style={{ width: "100%" }}
-                        />
-                        {formState.errors[
-                          `skills.${index}.projects.${projectIndex}.duration` as keyof typeof formState.errors
-                        ] && (
-                          <span
-                            className="error"
-                            style={{ fontSize: "0.8rem" }}
-                          >
-                            {
-                              formState.errors[
-                                `skills.${index}.projects.${projectIndex}.duration` as keyof typeof formState.errors
-                              ]
-                            }
-                          </span>
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeArrayItem(
-                            `skills.${index}.projects`,
-                            projectIndex
-                          )
-                        }
+                  {skill.projects?.map(
+                    (_project: any, projectIndex: number) => (
+                      <div
+                        key={projectIndex}
                         style={{
-                          backgroundColor: "#ffc107",
-                          color: "#000",
-                          padding: "0.25rem 0.5rem",
-                          border: "none",
+                          display: "flex",
+                          gap: "0.5rem",
+                          alignItems: "flex-start",
+                          marginBottom: "0.5rem",
+                          padding: "0.5rem",
+                          backgroundColor: "white",
                           borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "0.8rem",
                         }}
                       >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
+                        <div style={{ flex: 2 }}>
+                          <input
+                            {...register(
+                              `skills.${index}.projects.${projectIndex}.name`
+                            )}
+                            placeholder="Project name (e.g., E-commerce App)"
+                            style={{ width: "100%" }}
+                          />
+                          {formState.errors[
+                            `skills.${index}.projects.${projectIndex}.name` as keyof typeof formState.errors
+                          ] && (
+                            <span
+                              className="error"
+                              style={{ fontSize: "0.8rem" }}
+                            >
+                              {
+                                formState.errors[
+                                  `skills.${index}.projects.${projectIndex}.name` as keyof typeof formState.errors
+                                ]
+                              }
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ flex: 1 }}>
+                          <input
+                            {...register(
+                              `skills.${index}.projects.${projectIndex}.duration`
+                            )}
+                            type="number"
+                            placeholder="Duration (months)"
+                            style={{ width: "100%" }}
+                          />
+                          {formState.errors[
+                            `skills.${index}.projects.${projectIndex}.duration` as keyof typeof formState.errors
+                          ] && (
+                            <span
+                              className="error"
+                              style={{ fontSize: "0.8rem" }}
+                            >
+                              {
+                                formState.errors[
+                                  `skills.${index}.projects.${projectIndex}.duration` as keyof typeof formState.errors
+                                ]
+                              }
+                            </span>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeArrayItem(
+                              `skills.${index}.projects`,
+                              projectIndex
+                            )
+                          }
+                          style={{
+                            backgroundColor: "#ffc107",
+                            color: "#000",
+                            padding: "0.25rem 0.5rem",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )
+                  )}
 
                   <button
                     type="button"
