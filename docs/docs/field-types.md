@@ -77,7 +77,7 @@ const avatarPreview = formState.filePreview.avatar; // Auto-generated preview
 
 ### Basic File Input Example
 
-```tsx
+```typescript
 import { useForm } from "el-form-react-hooks";
 
 interface FileFormData {
@@ -158,7 +158,7 @@ El Form provides comprehensive file validation with both preset validators for c
 
 Use built-in validators for common file types:
 
-```tsx
+```typescript
 import { useForm } from "el-form-react-hooks";
 import { fileValidators } from "el-form-core";
 
@@ -223,7 +223,7 @@ function ValidatedFileForm() {
 
 Create validators with specific requirements:
 
-```tsx
+```typescript
 import { fileValidator } from "el-form-core";
 
 function CustomValidationForm() {
@@ -297,7 +297,7 @@ function CustomValidationForm() {
 
 When creating custom file validators, you can specify:
 
-```tsx
+```typescript
 fileValidator({
   // Size limits
   maxSize: 5 * 1024 * 1024, // Maximum file size in bytes (5MB)
@@ -329,7 +329,7 @@ fileValidator({
 
 #### Job Application Form
 
-```tsx
+```typescript
 function JobApplicationForm() {
   const { register, handleSubmit, formState, filePreview } = useForm({
     defaultValues: {
@@ -412,7 +412,7 @@ function JobApplicationForm() {
 
 #### User Profile Form
 
-```tsx
+```typescript
 function UserProfileForm() {
   const { register, handleSubmit, formState, filePreview } = useForm({
     defaultValues: {
@@ -464,7 +464,7 @@ function UserProfileForm() {
 
 File validation errors appear automatically in `formState.errors` and can be displayed like any other validation error:
 
-```tsx
+```typescript
 // Error messages are user-friendly and specific
 {
   formState.errors.avatar && (
@@ -482,7 +482,7 @@ File validation errors appear automatically in `formState.errors` and can be dis
 
 ### Common Validation Scenarios
 
-```tsx
+```typescript
 // Large file uploads (videos, archives)
 const largeFileValidator = fileValidator({
   maxSize: 100 * 1024 * 1024, // 100MB
@@ -509,7 +509,7 @@ const documentCollectionValidator = fileValidator({
 
 El Form supports schema validation for File objects using libraries like Zod. This provides a unified validation approach:
 
-```tsx
+```typescript
 import { z } from "zod";
 
 // Define schema with File validation
@@ -596,7 +596,7 @@ function SchemaValidatedForm() {
 
 You can also combine schema validation with `fileValidators` for maximum flexibility:
 
-```tsx
+```typescript
 const { register } = useForm({
   // Schema for basic fields and file type checking
   validators: {
@@ -621,7 +621,7 @@ const { register } = useForm({
 
 Here is a comprehensive example showing how `useForm` handles common input types.
 
-```tsx
+```typescript
 import { useForm } from "el-form";
 import { z } from "zod";
 
