@@ -5,6 +5,7 @@ sidebar_position: 6
 import { InteractivePreview } from '@site/src/components';
 import { DefaultErrorExample, ElegantErrorExample, MinimalErrorExample } from '@site/src/components/examples';
 import { Callout } from '@site/src/components/Callout';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Error Handling
 
@@ -71,9 +72,13 @@ function UserForm() {
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Default Error Handling">
-  <DefaultErrorExample />
+<DefaultErrorExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 _Try submitting the form without filling it out to see the default error display._
 
@@ -225,9 +230,13 @@ const ElegantErrorComponent: React.FC<AutoFormErrorProps> = ({
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Elegant Error Component">
-  <ElegantErrorExample />
+<ElegantErrorExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ### Minimal Error Style
 
@@ -269,9 +278,13 @@ const MinimalErrorComponent: React.FC<AutoFormErrorProps> = ({
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Minimal Error Component">
-  <MinimalErrorExample />
+<MinimalErrorExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ## Async Error Handling
 

@@ -4,14 +4,19 @@ sidebar_position: 7
 
 import { InteractivePreview } from '@site/src/components';
 import { FormReusabilityDemo, ContextPatternExample, FormPassingExample, HybridPatternExample } from '@site/src/components/examples';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Form Component Reusability
 
 El Form provides multiple patterns for creating reusable form components, giving you flexibility based on your specific needs and team preferences.
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Form Reusability Patterns Demo">
-  <FormReusabilityDemo />
+<FormReusabilityDemo />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ## 🎯 Recommended Approach: Multi-Pattern Support
 

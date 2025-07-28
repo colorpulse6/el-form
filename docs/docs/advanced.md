@@ -4,6 +4,7 @@ sidebar_position: 8
 
 import { InteractivePreview } from '@site/src/components';
 import { ConditionalFormExample, MultiStepFormExample } from '@site/src/components/examples';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Advanced Patterns
 
@@ -65,9 +66,13 @@ function ConditionalForm() {
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Conditional Form Fields">
-  <ConditionalFormExample />
+<ConditionalFormExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 _Try selecting different account types to see how the form adapts with different fields._
 
@@ -153,9 +158,13 @@ function MultiStepForm() {
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Multi-Step Form">
-  <MultiStepFormExample />
+<MultiStepFormExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 _Navigate through the steps to see how data is preserved and the progress indicator updates._
 

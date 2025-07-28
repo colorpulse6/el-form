@@ -4,6 +4,7 @@ sidebar_position: 3
 
 import { InteractivePreview } from '@site/src/components';
 import { UseFormArraysExample } from '@site/src/components/examples';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Arrays with useForm
 
@@ -13,9 +14,13 @@ This approach is more verbose but offers maximum flexibility, allowing you to bu
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="useForm with Arrays Example">
-  <UseFormArraysExample />
+<UseFormArraysExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ```tsx
 import { useForm } from "el-form";

@@ -4,6 +4,7 @@ sidebar_position: 6
 
 import { InteractivePreview } from '@site/src/components';
 import { RegistrationFormExample, ContactFormExample, ProfileFormExample } from '@site/src/components/examples';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Examples
 
@@ -91,9 +92,13 @@ function RegistrationForm() {
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Registration Form Example">
-  <RegistrationFormExample />
+<RegistrationFormExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ## Contact Form
 
@@ -101,9 +106,13 @@ A simple contact form with dropdown selections:
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Contact Form Example">
-  <ContactFormExample />
+<ContactFormExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ## Profile Form
 
@@ -111,9 +120,13 @@ A comprehensive profile form with arrays and various field types:
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Profile Form Example">
-  <ProfileFormExample />
+<ProfileFormExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ## Contact Form with Custom Styling
 

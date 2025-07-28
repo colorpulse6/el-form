@@ -4,6 +4,7 @@ sidebar_position: 4
 
 import { InteractivePreview } from '@site/src/components';
 import { UseFormExample, SimpleAutoFormExample, UseFormAdvancedExample } from '@site/src/components/examples';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 import { Callout } from '@site/src/components/Callout';
 
 # useForm Hook
@@ -1528,13 +1529,21 @@ For general errors, consider adding an error field to your form schema instead.
 
 ## Interactive Examples
 
+<BrowserOnly>
+{() => (
 <InteractivePreview>
   <UseFormExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
+<BrowserOnly>
+{() => (
 <InteractivePreview>
   <UseFormAdvancedExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ### Custom Validation Functions
 
@@ -1645,9 +1654,13 @@ function SignupForm() {
 }
 ```
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Advanced useForm Example">
   <UseFormAdvancedExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ## Form History & Persistence
 

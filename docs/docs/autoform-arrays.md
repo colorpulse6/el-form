@@ -4,6 +4,7 @@ sidebar_position: 2
 
 import { InteractivePreview } from '@site/src/components';
 import { BasicArrayExample, ObjectArrayExample, NestedArrayExample } from '@site/src/components/examples';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Arrays with AutoForm
 
@@ -33,9 +34,13 @@ function SkillsForm() {
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Basic Array Example">
-  <BasicArrayExample />
+<BasicArrayExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
 
 ## Object Arrays
 
@@ -64,6 +69,10 @@ function ContactsForm() {
 
 ### Try it out:
 
+<BrowserOnly>
+{() => (
 <InteractivePreview title="Object Array Example">
-  <ObjectArrayExample />
+<ObjectArrayExample />
 </InteractivePreview>
+)}
+</BrowserOnly>
