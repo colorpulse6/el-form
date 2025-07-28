@@ -131,7 +131,7 @@ export function useForm<T extends Record<string, any>>(
 
       const handleFileChange = async (
         name: string,
-        value: File | FileList | null
+        value: File | FileList | File[] | null
       ) => {
         // File-specific validation using el-form-core
         const fileValidationOptions =
@@ -165,42 +165,55 @@ export function useForm<T extends Record<string, any>>(
         // Use extracted utility for dirty state
         dirtyManager.updateFieldDirtyState(name, value, defaultValues);
 
-        setFormState((prev) => {
-          const newValues = name.includes(".")
-            ? setNestedValue(prev.values, name, value)
-            : { ...prev.values, [name]: value };
+        // Calculate new values first
+        const newValues = name.includes(".")
+          ? setNestedValue(formState.values, name, value)
+          : { ...formState.values, [name]: value };
 
-          // Update file preview separately
-          setFilePreview((prevPreviews) => {
-            const newFilePreview = { ...prevPreviews };
-            if (preview !== undefined) {
-              newFilePreview[fieldName] = preview;
-            } else if (!value) {
-              // Clear preview if no file
-              delete newFilePreview[fieldName];
-            }
-            return newFilePreview;
-          });
-
-          let newErrors = { ...prev.errors };
-
-          // Clear field error
-          if (name.includes(".")) {
-            const nestedError = getNestedValue(newErrors, name);
-            if (nestedError) {
-              newErrors = setNestedValue(newErrors, name, undefined);
-            }
-          } else {
-            delete newErrors[fieldName];
+        // Update file preview separately
+        setFilePreview((prevPreviews) => {
+          const newFilePreview = { ...prevPreviews };
+          if (preview !== undefined) {
+            newFilePreview[fieldName] = preview;
+          } else if (!value) {
+            // Clear preview if no file
+            delete newFilePreview[fieldName];
           }
-
-          return {
-            ...prev,
-            values: newValues,
-            errors: newErrors,
-            isDirty: dirtyFieldsRef.current.size > 0,
-          };
+          return newFilePreview;
         });
+
+        let newErrors = { ...formState.errors };
+
+        // Clear field error
+        if (name.includes(".")) {
+          const nestedError = getNestedValue(newErrors, name);
+          if (nestedError) {
+            newErrors = setNestedValue(newErrors, name, undefined);
+          }
+        } else {
+          delete newErrors[fieldName];
+        }
+
+        // Run Zod validation if configured
+        if (validationManager.shouldValidate("onChange")) {
+          const validationResult = await validationManager.validateField(
+            fieldName,
+            value,
+            newValues,
+            "onChange"
+          );
+
+          if (!validationResult.isValid) {
+            newErrors = { ...newErrors, ...validationResult.errors };
+          }
+        }
+
+        setFormState((prev) => ({
+          ...prev,
+          values: newValues,
+          errors: newErrors,
+          isDirty: dirtyFieldsRef.current.size > 0,
+        }));
       };
 
       const baseProps = {
@@ -211,7 +224,7 @@ export function useForm<T extends Record<string, any>>(
             if (e.target.type === "file") {
               const files = e.target.files;
               const fileValue = e.target.multiple
-                ? files // FileList for multiple
+                ? Array.from(files || []) // Convert FileList to array for multiple
                 : files?.[0] || null; // Single File or null
 
               // Handle file change separately
