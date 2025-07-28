@@ -505,7 +505,117 @@ const documentCollectionValidator = fileValidator({
 });
 ```
 
-> **Note**: File validation works seamlessly with the existing validation system. Combine file validators with other field validators, schema validation, and custom validation functions for comprehensive form validation.
+### Schema Validation (Zod, Yup, etc.)
+
+El Form supports schema validation for File objects using libraries like Zod. This provides a unified validation approach:
+
+```tsx
+import { z } from "zod";
+
+// Define schema with File validation
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+
+  // Single file validation
+  resume: z
+    .instanceof(File)
+    .refine(
+      (file) => file.size <= 5 * 1024 * 1024,
+      "File must be less than 5MB"
+    )
+    .refine(
+      (file) => file.type === "application/pdf",
+      "Only PDF files allowed"
+    ),
+
+  // Optional file
+  avatar: z
+    .instanceof(File)
+    .refine(
+      (file) => file.size <= 2 * 1024 * 1024,
+      "File must be less than 2MB"
+    )
+    .optional(),
+
+  // Array of files
+  portfolio: z
+    .array(z.instanceof(File))
+    .min(1, "At least one file required")
+    .max(5, "Maximum 5 files allowed")
+    .refine(
+      (files) => files.every((file) => file.size <= 10 * 1024 * 1024),
+      "Each file must be less than 10MB"
+    ),
+});
+
+function SchemaValidatedForm() {
+  const { register, handleSubmit, formState } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      resume: null as any, // Type assertion for Zod compatibility
+      avatar: undefined,
+      portfolio: [],
+    },
+    validators: {
+      onChange: formSchema.partial(), // Progressive validation
+      onSubmit: formSchema, // Full validation on submit
+    },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("name")} placeholder="Name" />
+      {formState.errors.name && <p>{formState.errors.name}</p>}
+
+      <input {...register("email")} type="email" placeholder="Email" />
+      {formState.errors.email && <p>{formState.errors.email}</p>}
+
+      <input {...register("resume")} type="file" accept=".pdf" />
+      {formState.errors.resume && <p>{formState.errors.resume}</p>}
+
+      <input {...register("portfolio")} type="file" multiple accept="image/*" />
+      {formState.errors.portfolio && <p>{formState.errors.portfolio}</p>}
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+**Advantages of Schema Validation for Files:**
+
+- **Unified validation** - All validation rules in one schema
+- **Type safety** - Full TypeScript integration with `z.infer<typeof schema>`
+- **Progressive validation** - Use `.partial()` for onChange, full schema for onSubmit
+- **Complex validation** - Custom refinements for advanced file validation logic
+- **Error consistency** - File validation errors appear alongside other field errors
+
+**Hybrid Approach:**
+
+You can also combine schema validation with `fileValidators` for maximum flexibility:
+
+```tsx
+const { register } = useForm({
+  // Schema for basic fields and file type checking
+  validators: {
+    onChange: z.object({
+      name: z.string().min(1),
+      email: z.string().email(),
+      resume: z.instanceof(File).optional(),
+    }),
+  },
+
+  // Advanced file validation using fileValidators
+  fieldValidators: {
+    resume: { onChange: fileValidators.document },
+    gallery: { onChange: fileValidators.gallery },
+  },
+});
+```
+
+> **Note**: File validation works seamlessly with the existing validation system. Choose between dedicated `fileValidators` for quick setup, or schema validation for unified type-safe validation across your entire form.
 
 ## Example
 
