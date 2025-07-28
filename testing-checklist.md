@@ -20,6 +20,7 @@ This document provides a systematic approach to testing all features of the `el-
 - ✅ **Form Submission**: handleSubmit, validation before submit, canSubmit(), submission state
 - ✅ **Reset Operations**: Basic reset() functionality, state clearing
 - ✅ **Complex Data**: Nested objects, array indexing, deep validation, mixed notation support
+- ✅ **File Upload Support**: File input registration, validation, management, preview, Zod integration
 
 **🔄 PARTIALLY TESTED**:
 
@@ -763,51 +764,51 @@ _Test Together: Complex data structure handling_
 
 _Test Together: Basic file input handling_
 
-- [ ] **register() function for file inputs**
+- [x] **register() function for file inputs**
 
-  - Detects `type="file"` automatically
-  - Returns `files` property instead of `value`
-  - Handles single file selection
-  - Handles multiple file selection (`multiple` attribute)
+  - [x] Detects `type="file"` automatically
+  - [x] Returns `files` property instead of `value`
+  - [x] Handles single file selection
+  - [x] Handles multiple file selection (`multiple` attribute)
 
-- [ ] **File object access**
+- [x] **File object access**
 
-  - Returns `FileList` object for multiple files
-  - Returns single `File` object for single files
-  - Provides access to file properties (name, size, type, lastModified)
-  - Handles empty file selection (null/undefined)
+  - [x] Returns `FileList` object for multiple files
+  - [x] Returns single `File` object for single files
+  - [x] Provides access to file properties (name, size, type, lastModified)
+  - [x] Handles empty file selection (null/undefined)
 
-- [ ] **File state management**
+- [x] **File state management**
 
-  - File selection updates form state
-  - File removal clears form state
-  - File replacement updates existing selection
-  - Files persist through form operations
+  - [x] File selection updates form state
+  - [x] File removal clears form state
+  - [x] File replacement updates existing selection
+  - [x] Files persist through form operations
 
 ### **9.2 File Validation**
 
 _Test Together: File validation scenarios_
 
-- [ ] **File type validation**
+- [x] **File type validation**
 
-  - Accept attribute validation
-  - MIME type checking
-  - File extension validation
-  - Custom file type validators
+  - [x] Accept attribute validation
+  - [x] MIME type checking
+  - [x] File extension validation
+  - [x] Custom file type validators
 
-- [ ] **File size validation**
+- [x] **File size validation**
 
-  - Maximum file size limits
-  - Minimum file size limits
-  - Total size limits for multiple files
-  - Human-readable size error messages
+  - [x] Maximum file size limits
+  - [x] Minimum file size limits
+  - [x] Total size limits for multiple files
+  - [x] Human-readable size error messages
 
-- [ ] **File count validation**
+- [x] **File count validation**
 
-  - Maximum number of files
-  - Minimum number of files
-  - Single file enforcement
-  - Multiple file count limits
+  - [x] Maximum number of files
+  - [x] Minimum number of files
+  - [x] Single file enforcement
+  - [x] Multiple file count limits
 
 - [ ] **File content validation**
 
@@ -820,19 +821,19 @@ _Test Together: File validation scenarios_
 
 _Test Together: File manipulation methods_
 
-- [ ] **addFile(name, file) method**
+- [x] **addFile(name, file) method**
 
-  - Add file to existing selection
-  - Append to multiple file inputs
-  - Validate before adding
-  - Update form state correctly
+  - [x] Add file to existing selection
+  - [x] Append to multiple file inputs
+  - [x] Validate before adding
+  - [x] Update form state correctly
 
-- [ ] **removeFile(name, index) method**
+- [x] **removeFile(name, index) method**
 
-  - Remove specific file by index
-  - Remove all files
-  - Update indices correctly
-  - Maintain file order
+  - [x] Remove specific file by index
+  - [x] Remove all files
+  - [x] Update indices correctly
+  - [x] Maintain file order
 
 - [ ] **replaceFile(name, index, file) method**
 
@@ -841,30 +842,30 @@ _Test Together: File manipulation methods_
   - Maintain other files
   - Update form state
 
-- [ ] **clearFiles(name) method**
+- [x] **clearFiles(name) method**
 
-  - Clear all selected files
-  - Reset file input state
-  - Update form validation
-  - Trigger change events
+  - [x] Clear all selected files
+  - [x] Reset file input state
+  - [x] Update form validation
+  - [x] Trigger change events
 
 ### **9.4 File Preview & Management**
 
 _Test Together: File display utilities_
 
-- [ ] **getFilePreview(file) utility**
+- [x] **getFilePreview(file) utility**
 
-  - Generate image previews
-  - Handle different file types
-  - Base64 data URL generation
-  - Preview cleanup on file removal
+  - [x] Generate image previews
+  - [x] Handle different file types
+  - [x] Base64 data URL generation
+  - [x] Preview cleanup on file removal
 
-- [ ] **getFileInfo(file) utility**
+- [x] **getFileInfo(file) utility**
 
-  - Format file size display
-  - Extract file metadata
-  - File type categorization
-  - Upload progress tracking
+  - [x] Format file size display
+  - [x] Extract file metadata
+  - [x] File type categorization
+  - [x] Upload progress tracking
 
 - [ ] **File drag & drop support**
 
@@ -873,7 +874,32 @@ _Test Together: File display utilities_
   - File type filtering on drop
   - Multiple file drop handling
 
-### **9.5 File Upload Integration**
+### **9.5 Zod Schema Integration**
+
+_Test Together: Schema-based file validation_
+
+- [x] **z.instanceof(File) validation**
+
+  - [x] Basic File type checking
+  - [x] File refinements for size validation
+  - [x] File refinements for type validation
+  - [x] Custom error messages
+
+- [x] **Array of files validation**
+
+  - [x] `z.array(z.instanceof(File))` support
+  - [x] Array refinements for file validation
+  - [x] Min/max file count validation
+  - [x] Mixed validation (files + other fields)
+
+- [x] **Progressive validation**
+
+  - [x] onChange validation with partial schemas
+  - [x] onSubmit validation with full schemas
+  - [x] Real-time error display
+  - [x] Validation state management
+
+### **9.6 File Upload Integration**
 
 _Test Together: Upload workflow_
 
