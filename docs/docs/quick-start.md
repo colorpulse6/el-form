@@ -321,7 +321,7 @@ The `useForm` hook gives you complete control over form state, validation timing
         🚀
       </div>
       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-        <a href="./autoform" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+        <a href="./guides/auto-form" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
           AutoForm Guide
         </a>
       </h3>
@@ -335,7 +335,7 @@ The `useForm` hook gives you complete control over form state, validation timing
         🎛️
       </div>
       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-        <a href="./useform" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+        <a href="./guides/use-form" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
           useForm Hook
         </a>
       </h3>
@@ -363,7 +363,7 @@ The `useForm` hook gives you complete control over form state, validation timing
         🔗
       </div>
       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-        <a href="./arrays" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+        <a href="./guides/array-fields" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
          Arrays
         </a>
       </h3>
@@ -389,7 +389,7 @@ The `useForm` hook gives you complete control over form state, validation timing
         See Examples →
       </a>
       <a
-        href="./form-reusability"
+        href="./concepts/component-reusability"
         className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
       >
         Form Reusability →

@@ -163,6 +163,6 @@ Learn about [component reusability patterns](./concepts/component-reusability.md
 
 - **[useForm Guide](./guides/use-form.md)** - Custom forms with full control
 - **[AutoForm Guide](./guides/auto-form.md)** - Schema-driven rapid development
-- **[Error Handling](./guides/error-handling.md)** - Comprehensive error management
+- **[Error Handling Guide](./guides/error-handling.md)** - Comprehensive error management
 
 Ready to build better forms? Let's [get started](./quick-start.md)!

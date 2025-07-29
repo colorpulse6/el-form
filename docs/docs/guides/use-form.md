@@ -554,8 +554,8 @@ const { register, handleSubmit, formState } = useForm();
 
 ## Next Steps
 
-- **[Error Handling Guide](./error-handling.md)** - Learn comprehensive error management
-- **[Async Validation Guide](./async-validation.md)** - Master server-side validation
-- **[Array Fields Guide](./array-fields.md)** - Handle dynamic lists and nested data
+- **[Error Handling Guide](../guides/error-handling.md)** - Error management patterns
+- **[Async Validation Guide](../guides/async-validation.md)** - Server-side validation
+- **[Array Fields Guide](../guides/array-fields.md)** - Handle dynamic lists and nested data
 - **[Component Reusability](../concepts/component-reusability.md)** - Build reusable form components
-- **[API Reference](../api/use-form.md)** - Complete useForm API documentation
+- **[API Reference](./use-form.md)** - Complete useForm API documentation

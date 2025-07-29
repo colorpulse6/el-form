@@ -125,7 +125,7 @@ const config: Config = {
             },
             {
               label: "Error Handling",
-              to: "/docs/error-handling",
+              to: "/docs/guides/error-handling",
             },
           ],
         },
