@@ -1,21 +1,45 @@
 const sidebars = {
   docs: [
-    "intro",
-    "quick-start",
     {
       type: "category",
-      label: "AutoForm",
-      items: ["autoform", "autoform-arrays", "custom-components"],
+      label: "Getting Started",
+      items: ["intro", "installation", "quick-start", "examples"],
     },
     {
       type: "category",
-      label: "useForm",
-      items: ["useform", "field-types", "useform-arrays"],
+      label: "Concepts",
+      items: [
+        "concepts/philosophy",
+        "concepts/validation",
+        "concepts/form-state",
+        "concepts/performance",
+        "concepts/component-reusability",
+      ],
     },
-    "form-reusability",
-    "error-handling",
-    "advanced",
-    "examples",
+    {
+      type: "category",
+      label: "Guides",
+      items: [
+        "guides/use-form",
+        "guides/auto-form",
+        "guides/error-handling",
+        "guides/async-validation",
+        "guides/array-fields",
+        "guides/custom-components",
+        "guides/integration-with-ui-libraries",
+      ],
+    },
+    {
+      type: "category",
+      label: "API Reference",
+      items: [
+        "api/overview",
+        "api/use-form",
+        "api/auto-form",
+        "api/form-provider",
+        "api/field-components",
+      ],
+    },
     "faq",
   ],
 };
