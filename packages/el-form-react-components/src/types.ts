@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { UseFormReturn, ValidatorConfig } from "el-form-react-hooks";
+import { ValidatorConfig } from "el-form-core";
+import { UseFormReturn } from "el-form-react-hooks";
 
 // Grid layout types
 export type GridColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
@@ -14,6 +15,11 @@ export interface AutoFormFieldConfig {
   component?: React.ComponentType<AutoFormFieldProps>;
   options?: Array<{ value: string; label: string }>;
   fields?: AutoFormFieldConfig[];
+  // Styling properties
+  className?: string;
+  inputClassName?: string;
+  labelClassName?: string;
+  errorClassName?: string;
 }
 
 export interface AutoFormFieldProps {
@@ -31,6 +37,11 @@ export interface AutoFormFieldProps {
   onAddItem?: () => void;
   onRemoveItem?: (index: number) => void;
   arrayPath?: string;
+  // Styling properties
+  className?: string;
+  inputClassName?: string;
+  labelClassName?: string;
+  errorClassName?: string;
 }
 
 export interface AutoFormErrorProps {
@@ -78,9 +89,10 @@ export interface AutoFormProps<T extends Record<string, any>> {
   onError?: (errors: Record<keyof T, string>) => void;
   children?: (formApi: UseFormReturn<T>) => React.ReactNode;
   customErrorComponent?: React.ComponentType<AutoFormErrorProps>;
-  componentMap?: ComponentMap;
-  // New validation options
+  componentMap?: Record<string, React.ComponentType<AutoFormFieldProps>>;
   validators?: ValidatorConfig;
   fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
+  submitButtonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
+  resetButtonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }

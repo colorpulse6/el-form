@@ -225,6 +225,71 @@ Override field configurations completely:
 />
 ```
 
+### Field Styling
+
+Customize the appearance of individual form fields:
+
+```tsx
+<AutoForm
+  schema={contactSchema}
+  fields={[
+    {
+      name: "name",
+      label: "Full Name",
+      placeholder: "Enter your name",
+      inputClassName:
+        "w-full bg-gray-50 border-2 border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500",
+      labelClassName: "text-lg font-semibold text-gray-800 mb-2 block",
+      errorClassName: "text-red-600 text-sm mt-1 font-medium",
+    },
+    {
+      name: "email",
+      label: "Email Address",
+      placeholder: "you@example.com",
+      inputClassName:
+        "w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500",
+      labelClassName: "text-sm font-medium text-gray-700 mb-1 block",
+      errorClassName: "text-red-500 text-xs mt-1",
+    },
+    {
+      name: "message",
+      label: "Message",
+      type: "textarea",
+      placeholder: "Tell us how we can help...",
+      inputClassName:
+        "w-full bg-gray-50 border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[120px]",
+      labelClassName: "text-base font-medium text-gray-800 mb-2 block",
+      errorClassName: "text-red-500 text-sm mt-1",
+    },
+  ]}
+  onSubmit={handleSubmit}
+/>
+```
+
+### Dark Mode Support
+
+AutoForm automatically supports dark mode when used with Tailwind CSS:
+
+```tsx
+<AutoForm
+  schema={userSchema}
+  fields={[
+    {
+      name: "name",
+      label: "Name",
+      placeholder: "Enter your name",
+      inputClassName:
+        "w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500",
+      labelClassName:
+        "text-gray-900 dark:text-white text-sm font-medium mb-1 block",
+      errorClassName: "text-red-500 dark:text-red-400 text-sm mt-1",
+    },
+    // ... other fields
+  ]}
+  onSubmit={handleSubmit}
+/>
+```
+
 ### Custom Components
 
 Replace any field with your own component:
@@ -768,14 +833,18 @@ function UserProfileForm({ userId }) {
 
 ### Field Configuration
 
-| Property      | Type               | Description                    |
-| ------------- | ------------------ | ------------------------------ |
-| `name`        | `string`           | Field name (must match schema) |
-| `label`       | `string`           | Field label override           |
-| `type`        | `FieldType`        | Input type override            |
-| `placeholder` | `string`           | Input placeholder              |
-| `colSpan`     | `1-12`             | Grid column span               |
-| `options`     | `{value, label}[]` | Select options                 |
+| Property         | Type               | Description                    |
+| ---------------- | ------------------ | ------------------------------ |
+| `name`           | `string`           | Field name (must match schema) |
+| `label`          | `string`           | Field label override           |
+| `type`           | `FieldType`        | Input type override            |
+| `placeholder`    | `string`           | Input placeholder              |
+| `colSpan`        | `1-12`             | Grid column span               |
+| `options`        | `{value, label}[]` | Select options                 |
+| `className`      | `string`           | CSS class for field container  |
+| `inputClassName` | `string`           | CSS class for input element    |
+| `labelClassName` | `string`           | CSS class for label element    |
+| `errorClassName` | `string`           | CSS class for error message    |
 
 ## Next Steps
 

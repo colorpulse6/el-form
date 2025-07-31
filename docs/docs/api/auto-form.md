@@ -38,6 +38,10 @@ interface AutoFormProps<T extends Record<string, any>> {
   validators?: ValidatorConfig;
   fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
+
+  // Button styling
+  submitButtonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
+  resetButtonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 ```
 
@@ -566,6 +570,12 @@ interface AutoFormFieldConfig {
     label: string;
   }>;
   component?: React.ComponentType<AutoFormFieldProps>; // Custom component
+
+  // Styling properties
+  className?: string;             // CSS class for field container
+  inputClassName?: string;        // CSS class for input element
+  labelClassName?: string;        // CSS class for label element
+  errorClassName?: string;        // CSS class for error message
 }
 ```
 
@@ -605,7 +615,78 @@ interface AutoFormFieldProps {
   onAddItem?: () => void; // For array fields
   onRemoveItem?: (index: number) => void; // For array fields
   arrayPath?: string; // For array fields
+
+  // Styling properties
+  className?: string; // CSS class for field container
+  inputClassName?: string; // CSS class for input element
+  labelClassName?: string; // CSS class for label element
+  errorClassName?: string; // CSS class for error message
 }
+```
+
+## Styling
+
+AutoForm provides comprehensive styling options through CSS class props:
+
+### Field-Level Styling
+
+```typescript
+<AutoForm
+  schema={userSchema}
+  fields={[
+    {
+      name: "email",
+      label: "Email Address",
+      placeholder: "you@example.com",
+      inputClassName:
+        "w-full bg-white border-2 border-blue-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500",
+      labelClassName: "text-lg font-semibold text-blue-800 mb-2 block",
+      errorClassName: "text-red-600 text-sm mt-1 font-medium",
+      className: "mb-6", // Container styling
+    },
+  ]}
+  onSubmit={handleSubmit}
+/>
+```
+
+### Dark Mode Support
+
+Use Tailwind's dark mode classes for automatic theme switching:
+
+```typescript
+<AutoForm
+  schema={userSchema}
+  fields={[
+    {
+      name: "name",
+      inputClassName:
+        "w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500",
+      labelClassName:
+        "text-gray-900 dark:text-white text-sm font-medium mb-1 block",
+      errorClassName: "text-red-500 dark:text-red-400 text-sm mt-1",
+    },
+  ]}
+  onSubmit={handleSubmit}
+/>
+```
+
+### Button Styling
+
+AutoForm also supports styling for submit and reset buttons:
+
+```typescript
+<AutoForm
+  schema={userSchema}
+  submitButtonProps={{
+    className:
+      "bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors",
+  }}
+  resetButtonProps={{
+    className:
+      "bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition-colors",
+  }}
+  onSubmit={handleSubmit}
+/>
 ```
 
 ## Examples

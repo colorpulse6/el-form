@@ -49,12 +49,16 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
   error,
   touched,
   options,
+  className,
+  inputClassName,
+  labelClassName,
+  errorClassName,
 }: AutoFormFieldProps) => {
   const fieldId = `field-${name}`;
 
   if (type === "checkbox") {
     return (
-      <div className="flex items-center gap-x-2">
+      <div className={className || "flex items-center gap-x-2"}>
         <input
           id={fieldId}
           name={name}
@@ -64,14 +68,19 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           onBlur={onBlur}
           className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
-        <label htmlFor={fieldId} className="text-sm font-medium text-gray-900">
+        <label
+          htmlFor={fieldId}
+          className={labelClassName || "text-sm font-medium text-gray-900"}
+        >
           {label}
         </label>
       </div>
     );
   }
 
-  const inputClasses = `
+  const inputClasses =
+    inputClassName ||
+    `
     w-full px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-500
     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
     ${
@@ -80,15 +89,17 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
         : "border-gray-300"
     }
   `
-    .trim()
-    .replace(/\s+/g, " ");
+      .trim()
+      .replace(/\s+/g, " ");
 
   return (
-    <div className="space-y-1">
+    <div className={className || "space-y-1"}>
       {label && (
         <label
           htmlFor={fieldId}
-          className="block text-sm font-medium text-gray-700"
+          className={
+            labelClassName || "block text-sm font-medium text-gray-700"
+          }
         >
           {label}
         </label>
@@ -135,7 +146,9 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
       )}
 
       {touched && error && (
-        <div className="text-red-500 text-xs mt-1">{error}</div>
+        <div className={errorClassName || "text-red-500 text-xs mt-1"}>
+          {error}
+        </div>
       )}
     </div>
   );
@@ -458,6 +471,8 @@ export function AutoForm<T extends Record<string, any>>({
   validators,
   fieldValidators,
   validateOn = "onChange",
+  submitButtonProps,
+  resetButtonProps,
 }: AutoFormProps<T>) {
   // Create validator config for the form
   // If custom validators are provided, use them; otherwise use the schema
@@ -594,6 +609,10 @@ export function AutoForm<T extends Record<string, any>>({
           error={error}
           touched={touched}
           options={fieldConfig.options}
+          className={fieldConfig.className}
+          inputClassName={fieldConfig.inputClassName}
+          labelClassName={fieldConfig.labelClassName}
+          errorClassName={fieldConfig.errorClassName}
         />
       </div>
     );
@@ -653,7 +672,8 @@ export function AutoForm<T extends Record<string, any>>({
           <button
             type="submit"
             disabled={formState.isSubmitting}
-            className="px-5 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200"
+            className="el-form-submit-button px-5 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200"
+            {...submitButtonProps}
           >
             {formState.isSubmitting ? "Submitting..." : "Submit"}
           </button>
@@ -662,6 +682,7 @@ export function AutoForm<T extends Record<string, any>>({
             type="button"
             onClick={() => reset()}
             className="px-5 py-2.5 bg-gray-600 text-white rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+            {...resetButtonProps}
           >
             Reset
           </button>

@@ -1,5 +1,45 @@
 /* Essential Docusaurus overrides only */
 
+/* Define CSS custom properties that automatically change with theme */
+:root {
+  --form-bg: #ffffff;
+  --form-border: #d1d5db;
+  --form-text: #111827;
+  --form-placeholder: #9ca3af;
+  --form-error: #ef4444;
+}
+
+[data-theme="dark"] {
+  --form-bg: #111827;
+  --form-border: #374151;
+  --form-text: #e5e7eb;
+  --form-placeholder: #6b7280;
+  --form-error: #f87171;
+}
+
+/* Apply form theming using CSS custom properties */
+.interactive-preview input,
+.interactive-preview textarea,
+.interactive-preview select {
+  background-color: var(--form-bg) !important;
+  border-color: var(--form-border) !important;
+  color: var(--form-text) !important;
+}
+
+.interactive-preview input::placeholder,
+.interactive-preview textarea::placeholder {
+  color: var(--form-placeholder) !important;
+}
+
+.interactive-preview label {
+  color: var(--form-text) !important;
+}
+
+.interactive-preview .text-red-500,
+.interactive-preview .text-red-400 {
+  color: var(--form-error) !important;
+}
+
 /* Ensure Tailwind classes work properly in navbar */
 .navbar__item {
   display: flex !important;
@@ -10,4 +50,8 @@
 .navbar__items .navbar__item > * {
   display: flex !important;
   align-items: center !important;
+}
+
+.interactive-preview .el-form-submit-button {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
 }
