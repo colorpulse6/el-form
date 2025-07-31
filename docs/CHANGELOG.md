@@ -1,5 +1,15 @@
 # el-form-docs
 
+## 0.4.0
+
+### Minor Changes
+
+- 2122008: Add auto form style props
+
+### Patch Changes
+
+- el-form-react@3.3.4
+
 ## 0.3.0
 
 ### Minor Changes
