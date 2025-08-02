@@ -51,7 +51,3 @@
   display: flex !important;
   align-items: center !important;
 }
-
-.interactive-preview .el-form-submit-button {
-  @apply bg-blue-600 text-white hover:bg-blue-700;
-}
