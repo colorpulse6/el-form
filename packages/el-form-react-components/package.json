@@ -1,7 +1,7 @@
 {
   "name": "el-form-react-components",
   "version": "3.4.0",
-  "description": "AutoForm and UI components for React - generate forms instantly from schemas (Zod, Yup, Valibot). Includes Tailwind CSS styling and customizable field components.",
+  "description": "Zero-boilerplate React AutoForm - generate beautiful forms instantly from Zod/Yup schemas. Pre-built Tailwind components, customizable field types, enterprise-ready form generator.",
   "author": "Nichalas Barnes",
   "license": "MIT",
   "repository": {

@@ -1,7 +1,7 @@
 {
   "name": "el-form-core",
   "version": "1.3.0",
-  "description": "Framework-agnostic form validation core powered by Zod",
+  "description": "Framework-agnostic form validation engine - schema-first validation core for TypeScript applications. Supports Zod, Yup, Valibot and custom validators.",
   "author": "Nichalas Barnes",
   "license": "MIT",
   "repository": {
@@ -13,10 +13,19 @@
     "form",
     "validation",
     "zod",
+    "yup",
+    "valibot",
     "typescript",
     "framework-agnostic",
     "schema-validation",
-    "type-safe"
+    "type-safe",
+    "form-validation",
+    "schema-first",
+    "validation-engine",
+    "typescript-validation",
+    "form-library",
+    "validator",
+    "schema-based-validation"
   ],
   "main": "dist/index.js",
   "module": "dist/index.mjs",
