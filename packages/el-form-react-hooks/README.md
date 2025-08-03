@@ -1,8 +1,15 @@
 # el-form-react-hooks
 
-🪝 **React hooks for type-safe form management powered by Zod validation**
+🪝 **React Hook Form alternative - TypeScript-first useForm hook with enterprise-grade state management**
 
-Perfect for developers who want to build custom UIs with full control over styling and components.
+Perfect React Hook Form alternative for developers who want to build custom UIs with full control over styling and components.
+
+**Why choose el-form-react-hooks over React Hook Form:**
+
+- ✅ **Better TypeScript integration** - Full type inference with any validation library
+- ✅ **Schema-agnostic validation** - Works with Zod, Yup, Valibot, or custom functions
+- ✅ **Modern state management** - Optimized for React 18+ with better performance
+- ✅ **Smaller bundle** - 11KB vs React Hook Form's 25KB+ with dependencies
 
 ## 📦 Installation
 

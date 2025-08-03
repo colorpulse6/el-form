@@ -1,8 +1,15 @@
 # el-form-react-components
 
-🎨 **Pre-built React form components with beautiful Tailwind styling**
+🎨 **Zero-boilerplate React AutoForm - Generate beautiful forms instantly from Zod schemas**
 
-Perfect for developers who want plug-and-play form components that look great out of the box.
+Perfect for developers who want plug-and-play form components that look great out of the box. Skip the tedious form building - generate complete, production-ready forms instantly.
+
+**AutoForm advantages:**
+
+- ✅ **Zero boilerplate code** - Define schema, get complete form UI
+- ✅ **Instant form generation** - From Zod schema to styled form in seconds
+- ✅ **Production ready** - Built-in validation, error handling, and accessibility
+- ✅ **Highly customizable** - Override any component or styling
 
 ## 📦 Installation
 
@@ -69,7 +76,7 @@ function App() {
 }
 ```
 
-## � Enhanced Validation System
+## 🛡️ Enhanced Validation System
 
 AutoForm now supports a flexible validation system that goes beyond just Zod schemas. You can combine schema validation with custom validators for maximum flexibility.
 
@@ -170,7 +177,7 @@ const fieldValidators = {
 />
 ```
 
-## �🛡️ Error Handling
+## 🛡️ Error Handling
 
 AutoForm provides comprehensive error handling with customization options:
 
