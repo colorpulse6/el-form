@@ -1,44 +1,74 @@
-# ⚡ El Form - Modern React Form Library
+# ⚡ El Form - Modern TypeScript React Form Library
 
 [![npm version](https://badge.fury.io/js/el-form-react.svg)](https://badge.fury.io/js/el-form-react)
 [![npm downloads](https://img.shields.io/npm/dm/el-form-react.svg)](https://www.npmjs.com/package/el-form-react)
+[![GitHub stars](https://img.shields.io/github/stars/colorpulse6/el-form.svg?style=social&label=Star&maxAge=2592000)](https://github.com/colorpulse6/el-form)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/el-form-react)](https://bundlephobia.com/package/el-form-react)
+[![Build Status](https://img.shields.io/github/workflow/status/colorpulse6/el-form/CI)](https://github.com/colorpulse6/el-form/actions)
 
-A **TypeScript-first React form library** with flexible validation support. Build forms with **AutoForm** for rapid development or **useForm** for complete control. El Form supports any validation approach - Zod, Yup, Valibot, custom functions, or no validation at all.
+**TypeScript-first React form library** with zero-boilerplate AutoForm and powerful useForm hook. The best React Hook Form alternative with schema-first validation (Zod, Yup, Valibot), built-in components, and enterprise-grade form management.
+
+## 📋 Table of Contents
+
+- [🚀 Quick Installation](#-quick-installation)
+- [🎯 Core Features](#-core-features)
+- [⚡ Quick Start](#-quick-start)
+- [🔧 Validation Approaches](#-validation-approaches)
+- [🎨 Component Reusability](#-component-reusability)
+- [🛡️ Error Handling](#️-error-handling)
+- [📦 Package Structure](#-package-structure)
+- [🏗️ Project Setup](#️-project-setup)
+- [🎨 Custom Error Components](#-custom-error-component-examples)
+- [🔧 Advanced Configuration](#-advanced-configuration)
+
+## 🚀 Quick Installation
+
+```bash
+# For everything (hooks + components + styling)
+npm install el-form-react
+
+# For hooks only (like React Hook Form alternative)
+npm install el-form-react-hooks
+
+# For AutoForm components only
+npm install el-form-react-components
+```
+
+> **Why El Form?** React Hook Form alternative with AutoForm, schema-agnostic validation, TypeScript-first design, and enterprise-ready form management.
 
 ## 🎯 **Core Features**
 
-### ✅ **Flexible Architecture**
+### ✨ **Best React Hook Form Alternative**
 
-- **AutoForm Component**: Auto-generated forms from schemas
-- **useForm Hook**: Manual control with React Hook Form-style API
-- **Multiple Validation**: Zod, Yup, custom functions, or no validation
-- **Modular Packages**: Install only what you need
+- **🚀 AutoForm Component**: Generate forms instantly from Zod/Yup schemas - zero boilerplate
+- **⚙️ useForm Hook**: React Hook Form-compatible API with enhanced TypeScript support
+- **🔥 Schema-First Validation**: Zod, Yup, Valibot, or custom validation functions
+- **📦 Modular Architecture**: Install only what you need - hooks, components, or complete package
 
-### ✅ **Modern Form Management**
+### ✨ **Enterprise Form Management**
 
-- **Schema-Agnostic**: Works with any validation library or custom functions
-- **Real-time Validation**: Configurable validation on change/blur/submit
-- **TypeScript Integration**: Full type safety with excellent inference
-- **Form State Tracking**: Complete state management including dirty detection
-- **Performance Optimized**: Minimal re-renders and debounced validation
+- **🏎️ Performance Optimized**: Minimal re-renders, debounced validation, efficient state updates
+- **🛡️ Type-Safe Forms**: Full TypeScript integration with automatic inference
+- **📊 Advanced State Tracking**: Dirty fields, touched state, submission status, form history
+- **⚡ Real-time Validation**: Configurable validation triggers (onChange/onBlur/onSubmit)
+- **🔄 Form Reset & History**: Complete form state management with undo/redo capabilities
 
-### ✅ **Component Reusability**
+### ✨ **Developer Experience**
 
-- **Context Pattern**: FormProvider and useFormContext for nested components
-- **Form Passing**: Explicit form instances for better testability
-- **Hybrid Pattern**: Components that work with both approaches
-- **Type-Safe Field Names**: Generic constraints for field validation
+- **🧩 Component Reusability**: Context pattern, form passing, and hybrid approaches
+- **🎨 Flexible Styling**: Works with Tailwind CSS, styled-components, CSS modules, or any styling solution
+- **🛠️ Built-in Components**: Pre-styled form fields, error displays, and layout components
+- **📝 Extensive Documentation**: Complete guides, examples, and TypeScript definitions
 
-### ✅ **Styling & Layout**
+### ✨ **Production Ready**
 
-- **Tailwind CSS**: Modern utility-first styling (optional)
-- **Grid/Flex Layouts**: Flexible responsive layouts
-- **Custom Components**: Override any component with your own
-- **Error Components**: Multiple error display patterns included
+- **🌐 Framework Agnostic Core**: Use with React, Next.js, Remix, or any React framework
+- **📱 Mobile Optimized**: Touch-friendly inputs and responsive design patterns
+- **♿ Accessibility Built-in**: ARIA attributes, keyboard navigation, screen reader support
+- **🧪 Testing Friendly**: Simple component testing with explicit form instances
 
 ### 📦 **Package Structure**
 
@@ -665,5 +695,33 @@ This form library is **production-ready** with comprehensive features including:
 - Enterprise applications requiring type safety
 - Modern React applications with any validation approach
 - Teams wanting consistent form patterns across projects
+
+## 🔥 **Why Choose El Form?**
+
+### **vs React Hook Form**
+
+- ✅ **AutoForm component** - Generate complete forms from schemas instantly
+- ✅ **Better TypeScript** - Full type inference with any validation library
+- ✅ **Modular packages** - Install only what you need
+- ✅ **Built-in components** - Pre-styled Tailwind components included
+- ✅ **Schema-agnostic** - Works with Zod, Yup, Valibot, or custom validators
+
+### **vs Formik**
+
+- ✅ **Modern React** - Built for React 18+ with hooks-first design
+- ✅ **Better performance** - Minimal re-renders and optimized state updates
+- ✅ **TypeScript-first** - Designed for TypeScript from the ground up
+- ✅ **Active development** - Regular updates and community support
+- ✅ **Zero configuration** - Works out of the box with sensible defaults
+
+### **vs React Final Form**
+
+- ✅ **Simpler API** - Intuitive hooks-based interface
+- ✅ **AutoForm magic** - Declarative forms from validation schemas
+- ✅ **Modern ecosystem** - Built for current React patterns and tools
+- ✅ **Comprehensive docs** - Complete guides and examples
+- ✅ **Framework agnostic core** - Can be adapted to other frameworks
+
+---
 
 **Get started:** `npm install el-form-react` and see the [documentation](https://el-form.dev) for examples and guides.

@@ -1,6 +1,6 @@
 # el-form-core
 
-🔧 **Framework-agnostic form validation core powered by Zod**
+🔧 **Framework-agnostic form validation engine - TypeScript schema validation core**
 
 The foundational validation logic that powers the entire el-form ecosystem.
 
@@ -92,8 +92,9 @@ if (result.success) {
 ## 🔗 Links
 
 - [Documentation](https://colorpulse6.github.io/el-form/)
-- [GitHub](https://github.com/colorpulse6/el-form)
-- [npm](https://www.npmjs.com/package/el-form-core)
+- [GitHub Repository](https://github.com/colorpulse6/el-form)
+- [npm Package](https://www.npmjs.com/package/el-form-core)
+- [React Hook Form Alternative Guide](https://github.com/colorpulse6/el-form#why-choose-el-form)
 
 ## 📄 License
 

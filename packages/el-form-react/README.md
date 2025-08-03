@@ -1,8 +1,15 @@
 # el-form-react
 
-⚡ **Complete React form solution with hooks and pre-built components**
+⚡ **Best React Hook Form alternative - Complete TypeScript form library with zero-boilerplate AutoForm**
 
-This is the **all-in-one** package that includes everything you need for React forms. If you want to optimize bundle size, consider using the individual packages instead.
+This is the **all-in-one** package that includes everything you need for modern React forms. Perfect alternative to React Hook Form + manual component building, or complex form builders like Formik.
+
+**Why developers choose el-form-react:**
+
+- ✅ **Instant AutoForm generation** from Zod/Yup schemas
+- ✅ **Better TypeScript support** than React Hook Form
+- ✅ **Zero configuration** - works out of the box
+- ✅ **Modern React patterns** - built for React 18+
 
 ## 📦 Installation
 
