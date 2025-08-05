@@ -11,6 +11,17 @@ This is the **all-in-one** package that includes everything you need for modern 
 - ✅ **Zero configuration** - works out of the box
 - ✅ **Modern React patterns** - built for React 18+
 
+## 🧭 **Choose the Right Package**
+
+| Package                                                                                | Use When                                            | Bundle Size | Dependencies |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------- | ----------- | ------------ |
+| **[el-form-react-hooks](https://www.npmjs.com/package/el-form-react-hooks)**           | You want full control over UI/styling               | 11KB        | None         |
+| **[el-form-react-components](https://www.npmjs.com/package/el-form-react-components)** | You want pre-built components with Tailwind         | 18KB        | Tailwind CSS |
+| **[el-form-react](https://www.npmjs.com/package/el-form-react)**                       | You want both hooks + components ← **You are here** | 29KB        | Tailwind CSS |
+| **[el-form-core](https://www.npmjs.com/package/el-form-core)**                         | Framework-agnostic validation only                  | 4KB         | None         |
+
+> **🎯 What you get:** This package combines [el-form-react-hooks](https://www.npmjs.com/package/el-form-react-hooks) + [el-form-react-components](https://www.npmjs.com/package/el-form-react-components) for maximum flexibility.
+
 ## 📦 Installation
 
 ```bash
@@ -279,6 +290,29 @@ const schema = z.object({
 
 <AutoForm schema={schema} onSubmit={(data) => console.log(data)} />;
 // Automatically generates Add/Remove buttons
+```
+
+## 🏗️ Package Structure
+
+This is part of the **el-form** ecosystem:
+
+- **`el-form-core`** - Framework-agnostic validation logic (4KB)
+- **`el-form-react-hooks`** - React hooks only (11KB)
+- **`el-form-react-components`** - Pre-built UI components (18KB)
+- **`el-form-react`** - Everything combined (29KB) ← **You are here**
+
+## 🧩 Need Individual Packages?
+
+### Just Hooks (11KB, no styling dependencies)
+
+```bash
+npm install el-form-react-hooks
+```
+
+### Just Components (18KB, requires Tailwind)
+
+```bash
+npm install el-form-react-components
 ```
 
 ## 🔗 Links
