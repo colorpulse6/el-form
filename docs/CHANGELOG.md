@@ -1,5 +1,13 @@
 # el-form-docs
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [2c16793]
+  - el-form-react@3.4.0
+  - el-form-core@1.4.0
+
 ## 0.4.0
 
 ### Minor Changes

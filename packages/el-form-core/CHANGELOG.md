@@ -1,5 +1,17 @@
 # el-form-core
 
+## 1.4.0
+
+### Minor Changes
+
+- 2c16793: Add cross-package links and better guidance in README files
+
+  - Added comparison table to help users choose the right package
+  - Clear warnings about styling dependencies for AutoForm components
+  - Direct users to el-form-react-hooks for custom styling needs
+  - Added package ecosystem overview to all READMEs
+  - Better onboarding to reduce confusion about package selection
+
 ## 1.3.0
 
 ### Minor Changes
