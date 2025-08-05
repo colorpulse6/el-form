@@ -46,7 +46,7 @@ This document provides a systematic approach to testing all features of the `el-
 | **State Management**    | Form state, dirty/touched tracking      | 🔴 Critical | ✅ Yes            |
 | **Form Control**        | Value setting, errors, reset            | 🟡 High     | ✅ Yes            |
 | **Advanced Features**   | Watch, submission, arrays, files        | 🟡 High     | ✅ Partially      |
-| **File Upload Support** | File inputs, validation, preview        | � High      | ✅ Yes            |
+| **File Upload Support** | File inputs, validation, preview        | 🟡 High      | ✅ Yes            |
 | **Context Integration** | FormProvider, reusability patterns      | 🟢 Medium   | ✅ Yes            |
 | **Performance**         | Optimization, edge cases                | 🟢 Medium   | ✅ Yes            |
 

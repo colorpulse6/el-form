@@ -147,7 +147,7 @@ const form = useForm({
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
   <FeatureCard
-    icon="�"
+    icon="🔧"
     title="Schema-Agnostic"
     description="Use Zod, Yup, custom functions, or no validation - your choice"
   />

@@ -100,7 +100,7 @@ if (result.success) {
 - **Parameters**: `schema` - Zod schema
 - **Returns**: Validation utilities for the schema
 
-## � For React Users - Get Started Here
+## ⚛️ For React Users - Get Started Here
 
 ### Want React Hook Form Alternative? (11KB)
 
@@ -135,7 +135,7 @@ import { useForm, AutoForm } from "el-form-react";
 // Both hooks and components
 ```
 
-## �🔗 Links
+## 🔗 Links
 
 - [Documentation](https://colorpulse6.github.io/el-form/)
 - [GitHub Repository](https://github.com/colorpulse6/el-form)
