@@ -4,6 +4,17 @@
 
 The foundational validation logic that powers the entire el-form ecosystem.
 
+## 🧭 **Choose the Right Package**
+
+| Package                                                                                | Use When                                              | Bundle Size | Dependencies |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------- | ----------- | ------------ |
+| **[el-form-react-hooks](https://www.npmjs.com/package/el-form-react-hooks)**           | You want full control over UI/styling                 | 11KB        | None         |
+| **[el-form-react-components](https://www.npmjs.com/package/el-form-react-components)** | You want pre-built components with Tailwind           | 18KB        | Tailwind CSS |
+| **[el-form-react](https://www.npmjs.com/package/el-form-react)**                       | You want both hooks + components                      | 29KB        | Tailwind CSS |
+| **[el-form-core](https://www.npmjs.com/package/el-form-core)**                         | Framework-agnostic validation only ← **You are here** | 4KB         | None         |
+
+> **⚠️ For React users:** You probably want one of the React packages above instead of this core package.
+
 ## 📦 Installation
 
 ```bash
@@ -88,6 +99,41 @@ if (result.success) {
 
 - **Parameters**: `schema` - Zod schema
 - **Returns**: Validation utilities for the schema
+
+## ⚛️ For React Users - Get Started Here
+
+### Want React Hook Form Alternative? (11KB)
+
+```bash
+npm install el-form-react-hooks
+```
+
+```tsx
+import { useForm } from "el-form-react-hooks";
+// Build any UI you want with full control
+```
+
+### Want Instant Forms? (18KB)
+
+```bash
+npm install el-form-react-components
+```
+
+```tsx
+import { AutoForm } from "el-form-react-components";
+// Zero-boilerplate forms from schemas
+```
+
+### Want Everything? (29KB)
+
+```bash
+npm install el-form-react
+```
+
+```tsx
+import { useForm, AutoForm } from "el-form-react";
+// Both hooks and components
+```
 
 ## 🔗 Links
 

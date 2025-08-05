@@ -79,7 +79,7 @@ npm install el-form-react-components
 
 ---
 
-## � **Quick Start**
+## ⚡ **Quick Start**
 
 ### Installation
 

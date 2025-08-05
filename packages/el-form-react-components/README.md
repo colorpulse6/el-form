@@ -11,6 +11,17 @@ Perfect for developers who want plug-and-play form components that look great ou
 - ✅ **Production ready** - Built-in validation, error handling, and accessibility
 - ✅ **Highly customizable** - Override any component or styling
 
+## 🧭 **Choose the Right Package**
+
+| Package                                                                                | Use When                                    | Bundle Size | Dependencies |
+| -------------------------------------------------------------------------------------- | ------------------------------------------- | ----------- | ------------ |
+| **[el-form-react-hooks](https://www.npmjs.com/package/el-form-react-hooks)**           | You want full control over UI/styling       | 11KB        | None         |
+| **[el-form-react-components](https://www.npmjs.com/package/el-form-react-components)** | You want pre-built components with Tailwind | 18KB        | Tailwind CSS |
+| **[el-form-react](https://www.npmjs.com/package/el-form-react)**                       | You want both hooks + components            | 29KB        | Tailwind CSS |
+| **[el-form-core](https://www.npmjs.com/package/el-form-core)**                         | Framework-agnostic validation only          | 4KB         | None         |
+
+> **⚠️ Need custom styling?** This package requires Tailwind CSS. If you prefer to build your own UI, use **[el-form-react-hooks](https://www.npmjs.com/package/el-form-react-hooks)** instead - it's lighter (11KB) and has zero styling dependencies.
+
 ## 📦 Installation
 
 ```bash
@@ -21,7 +32,7 @@ yarn add el-form-react-components
 pnpm add el-form-react-components
 ```
 
-**⚠️ Styling Requirement:** This package requires Tailwind CSS for styling.
+> **⚠️ IMPORTANT:** This package requires Tailwind CSS for styling. If you don't want to use Tailwind or prefer custom styling, use **[el-form-react-hooks](https://www.npmjs.com/package/el-form-react-hooks)** instead.
 
 ```bash
 npm install tailwindcss

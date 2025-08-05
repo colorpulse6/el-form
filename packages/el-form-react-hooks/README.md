@@ -11,6 +11,17 @@ Perfect React Hook Form alternative for developers who want to build custom UIs 
 - ✅ **Modern state management** - Optimized for React 18+ with better performance
 - ✅ **Smaller bundle** - 11KB vs React Hook Form's 25KB+ with dependencies
 
+## 🧭 **Choose the Right Package**
+
+| Package                                                                                | Use When                                                 | Bundle Size | Dependencies |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------- | ------------ |
+| **[el-form-react-hooks](https://www.npmjs.com/package/el-form-react-hooks)**           | You want full control over UI/styling ← **You are here** | 11KB        | None         |
+| **[el-form-react-components](https://www.npmjs.com/package/el-form-react-components)** | You want pre-built components with Tailwind              | 18KB        | Tailwind CSS |
+| **[el-form-react](https://www.npmjs.com/package/el-form-react)**                       | You want both hooks + components                         | 29KB        | Tailwind CSS |
+| **[el-form-core](https://www.npmjs.com/package/el-form-core)**                         | Framework-agnostic validation only                       | 4KB         | None         |
+
+> **✨ Want instant beautiful forms?** Try **[el-form-react-components](https://www.npmjs.com/package/el-form-react-components)** for zero-boilerplate AutoForm that generates complete forms from schemas.
+
 ## 📦 Installation
 
 ```bash
