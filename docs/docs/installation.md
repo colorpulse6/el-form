@@ -59,6 +59,15 @@ npm install el-form-react-components
 import { AutoForm } from "el-form-react-components";
 ```
 
+**For instant beautiful styling**, also import the pre-compiled CSS:
+
+```typescript
+import { AutoForm } from "el-form-react-components";
+import "el-form-react-components/styles.css"; // ✨ Zero-configuration styling
+```
+
+This provides professional styling with gradient buttons, focus states, and error handling - no Tailwind CSS installation required!
+
 ### For Framework-Agnostic Validation
 
 If you're building your own form library or using a different framework:

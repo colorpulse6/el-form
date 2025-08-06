@@ -49,6 +49,35 @@ This automatically generates:
 - Submit button
 - Validation and error handling
 
+### Adding Pre-built Styling
+
+For instant beautiful styling without any configuration, import the pre-compiled CSS:
+
+```tsx
+import { AutoForm } from "el-form-react-components";
+import "el-form-react-components/styles.css"; // ✨ Add this line
+import { z } from "zod";
+
+const userSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  age: z.number().min(18, "Must be 18+"),
+});
+
+function StyledUserForm() {
+  return (
+    <AutoForm
+      schema={userSchema}
+      onSubmit={(data) => console.log("Success:", data)}
+    />
+  );
+}
+```
+
+<Callout type="info" title="Zero Configuration Styling">
+The pre-compiled CSS includes professional styling with gradient buttons, rounded inputs, focus states, and error styling. No Tailwind CSS installation required!
+</Callout>
+
 ### With Custom Styling
 
 AutoForm comes with beautiful Tailwind CSS styling by default, but you can customize it:

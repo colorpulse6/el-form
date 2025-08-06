@@ -59,6 +59,7 @@ The fastest way to create a form is with AutoForm and a Zod schema:
 
 ```tsx
 import { AutoForm } from "el-form-react-components";
+import "el-form-react-components/styles.css"; // ✨ Beautiful styling
 import { z } from "zod";
 
 const contactSchema = z.object({
@@ -74,7 +75,7 @@ function ContactForm() {
 }
 ```
 
-This generates a complete form with validation, error handling, and type safety!
+This generates a complete form with validation, error handling, type safety, and beautiful styling!
 
 ## Alternative: useForm Hook
 
