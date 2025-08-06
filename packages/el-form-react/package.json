@@ -1,6 +1,6 @@
 {
   "name": "el-form-react",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "Best React Hook Form alternative - TypeScript-first form library with zero-boilerplate AutoForm and powerful useForm hook. Schema-first validation (Zod, Yup, Valibot), built-in components, enterprise-grade form state management.",
   "author": "Nichalas Barnes",
   "license": "MIT",
