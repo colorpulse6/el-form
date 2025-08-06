@@ -720,6 +720,40 @@ function ContactForm() {
 }
 ```
 
+### AutoForm with Pre-compiled Styling
+
+Import the pre-compiled CSS for instant beautiful styling:
+
+```typescript
+import { AutoForm } from "el-form-react-components";
+import "el-form-react-components/styles.css"; // ✨ Add this for instant styling
+import { z } from "zod";
+
+const userSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Please enter a valid email"),
+  role: z.enum(["admin", "user", "guest"]),
+});
+
+function StyledUserForm() {
+  return (
+    <AutoForm
+      schema={userSchema}
+      onSubmit={(data) => console.log("User data:", data)}
+    />
+  );
+}
+```
+
+**Features of pre-compiled styling:**
+
+- ✅ Professional gradient buttons with hover effects
+- ✅ Rounded inputs with focus states
+- ✅ Semantic CSS classes (`.el-form-*`)
+- ✅ Error styling with proper visual hierarchy
+- ✅ No Tailwind CSS installation required
+- ✅ 31KB minified CSS bundle
+
 ### Advanced AutoForm with Customization
 
 ```typescript

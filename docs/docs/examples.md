@@ -15,7 +15,8 @@ Explore practical examples of El Form in action.
 A complete user registration form with validation:
 
 ```tsx
-import { AutoForm } from "el-form";
+import { AutoForm } from "el-form-react-components";
+import "el-form-react-components/styles.css"; // ✨ Beautiful default styling
 import { z } from "zod";
 
 const registrationSchema = z
@@ -227,7 +228,7 @@ function ContactForm() {
 A survey form that shows different questions based on previous answers:
 
 ```tsx
-import { useForm } from "el-form";
+import { useForm } from "el-form-react-hooks";
 
 const surveySchema = z.object({
   userType: z.enum(["student", "professional", "other"]),
