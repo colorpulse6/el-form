@@ -58,7 +58,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
 
   if (type === "checkbox") {
     return (
-      <div className={className || "flex items-center gap-x-2"}>
+      <div className={className || "flex items-center gap-x-3"}>
         <input
           id={fieldId}
           name={name}
@@ -66,11 +66,11 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           checked={!!value}
           onChange={onChange}
           onBlur={onBlur}
-          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className={inputClassName || "el-form-checkbox"}
         />
         <label
           htmlFor={fieldId}
-          className={labelClassName || "text-sm font-medium text-gray-900"}
+          className={labelClassName || "text-sm font-medium text-gray-800"}
         >
           {label}
         </label>
@@ -78,29 +78,15 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
     );
   }
 
-  const inputClasses =
-    inputClassName ||
-    `
-    w-full px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-500
-    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-    ${
-      touched && error
-        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-        : "border-gray-300"
-    }
-  `
-      .trim()
-      .replace(/\s+/g, " ");
+  const hasError = touched && error;
+  const baseInputClasses = inputClassName || "el-form-input";
+  const errorInputClasses = hasError ? "el-form-input-error" : "";
+  const inputClasses = `${baseInputClasses} ${errorInputClasses}`.trim();
 
   return (
-    <div className={className || "space-y-1"}>
+    <div className={className || "el-form-field"}>
       {label && (
-        <label
-          htmlFor={fieldId}
-          className={
-            labelClassName || "block text-sm font-medium text-gray-700"
-          }
-        >
+        <label htmlFor={fieldId} className={labelClassName || "el-form-label"}>
           {label}
         </label>
       )}
@@ -113,7 +99,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           onChange={onChange}
           onBlur={onBlur}
           placeholder={placeholder}
-          className={`${inputClasses} resize-none`}
+          className={inputClassName || "el-form-textarea"}
           rows={4}
         />
       ) : type === "select" && options ? (
@@ -123,7 +109,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           value={value || ""}
           onChange={onChange}
           onBlur={onBlur}
-          className={inputClasses}
+          className={inputClassName || "el-form-select"}
         >
           <option value="">{placeholder || "Select an option"}</option>
           {options.map((option: { value: string; label: string }) => (
@@ -145,9 +131,10 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
         />
       )}
 
-      {touched && error && (
-        <div className={errorClassName || "text-red-500 text-xs mt-1"}>
-          {error}
+      {hasError && (
+        <div className={errorClassName || "el-form-error-message"}>
+          <span>⚠️</span>
+          <span className="ml-1">{error}</span>
         </div>
       )}
     </div>
@@ -295,17 +282,17 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="el-form-label">
           {fieldConfig.label || fieldConfig.name}
         </label>
         <button
           type="button"
           onClick={handleAddItem}
-          className="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="el-form-array-add-button"
         >
-          + Add {fieldConfig.label || fieldConfig.name}
+          ✨ Add {fieldConfig.label || fieldConfig.name}
         </button>
       </div>
 
@@ -314,24 +301,21 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
           const itemPath = `${path}[${index}]`;
 
           return (
-            <div
-              key={index}
-              className="p-4 border border-gray-200 rounded-lg bg-gray-50"
-            >
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-medium text-gray-700">
+            <div key={index} className="el-form-array-item">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-sm font-semibold text-gray-800">
                   {fieldConfig.label || fieldConfig.name} #{index + 1}
                 </h4>
                 <button
                   type="button"
                   onClick={() => handleRemoveItem(index)}
-                  className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="el-form-array-remove-button"
                 >
-                  Remove
+                  🗑️ Remove
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {fieldConfig.fields?.map((nestedField) =>
                   renderNestedField(nestedField, index, itemPath)
                 )}
@@ -342,9 +326,11 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
       </div>
 
       {arrayValue.length === 0 && (
-        <div className="text-gray-500 text-sm italic text-center py-4">
+        <div className="text-gray-500 text-sm italic text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+          <div className="text-2xl mb-2">📝</div>
           No {fieldConfig.label?.toLowerCase() || fieldConfig.name} added yet.
-          Click "Add" to create one.
+          <br />
+          Click "Add" to create your first entry.
         </div>
       )}
     </div>
@@ -644,57 +630,66 @@ export function AutoForm<T extends Record<string, any>>({
 
   // Default form rendering
   const defaultForm = (
-    <form
-      onSubmit={handleSubmit(
-        (data) => onSubmit(data),
-        onError ||
-          ((errors) => console.error("Form validation errors:", errors))
-      )}
-      className="w-full"
-    >
-      {/* Error Summary Component */}
-      <ErrorComponent
-        errors={formState.errors as Record<string, string>}
-        touched={formState.touched as Record<string, boolean>}
-      />
+    <div className="el-form-container">
+      <form
+        onSubmit={handleSubmit(
+          (data) => onSubmit(data),
+          onError ||
+            ((errors) => console.error("Form validation errors:", errors))
+        )}
+        className="w-full"
+      >
+        {/* Error Summary Component */}
+        <ErrorComponent
+          errors={formState.errors as Record<string, string>}
+          touched={formState.touched as Record<string, boolean>}
+        />
 
-      <div className={containerClasses}>
-        {fieldsToRender.map(renderField)}
+        <div className={containerClasses}>
+          {fieldsToRender.map(renderField)}
 
-        <div
-          className={`
-          flex gap-3 mt-6
-          ${layout === "grid" ? "col-span-full" : "w-full"}
-        `
-            .trim()
-            .replace(/\s+/g, " ")}
-        >
-          <button
-            type="submit"
-            disabled={formState.isSubmitting}
-            className="el-form-submit-button px-5 py-2.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200"
-            {...submitButtonProps}
+          <div
+            className={`
+            flex gap-4 mt-8
+            ${layout === "grid" ? "col-span-full" : "w-full"}
+          `
+              .trim()
+              .replace(/\s+/g, " ")}
           >
-            {formState.isSubmitting ? "Submitting..." : "Submit"}
-          </button>
+            <button
+              type="submit"
+              disabled={formState.isSubmitting}
+              className="el-form-submit-button"
+              {...submitButtonProps}
+            >
+              {formState.isSubmitting ? (
+                <>
+                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                  Submitting...
+                </>
+              ) : (
+                "Submit"
+              )}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => reset()}
-            className="px-5 py-2.5 bg-gray-600 text-white rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
-            {...resetButtonProps}
-          >
-            Reset
-          </button>
+            <button
+              type="button"
+              onClick={() => reset()}
+              className="el-form-reset-button"
+              {...resetButtonProps}
+            >
+              Reset
+            </button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 
   // If children render prop is provided, render it along with the form
   if (children) {
     return (
-      <div className="w-full">
+      <div className="el-form-container">
         <form
           onSubmit={handleSubmit(
             (data) => onSubmit(data),

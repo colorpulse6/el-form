@@ -40,14 +40,17 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
-    }
+    },
+    "./styles.css": "./dist/styles.css"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch"
+    "build": "tsup && pnpm run build:css",
+    "build:css": "pnpm dlx @tailwindcss/cli -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --minify",
+    "dev": "tsup --watch",
+    "dev:css": "pnpm dlx @tailwindcss/cli -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --watch"
   },
   "dependencies": {
     "el-form-core": "workspace:^",
@@ -64,6 +67,8 @@
   },
   "devDependencies": {
     "@types/react": "^18.0.0",
+    "tailwindcss": "^4.1.8",
+    "@tailwindcss/cli": "^4.1.8",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
   }

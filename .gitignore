@@ -41,6 +41,7 @@ Thumbs.db
 
 # Test projects
 el-form-test-project/
+examples/showcase/
 
 # Development tracking
 FEATURE_CHECKLIST.md

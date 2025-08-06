@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* AutoForm base styles */
+.el-form-error-summary {
+  @apply mb-6 p-4 border border-red-200 rounded-lg bg-red-50 shadow-sm;
+}
+
+.el-form-error-summary h3 {
+  @apply text-red-800 font-semibold mb-3 text-sm;
+}
+
+.el-form-error-summary ul {
+  @apply list-none space-y-2;
+}
+
+.el-form-error-summary li {
+  @apply text-red-600 text-sm flex items-start;
+}
+
+.el-form-submit-button {
+  @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md;
+}
+
+/* Enhanced field styling */
+.el-form-field {
+  @apply space-y-2;
+}
+
+.el-form-label {
+  @apply block text-sm font-medium text-gray-800;
+}
+
+.el-form-input {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 bg-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400;
+}
+
+.el-form-input-error {
+  @apply border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50;
+}
+
+.el-form-error-message {
+  @apply text-red-600 text-sm mt-1 flex items-center;
+}
+
+.el-form-checkbox {
+  @apply h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 transition-colors duration-200;
+}
+
+.el-form-select {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400;
+}
+
+.el-form-textarea {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 bg-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 resize-y;
+}
+
+.el-form-container {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+}
+
+/* Array field styling */
+.el-form-array-item {
+  @apply p-4 border border-gray-200 rounded-lg bg-gray-50 shadow-sm;
+}
+
+.el-form-array-add-button {
+  @apply px-4 py-2 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 shadow-sm;
+}
+
+.el-form-array-remove-button {
+  @apply px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200;
+}
+
+.el-form-reset-button {
+  @apply px-6 py-3 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 border border-gray-300;
+}
