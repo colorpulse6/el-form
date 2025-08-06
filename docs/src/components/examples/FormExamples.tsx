@@ -1,19 +1,29 @@
 import { AutoForm } from "el-form-react";
 import { z } from "zod";
 
-const registrationSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string(),
-  dob: z
-    .string()
-    .refine((val) => !isNaN(Date.parse(val)), {
-      message: "Please enter a valid date",
-    })
-    .optional(),
-});
+const registrationSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Please enter a valid email"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain uppercase, lowercase, and number"
+      ),
+    confirmPassword: z.string(),
+    dateOfBirth: z.string().transform((str) => new Date(str)),
+    terms: z
+      .union([z.boolean(), z.string()])
+      .transform((val) => val === true || val === "on")
+      .refine((val) => val, "You must accept the terms"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 // Simplified field configuration - CSS custom properties handle theming
 const fieldConfig = {
@@ -25,7 +35,7 @@ const fieldConfig = {
 
 export const RegistrationFormExample = () => {
   const handleSubmit = (data: z.infer<typeof registrationSchema>) => {
-    alert(`Welcome, ${data.firstName}!`);
+    alert(`Welcome, ${data.firstName}! Registration successful.`);
   };
 
   return (
@@ -48,14 +58,15 @@ export const RegistrationFormExample = () => {
         {
           name: "email",
           label: "Email Address",
-          placeholder: "Enter your email",
+          placeholder: "you@example.com",
           ...fieldConfig,
         },
         {
           name: "password",
           label: "Password",
           type: "password",
-          placeholder: "Enter password",
+          placeholder:
+            "Enter password (uppercase, lowercase, and number required)",
           ...fieldConfig,
         },
         {
@@ -66,9 +77,15 @@ export const RegistrationFormExample = () => {
           ...fieldConfig,
         },
         {
-          name: "dob",
+          name: "dateOfBirth",
           label: "Date of Birth",
           type: "date",
+          ...fieldConfig,
+        },
+        {
+          name: "terms",
+          label: "I accept the terms and conditions",
+          type: "checkbox",
           ...fieldConfig,
         },
       ]}

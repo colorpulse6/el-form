@@ -49,6 +49,16 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
           errors,
           isValid,
           isSubmitting: false,
+          // Mark all fields with errors as touched so they display
+          touched: !isValid
+            ? {
+                ...prev.touched,
+                ...Object.keys(errors).reduce(
+                  (acc, field) => ({ ...acc, [field]: true }),
+                  {}
+                ),
+              }
+            : prev.touched,
         }));
 
         if (isValid) {

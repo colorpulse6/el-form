@@ -456,7 +456,7 @@ export function AutoForm<T extends Record<string, any>>({
   componentMap,
   validators,
   fieldValidators,
-  validateOn = "onChange",
+  validateOn = "onSubmit",
   submitButtonProps,
   resetButtonProps,
 }: AutoFormProps<T>) {
@@ -464,6 +464,10 @@ export function AutoForm<T extends Record<string, any>>({
   // If custom validators are provided, use them; otherwise use the schema
   const formValidators = validators || {
     [validateOn === "manual" ? "onSubmit" : validateOn]: schema,
+    // Ensure onSubmit validation is always available for form submission
+    ...(validateOn !== "onSubmit" && validateOn !== "manual"
+      ? { onSubmit: schema }
+      : {}),
   };
 
   const formApi = useForm<T>({

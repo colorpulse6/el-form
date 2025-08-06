@@ -13,9 +13,13 @@ const advancedSchema = z
       .number()
       .min(18, "Must be at least 18 years old")
       .max(120, "Age must be realistic"),
-    newsletter: z.boolean().optional(),
+    newsletter: z
+      .union([z.boolean(), z.string()])
+      .transform((val) => val === true || val === "on")
+      .optional(),
     terms: z
-      .boolean()
+      .union([z.boolean(), z.string()])
+      .transform((val) => val === true || val === "on")
       .refine((val) => val === true, "You must accept the terms"),
   })
   .refine((data) => data.password === data.confirmPassword, {
