@@ -754,8 +754,6 @@ function StyledUserForm() {
 - ✅ No Tailwind CSS installation required
 - ✅ 31KB minified CSS bundle
 
-````
-
 ### Advanced AutoForm with Customization
 
 ```typescript
@@ -836,7 +834,7 @@ function RegistrationForm() {
     />
   );
 }
-````
+```
 
 ### AutoForm with Render Props
 
