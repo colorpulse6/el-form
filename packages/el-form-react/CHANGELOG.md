@@ -1,5 +1,12 @@
 # el-form-react
 
+## 3.3.5
+
+### Patch Changes
+
+- Updated dependencies [6860051]
+  - el-form-react-components@3.5.0
+
 ## 3.3.4
 
 ### Patch Changes
