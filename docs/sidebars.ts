@@ -41,6 +41,7 @@ const sidebars = {
       ],
     },
     "faq",
+    "changelog",
   ],
 };
 

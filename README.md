@@ -725,3 +725,5 @@ This form library is **production-ready** with comprehensive features including:
 ---
 
 **Get started:** `npm install el-form-react` and see the [documentation](https://el-form.dev) for examples and guides.
+
+📋 **[View the full changelog](https://el-form.dev/changelog)** for all updates and migration guides.
