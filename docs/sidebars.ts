@@ -22,6 +22,7 @@ const sidebars = {
       items: [
         "guides/use-form",
         "guides/auto-form",
+        "guides/conditional-rendering",
         "guides/error-handling",
         "guides/async-validation",
         "guides/array-fields",
