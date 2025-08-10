@@ -6,6 +6,13 @@ const config: Config = {
   title: "El Form",
   tagline: "Elegant React forms, powered by Zod",
   favicon: "img/favicon.ico",
+  // Algolia site verification meta tag (safe to keep after verification)
+  headTags: [
+    {
+      tagName: 'meta',
+      attributes: { name: 'algolia-site-verification', content: 'A184A8061FD9E493' },
+    },
+  ],
 
   // Set the production url of your site here
   url: "https://colorpulse6.github.io",
