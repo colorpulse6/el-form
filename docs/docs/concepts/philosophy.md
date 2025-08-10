@@ -1,5 +1,13 @@
 ---
 sidebar_position: 1
+title: Philosophy
+description: The core principles behind El Form—schema-agnostic validation, progressive enhancement, type safety, reusability, and performance.
+keywords:
+  - el form philosophy
+  - form library design
+  - react form principles
+  - schema agnostic validation
+  - performance forms
 ---
 
 # Philosophy

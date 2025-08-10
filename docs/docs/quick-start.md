@@ -1,5 +1,14 @@
 ---
 sidebar_position: 2
+title: Quick Start
+description: Get started with El Form quickly—installation, AutoForm, useForm hook, and validation options.
+keywords:
+  - el form
+  - react form quick start
+  - autoform
+  - useform hook
+  - schema validation
+  - form library setup
 ---
 
 import { InstallCommand, CodeBlock, Callout, FeatureCard, InteractivePreview, ProgressSteps } from '@site/src/components/DocComponents';

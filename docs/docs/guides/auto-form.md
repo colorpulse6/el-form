@@ -1,5 +1,13 @@
 ---
 sidebar_position: 2
+title: AutoForm Guide
+description: Learn how to generate fully functional, styled React forms from Zod schemas using El Form's AutoForm component.
+keywords:
+  - autoform
+  - el form autoform
+  - react form generation
+  - zod forms
+  - schema driven forms
 ---
 
 import { InteractivePreview } from '@site/src/components';
