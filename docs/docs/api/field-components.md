@@ -164,6 +164,76 @@ function UserForm() {
 }
 ```
 
+### FormSwitch & FormCase
+
+**Description:** Components for conditional form rendering based on field values.
+
+```typescript
+interface FormSwitchProps<T extends Record<string, any>> {
+  on: string; // The value to switch on
+  form: UseFormReturn<T>; // The form instance
+  children: React.ReactNode; // FormCase components
+}
+
+interface FormCaseProps<T extends Record<string, any>> {
+  value: string; // The value this case matches
+  children: (form: UseFormReturn<T>) => React.ReactNode; // Render prop
+}
+
+function FormSwitch<T extends Record<string, any>>(
+  props: FormSwitchProps<T>
+): JSX.Element;
+
+function FormCase<T extends Record<string, any>>(
+  props: FormCaseProps<T>
+): JSX.Element;
+```
+
+**Usage:**
+
+```typescript
+import { FormSwitch, FormCase } from "el-form-react-components";
+
+// Conditional rendering based on form values
+function ConditionalForm() {
+  const form = useForm({
+    defaultValues: {
+      userType: "individual",
+      firstName: "",
+      companyName: "",
+    },
+  });
+
+  const userType = form.watch("userType");
+
+  return (
+    <FormProvider form={form}>
+      <SelectField
+        name="userType"
+        label="User Type"
+        options={[
+          { value: "individual", label: "Individual" },
+          { value: "business", label: "Business" },
+        ]}
+      />
+
+      <FormSwitch on={userType} form={form}>
+        <FormCase value="individual">
+          {(individualForm) => (
+            <TextField name="firstName" label="First Name" required />
+          )}
+        </FormCase>
+        <FormCase value="business">
+          {(businessForm) => (
+            <TextField name="companyName" label="Company Name" required />
+          )}
+        </FormCase>
+      </FormSwitch>
+    </FormProvider>
+  );
+}
+```
+
 ## Base Field Props
 
 All field components extend the `BaseFieldProps` interface:

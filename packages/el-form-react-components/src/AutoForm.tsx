@@ -7,8 +7,59 @@ import {
   AutoFormFieldProps,
   AutoFormErrorProps,
   GridColumns,
+  ComponentMap,
 } from "./types";
 import { z } from "zod";
+import { FormSwitch, FormCase } from "./Form";
+
+// ------------------------------
+// Internal Zod helpers
+// ------------------------------
+type ZodDiscriminatedUnionLike = z.ZodTypeAny & {
+  _def?: {
+    typeName?: string;
+    discriminator?: string;
+    options?: z.ZodObject<any, any, any, any>[];
+  };
+};
+
+function extractDiscriminatedUnionDef(
+  schema: z.ZodTypeAny
+): {
+  discriminator: string;
+  options: z.ZodObject<any, any, any, any>[];
+} | null {
+  const def = (schema as ZodDiscriminatedUnionLike)?._def;
+  if (!def || def.typeName !== "ZodDiscriminatedUnion") return null;
+  const { discriminator, options } = def;
+  if (!discriminator || !Array.isArray(options)) return null;
+
+  // Validate each option is a ZodObject (future-proof against internal changes / misusage)
+  const validOptions: z.ZodObject<any, any, any, any>[] = [];
+  for (const opt of options) {
+    if (opt instanceof z.ZodObject) {
+      validOptions.push(opt);
+    } else if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[el-form] AutoForm: encountered non-ZodObject entry in discriminated union options; it will be ignored.",
+        opt
+      );
+    }
+  }
+
+  if (!validOptions.length) {
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error(
+        "[el-form] AutoForm: discriminated union has no valid ZodObject options after filtering; skipping field generation."
+      );
+    }
+    return null;
+  }
+
+  return { discriminator, options: validOptions };
+}
 
 // Default error component
 const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({
@@ -340,6 +391,42 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
 function generateFieldsFromSchema<T extends z.ZodType<any, any>>(
   schema: T
 ): AutoFormFieldConfig[] {
+  const typeName = schema._def.typeName;
+
+  // Handle discriminated union at the root level
+  if (typeName === "ZodDiscriminatedUnion") {
+    const du = extractDiscriminatedUnionDef(schema);
+    if (!du) return [];
+    const { discriminator: discriminatorField, options } = du;
+
+    const fieldConfig: AutoFormFieldConfig = {
+      name: "__discriminatedUnion__", // Special name for root-level discriminated union
+      type: "discriminatedUnion",
+      discriminatorField: discriminatorField,
+      unionOptions: {},
+    };
+
+    // Generate select options for the discriminator field
+    fieldConfig.options = options.map((option: z.ZodObject<any, any>) => {
+      const discriminatorValue = option.shape[discriminatorField]._def.value;
+      return {
+        value: discriminatorValue,
+        label:
+          discriminatorValue.charAt(0).toUpperCase() +
+          discriminatorValue.slice(1),
+      };
+    });
+
+    // Generate field configs for each union option
+    options.forEach((option: z.ZodObject<any, any>) => {
+      const discriminatorValue = option.shape[discriminatorField]._def.value;
+      fieldConfig.unionOptions![discriminatorValue] =
+        generateFieldsFromSchema(option);
+    });
+
+    return [fieldConfig];
+  }
+
   if (!(schema instanceof z.ZodObject)) {
     return [];
   }
@@ -379,6 +466,37 @@ function generateFieldsFromSchema<T extends z.ZodType<any, any>>(
         }));
       } else if (typeName === "ZodDate") {
         fieldConfig.type = "date";
+      } else if (typeName === "ZodDiscriminatedUnion") {
+        fieldConfig.type = "discriminatedUnion";
+        const duInner = extractDiscriminatedUnionDef(zodType);
+        if (!duInner) {
+          // Defensive: if structure changed, skip this field
+          continue;
+        }
+        const { discriminator: discriminatorField, options } = duInner;
+
+        fieldConfig.discriminatorField = discriminatorField;
+        fieldConfig.unionOptions = {};
+
+        // Generate select options for the discriminator field
+        fieldConfig.options = options.map((option: z.ZodObject<any, any>) => {
+          const discriminatorValue =
+            option.shape[discriminatorField]._def.value;
+          return {
+            value: discriminatorValue,
+            label:
+              discriminatorValue.charAt(0).toUpperCase() +
+              discriminatorValue.slice(1),
+          };
+        });
+
+        // Generate field configs for each union option
+        options.forEach((option: z.ZodObject<any, any>) => {
+          const discriminatorValue =
+            option.shape[discriminatorField]._def.value;
+          fieldConfig.unionOptions![discriminatorValue] =
+            generateFieldsFromSchema(option);
+        });
       } else if (typeName === "ZodArray") {
         fieldConfig.type = "array";
         const arrayElementType = (zodType._def as any).type;
@@ -413,6 +531,107 @@ function generateFieldsFromSchema<T extends z.ZodType<any, any>>(
 
   return fields;
 }
+
+// Component for rendering discriminated union fields
+interface DiscriminatedUnionFieldProps {
+  fieldConfig: AutoFormFieldConfig;
+  formApi: any;
+  componentMap?: ComponentMap;
+}
+
+const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
+  fieldConfig,
+  formApi,
+  componentMap,
+}) => {
+  const { register, watch } = formApi;
+
+  if (!fieldConfig.discriminatorField || !fieldConfig.unionOptions) {
+    return null;
+  }
+
+  // Register the discriminator field
+  const discriminatorProps = register(fieldConfig.discriminatorField);
+  const discriminatorValue = watch(fieldConfig.discriminatorField);
+
+  // Render the discriminator select field
+  const DiscriminatorComponent =
+    (fieldConfig.type && componentMap?.[fieldConfig.type]) || DefaultField;
+
+  return (
+    <div className="discriminated-union-field">
+      {/* Render the discriminator selector */}
+      <div className="mb-4">
+        <DiscriminatorComponent
+          name={fieldConfig.discriminatorField}
+          label={fieldConfig.label || fieldConfig.name}
+          type="select"
+          value={discriminatorValue}
+          onChange={discriminatorProps.onChange}
+          onBlur={discriminatorProps.onBlur}
+          options={fieldConfig.options}
+        />
+      </div>
+
+      {/* Render conditional fields using FormSwitch */}
+      <FormSwitch on={discriminatorValue} form={formApi}>
+        {fieldConfig.options?.map((option) => (
+          <FormCase key={option.value} value={option.value}>
+            {(form) => {
+              const optionFields =
+                fieldConfig.unionOptions![option.value] || [];
+              return (
+                <div className="space-y-4">
+                  {optionFields
+                    .filter(
+                      (field) => field.name !== fieldConfig.discriminatorField
+                    )
+                    .map((field) => {
+                      const fieldProps = form.register(field.name);
+                      const error = form.formState.errors[field.name];
+                      const touched = form.formState.touched[field.name];
+
+                      const fieldValue =
+                        "checked" in fieldProps
+                          ? fieldProps.checked
+                          : "value" in fieldProps
+                          ? fieldProps.value
+                          : undefined;
+
+                      const FieldComponent =
+                        field.component ||
+                        (field.type && componentMap?.[field.type]) ||
+                        DefaultField;
+
+                      return (
+                        <FieldComponent
+                          key={field.name}
+                          name={field.name}
+                          label={field.label || field.name}
+                          type={field.type}
+                          placeholder={field.placeholder}
+                          value={fieldValue}
+                          onChange={fieldProps.onChange}
+                          onBlur={fieldProps.onBlur}
+                          error={error}
+                          touched={touched}
+                          options={field.options}
+                          className={field.className}
+                          inputClassName={field.inputClassName}
+                          labelClassName={field.labelClassName}
+                          errorClassName={field.errorClassName}
+                        />
+                      );
+                    })}
+                </div>
+              );
+            }}
+          </FormCase>
+        ))}
+      </FormSwitch>
+    </div>
+  );
+};
 
 // Merge auto-generated fields with manual field overrides
 function mergeFields(
@@ -460,6 +679,10 @@ export function AutoForm<T extends Record<string, any>>({
   submitButtonProps,
   resetButtonProps,
 }: AutoFormProps<T>) {
+  // Special handling for root-level discriminated unions
+  const isRootDiscriminatedUnion =
+    schema._def.typeName === "ZodDiscriminatedUnion";
+
   // Create validator config for the form
   // If custom validators are provided, use them; otherwise use the schema
   const formValidators = validators || {
@@ -564,6 +787,19 @@ export function AutoForm<T extends Record<string, any>>({
       );
     }
 
+    // Handle discriminated union fields
+    if (fieldConfig.type === "discriminatedUnion") {
+      return (
+        <div key={fieldConfig.name} className={fieldContainerClasses}>
+          <DiscriminatedUnionField
+            fieldConfig={fieldConfig}
+            formApi={formApi}
+            componentMap={componentMap}
+          />
+        </div>
+      );
+    }
+
     // Handle regular fields
     const fieldProps = register(String(fieldName));
     const error = formState.errors[fieldName];
@@ -650,7 +886,56 @@ export function AutoForm<T extends Record<string, any>>({
         />
 
         <div className={containerClasses}>
-          {fieldsToRender.map(renderField)}
+          {isRootDiscriminatedUnion
+            ? // Special handling for root-level discriminated unions
+              (() => {
+                const duRoot = extractDiscriminatedUnionDef(schema);
+                if (!duRoot) {
+                  if (process.env.NODE_ENV !== "production") {
+                    // eslint-disable-next-line no-console
+                    console.warn(
+                      "[el-form] AutoForm: expected root discriminated union schema but could not extract definition."
+                    );
+                  }
+                  return null;
+                }
+                const { discriminator: discriminatorField, options } = duRoot;
+
+                const fieldConfig: AutoFormFieldConfig = {
+                  name: discriminatorField,
+                  type: "discriminatedUnion",
+                  discriminatorField: discriminatorField,
+                  unionOptions: {},
+                  options: options.map((option: z.ZodObject<any, any>) => {
+                    const discriminatorValue =
+                      option.shape[discriminatorField]._def.value;
+                    return {
+                      value: discriminatorValue,
+                      label:
+                        discriminatorValue.charAt(0).toUpperCase() +
+                        discriminatorValue.slice(1),
+                    };
+                  }),
+                };
+
+                // Generate field configs for each union option
+                options.forEach((option: z.ZodObject<any, any>) => {
+                  const discriminatorValue =
+                    option.shape[discriminatorField]._def.value;
+                  fieldConfig.unionOptions![discriminatorValue] =
+                    generateFieldsFromSchema(option);
+                });
+
+                return (
+                  <DiscriminatedUnionField
+                    fieldConfig={fieldConfig}
+                    formApi={formApi}
+                    componentMap={componentMap}
+                  />
+                );
+              })()
+            : // Normal field rendering
+              fieldsToRender.map(renderField)}
 
           <div
             className={`

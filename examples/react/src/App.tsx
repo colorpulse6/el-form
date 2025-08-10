@@ -3,11 +3,19 @@ import { FormHistoryTest } from "./forms/FormHistoryTest";
 import FileUploadTest from "./forms/FileUploadTest";
 import AdvancedFileValidationTest from "./forms/AdvancedFileValidationTest";
 import ZodFileValidationTest from "./forms/ZodFileValidationTest";
+import { DiscriminatedUnionForm } from "./forms/DiscriminatedUnionForm";
+import { AutoDiscriminatedUnionForm } from "./forms/AutoDiscriminatedUnionForm";
 import { useState } from "react";
 
 function App() {
   const [currentTest, setCurrentTest] = useState<
-    "basic" | "advanced" | "zod" | "validation" | "history"
+    | "basic"
+    | "advanced"
+    | "zod"
+    | "validation"
+    | "history"
+    | "discriminated"
+    | "auto-discriminated"
   >("basic");
 
   return (
@@ -108,6 +116,43 @@ function App() {
           >
             🕰️ Form History Test
           </button>
+          <button
+            onClick={() => setCurrentTest("discriminated")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "discriminated"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color: currentTest === "discriminated" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            🔀 Discriminated Unions
+          </button>
+          <button
+            onClick={() => setCurrentTest("auto-discriminated")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "auto-discriminated"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color:
+                currentTest === "auto-discriminated" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            🤖 Auto Discriminated
+          </button>
         </nav>
       </div>
 
@@ -116,6 +161,8 @@ function App() {
       {currentTest === "zod" && <ZodFileValidationTest />}
       {currentTest === "validation" && <BasicValidationTest />}
       {currentTest === "history" && <FormHistoryTest />}
+      {currentTest === "discriminated" && <DiscriminatedUnionForm />}
+      {currentTest === "auto-discriminated" && <AutoDiscriminatedUnionForm />}
     </div>
   );
 }

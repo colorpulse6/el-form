@@ -15,6 +15,9 @@ export interface AutoFormFieldConfig {
   component?: React.ComponentType<AutoFormFieldProps>;
   options?: Array<{ value: string; label: string }>;
   fields?: AutoFormFieldConfig[];
+  // Discriminated union properties
+  discriminatorField?: string;
+  unionOptions?: Record<string, AutoFormFieldConfig[]>;
   // Styling properties
   className?: string;
   inputClassName?: string;
@@ -73,7 +76,8 @@ export type FieldType =
   | "array"
   | "checkbox"
   | "date"
-  | "url";
+  | "url"
+  | "discriminatedUnion";
 
 export type ComponentMap = Partial<
   Record<FieldType, React.ComponentType<AutoFormFieldProps>>

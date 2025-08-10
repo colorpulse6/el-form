@@ -6,6 +6,8 @@ export {
   SelectField,
   createField,
 } from "./FieldComponents";
+// Export Form namespace components individually
+export { FormSwitch, FormCase } from "./Form";
 export type {
   AutoFormProps,
   AutoFormErrorProps,
