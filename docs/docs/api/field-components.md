@@ -1,5 +1,12 @@
 ---
 sidebar_position: 5
+title: Field Components API
+description: Reference for El Form field components (TextField, TextareaField, SelectField, CheckboxField, RadioGroup, FileField, custom mapping) with props and usage.
+keywords:
+  - field components api
+  - el form textfield
+  - react form components
+  - autoform component map
 ---
 
 # Field Components API

@@ -1,5 +1,12 @@
 ---
 sidebar_position: 2
+title: useForm API
+description: Full API reference for the useForm hook—options, return values, validation, arrays, files, snapshots and utility methods.
+keywords:
+  - useform api
+  - react form hook api
+  - el form useform reference
+  - form validation hook
 ---
 
 # useForm API
