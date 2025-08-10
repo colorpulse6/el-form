@@ -1,5 +1,6 @@
 import React from "react";
 import { UseFormReturn } from "el-form-react-hooks";
+import { __DEV__ } from "../utils/env";
 
 // Supported primitive discriminator types
 type DiscriminatorPrimitive = string | number | boolean;
@@ -42,7 +43,7 @@ export function FormSwitch<T extends Record<string, any>>({
   }
 
   // Duplicate detection (dev only)
-  if (process.env.NODE_ENV !== "production") {
+  if (__DEV__) {
     const counts = new Map<DiscriminatorPrimitive, number>();
     for (const child of childrenArray) {
       if (!isFormCaseElement(child)) continue;
@@ -68,7 +69,7 @@ export function FormSwitch<T extends Record<string, any>>({
   }
 
   // If we got here, no matching case was found. Provide a helpful dev warning.
-  if (process.env.NODE_ENV !== "production") {
+  if (__DEV__) {
     const available = childrenArray
       .filter(isFormCaseElement)
       .map((c) => c.props.value)

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { __DEV__ } from "./utils/env";
 import { useForm } from "el-form-react-hooks";
 import type { ValidatorConfig } from "el-form-core";
 import {
@@ -39,7 +40,7 @@ function extractDiscriminatedUnionDef(
   for (const opt of options) {
     if (opt instanceof z.ZodObject) {
       validOptions.push(opt);
-    } else if (process.env.NODE_ENV !== "production") {
+  } else if (__DEV__) {
       // eslint-disable-next-line no-console
       console.warn(
         "[el-form] AutoForm: encountered non-ZodObject entry in discriminated union options; it will be ignored.",
@@ -49,7 +50,7 @@ function extractDiscriminatedUnionDef(
   }
 
   if (!validOptions.length) {
-    if (process.env.NODE_ENV !== "production") {
+  if (__DEV__) {
       // eslint-disable-next-line no-console
       console.error(
         "[el-form] AutoForm: discriminated union has no valid ZodObject options after filtering; skipping field generation."
@@ -891,7 +892,7 @@ export function AutoForm<T extends Record<string, any>>({
               (() => {
                 const duRoot = extractDiscriminatedUnionDef(schema);
                 if (!duRoot) {
-                  if (process.env.NODE_ENV !== "production") {
+                  if (__DEV__) {
                     // eslint-disable-next-line no-console
                     console.warn(
                       "[el-form] AutoForm: expected root discriminated union schema but could not extract definition."
