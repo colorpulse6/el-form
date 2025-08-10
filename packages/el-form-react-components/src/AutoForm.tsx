@@ -39,22 +39,10 @@ function extractDiscriminatedUnionDef(
   for (const opt of options) {
     if (opt instanceof z.ZodObject) {
       validOptions.push(opt);
-    } else if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.warn(
-        "[el-form] AutoForm: encountered non-ZodObject entry in discriminated union options; it will be ignored.",
-        opt
-      );
     }
   }
 
   if (!validOptions.length) {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.error(
-        "[el-form] AutoForm: discriminated union has no valid ZodObject options after filtering; skipping field generation."
-      );
-    }
     return null;
   }
 
@@ -891,12 +879,7 @@ export function AutoForm<T extends Record<string, any>>({
               (() => {
                 const duRoot = extractDiscriminatedUnionDef(schema);
                 if (!duRoot) {
-                  if (process.env.NODE_ENV !== "production") {
-                    // eslint-disable-next-line no-console
-                    console.warn(
-                      "[el-form] AutoForm: expected root discriminated union schema but could not extract definition."
-                    );
-                  }
+                  
                   return null;
                 }
                 const { discriminator: discriminatorField, options } = duRoot;

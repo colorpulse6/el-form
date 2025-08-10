@@ -41,23 +41,7 @@ export function FormSwitch<T extends Record<string, any>>({
     );
   }
 
-  // Duplicate detection (dev only)
-  if (process.env.NODE_ENV !== "production") {
-    const counts = new Map<DiscriminatorPrimitive, number>();
-    for (const child of childrenArray) {
-      if (!isFormCaseElement(child)) continue;
-      counts.set(child.props.value, (counts.get(child.props.value) || 0) + 1);
-    }
-    const dups = Array.from(counts.entries()).filter(([, c]) => c > 1);
-    if (dups.length) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[el-form] FormSwitch: duplicate FormCase values detected: ` +
-          dups.map(([v, c]) => `${String(v)} (x${c})`).join(", ") +
-          ". Only the first occurrence will be considered."
-      );
-    }
-  }
+  // Duplicate detection removed.
 
   for (const child of childrenArray) {
     if (!isFormCaseElement(child)) continue;
@@ -67,21 +51,7 @@ export function FormSwitch<T extends Record<string, any>>({
     }
   }
 
-  // If we got here, no matching case was found. Provide a helpful dev warning.
-  if (process.env.NODE_ENV !== "production") {
-    const available = childrenArray
-      .filter(isFormCaseElement)
-      .map((c) => c.props.value)
-      .join(", ");
-    // Only warn if there is at least one FormCase child (otherwise user might be composing differently)
-    if (available) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[el-form] FormSwitch: no FormCase matched value "${on}". Available cases: [${available}].` +
-          " This can happen if defaultValues uses a value outside the discriminated union, the field was reset, or the FormCase value has a typo."
-      );
-    }
-  }
+  // Dev warning removed.
 
   if (fallback) {
     if (typeof fallback === "function") {
