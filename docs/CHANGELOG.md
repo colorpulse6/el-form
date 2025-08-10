@@ -1,5 +1,11 @@
 # el-form-docs
 
+## 0.6.1
+
+### Patch Changes
+
+- el-form-react@3.4.3
+
 ## 0.6.0
 
 ### Minor Changes
