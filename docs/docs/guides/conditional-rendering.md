@@ -70,37 +70,49 @@ function ConditionalForm() {
 
 ### FormSwitch
 
-The main component that handles the conditional logic.
+The main component that handles conditional logic. Supports string, number, or boolean discriminators.
 
 ```typescript
+type DiscriminatorPrimitive = string | number | boolean;
+
 interface FormSwitchProps<T extends Record<string, any>> {
-  on: string; // The value to switch on
-  form: UseFormReturn<T>; // The form instance
-  children: React.ReactNode; // FormCase components
+  on: DiscriminatorPrimitive | null | undefined; // Current discriminator value
+  form: UseFormReturn<T>; // Form instance
+  children: React.ReactNode; // One or more FormCase elements
+  fallback?: React.ReactNode | ((form: UseFormReturn<T>) => React.ReactNode); // Optional when no case matches
 }
 ```
 
 **Props:**
 
-- `on`: The current value that determines which case to render
-- `form`: The form instance from `useForm`
-- `children`: One or more `FormCase` components
+- `on`: Current value used to select a matching `FormCase`. If `null`/`undefined`, nothing renders (or fallback if provided).
+- `form`: The active form API.
+- `children`: `FormCase` elements (each declares a `value`).
+- `fallback` (optional): Rendered (or invoked if a function) when no `FormCase` value matches.
 
 ### FormCase
 
-Individual cases that can be rendered by `FormSwitch`.
+Declarative case definition consumed by `FormSwitch`. It does not render its function itself; `FormSwitch` invokes it only when matched.
 
 ```typescript
+type DiscriminatorPrimitive = string | number | boolean;
+
 interface FormCaseProps<T extends Record<string, any>> {
-  value: string; // The value this case matches
-  children: (form: UseFormReturn<T>) => React.ReactNode; // Render prop
+  value: DiscriminatorPrimitive; // Value to match against `on`
+  children: (form: UseFormReturn<T>) => React.ReactNode; // Render function for this branch
 }
 ```
 
 **Props:**
 
-- `value`: The value that triggers this case
-- `children`: A render prop function that receives the form instance
+- `value`: Primitive discriminator value (string | number | boolean).
+- `children`: Render function receiving the form instance for this branch.
+
+### Dev Diagnostics
+
+- If two `FormCase` elements share the same `value`, a dev-time error is logged.
+- If no case matches, a dev-time warning lists available values (unless a `fallback` prop handles it).
+- These diagnostics are stripped in production builds.
 
 ## Advanced Examples
 
@@ -140,7 +152,11 @@ function AnimalForm() {
         <option value="dog">Dog</option>
       </select>
 
-      <FormSwitch on={type} form={form}>
+      <FormSwitch
+        on={type}
+        form={form}
+        fallback={<p>Select an animal type.</p>}
+      >
         <FormCase value="cat">
           {(catForm) => (
             <div>
@@ -200,7 +216,13 @@ function WizardForm() {
     <form>
       <div className="step-indicator">Step: {currentStep}</div>
 
-      <FormSwitch on={currentStep} form={form}>
+      <FormSwitch
+        on={currentStep}
+        form={form}
+        fallback={(f) => (
+          <p className="error">Unknown step: {String(f.watch("step"))}</p>
+        )}
+      >
         <FormCase value="personal">
           {(personalForm) => (
             <div>
@@ -292,7 +314,7 @@ function FeatureToggleForm() {
       <input {...form.register("title")} placeholder="Title" />
       <textarea {...form.register("content")} placeholder="Content" />
 
-      <FormSwitch on={userRole} form={form}>
+      <FormSwitch on={userRole} form={form} fallback={<p>No role selected.</p>}>
         <FormCase value="basic">
           {() => (
             <p className="info">Basic users can only edit title and content.</p>
@@ -340,7 +362,7 @@ function FeatureToggleForm() {
 
 ## Type Safety
 
-The FormSwitch component maintains type safety through TypeScript generics. While the form object is typed as `any` within each FormCase for flexibility, you can add your own type assertions or use discriminated unions with Zod for full type safety:
+`FormSwitch` and `FormCase` rely on the same generic `T` you passed to `useForm<T>()`. Each render function receives a fully typed `UseFormReturn<T>`. When using Zod discriminated unions, you still get compile-time safety for shared fields. If you need _branch-level_ narrowed types, refine inside the render function using a type guard or by splitting your form into sub-schemas.
 
 ```typescript
 // With Zod discriminated unions, you get automatic type narrowing
@@ -377,28 +399,14 @@ Choose clear, descriptive values for your switch cases:
 </FormSwitch>
 ```
 
-### 2. Handle Default Cases
+### 2. Provide a Fallback
 
-Always consider what happens when no case matches:
+Use the `fallback` prop instead of crafting a pseudo "default" case:
 
-```typescript
-function SafeForm() {
-  const form = useForm();
-  const type = form.watch("type");
-
-  return (
-    <form>
-      <FormSwitch on={type || "default"} form={form}>
-        <FormCase value="default">
-          {() => <p>Please select a type above</p>}
-        </FormCase>
-        <FormCase value="specific">
-          {(form) => <SpecificFields form={form} />}
-        </FormCase>
-      </FormSwitch>
-    </form>
-  );
-}
+```tsx
+<FormSwitch on={type} form={form} fallback={<p>Please select a type above.</p>}>
+  <FormCase value="specific">{(f) => <SpecificFields form={f} />}</FormCase>
+</FormSwitch>
 ```
 
 ### 3. Keep Cases Simple
@@ -445,6 +453,10 @@ const schema = z.discriminatedUnion("type", [
 ]);
 ```
 
+### 5. Avoid Duplicate Values
+
+Each `value` must be unique. Duplicates log an error in development; only the first match is rendered.
+
 ## Performance Considerations
 
 - FormSwitch only renders the matching FormCase, so unused cases don't impact performance
@@ -457,17 +469,20 @@ const schema = z.discriminatedUnion("type", [
 
 If your FormCase isn't rendering, check that:
 
-1. The `value` prop exactly matches the watched field value
-2. The watched field has a value (not undefined or null)
-3. The FormCase is a direct child of FormSwitch
+1. The `value` prop exactly matches the watched field value (strict equality)
+2. The watched field is not `null`/`undefined` (or use `fallback`)
+3. The `FormCase` is a direct child of `FormSwitch`
+4. No typos or casing differences ("Dog" vs "dog")
+5. No duplicate `value` overshadowing your intended case
 
 ### TypeScript Errors
 
 If you encounter TypeScript errors:
 
-1. Ensure your form type includes all possible fields from all cases
-2. Use discriminated unions with Zod for better type inference
-3. Add type assertions within FormCase children if needed
+1. Ensure the generic `T` includes fields from every branch.
+2. Use Zod discriminated unions or a unified interface with optional branch fields.
+3. Narrow inside a branch only after checking the discriminator: `if (form.watch("type") === "cat") { ... }`.
+4. For large unions, split branch UIs into separate components for clarity.
 
 ## Integration with Other Libraries
 

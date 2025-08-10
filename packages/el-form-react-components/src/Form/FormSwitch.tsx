@@ -1,20 +1,26 @@
 import React from "react";
 import { UseFormReturn } from "el-form-react-hooks";
 
+// Supported primitive discriminator types
+type DiscriminatorPrimitive = string | number | boolean;
+
 interface FormSwitchProps<T extends Record<string, any>> {
   /**
    * Current discriminator value. May be temporarily undefined during initial render
    * if the form field has not been initialized yet, so we allow undefined for robustness.
    */
-  on: string | undefined | null;
+  on: DiscriminatorPrimitive | undefined | null;
   form: UseFormReturn<T>;
   children: React.ReactNode;
+  /** Optional fallback rendered when no case matches */
+  fallback?: React.ReactNode | ((form: UseFormReturn<T>) => React.ReactNode);
 }
 
 export function FormSwitch<T extends Record<string, any>>({
   on,
   form,
   children,
+  fallback,
 }: FormSwitchProps<T>) {
   // If the discriminator hasn't been set yet, don't attempt to render a branch.
   if (on == null) return null;
@@ -23,16 +29,34 @@ export function FormSwitch<T extends Record<string, any>>({
 
   // Type guard to ensure an element matches the expected FormCase shape
   function isFormCaseElement(el: unknown): el is React.ReactElement<{
-    value: string;
+    value: DiscriminatorPrimitive;
     children: (form: UseFormReturn<T>) => React.ReactNode;
   }> {
     if (!React.isValidElement(el)) return false;
     const props: any = el.props;
     return (
       props &&
-      typeof props.value === "string" &&
+      ["string", "number", "boolean"].includes(typeof props.value) &&
       typeof props.children === "function"
     );
+  }
+
+  // Duplicate detection (dev only)
+  if (process.env.NODE_ENV !== "production") {
+    const counts = new Map<DiscriminatorPrimitive, number>();
+    for (const child of childrenArray) {
+      if (!isFormCaseElement(child)) continue;
+      counts.set(child.props.value, (counts.get(child.props.value) || 0) + 1);
+    }
+    const dups = Array.from(counts.entries()).filter(([, c]) => c > 1);
+    if (dups.length) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[el-form] FormSwitch: duplicate FormCase values detected: ` +
+          dups.map(([v, c]) => `${String(v)} (x${c})`).join(", ") +
+          ". Only the first occurrence will be considered."
+      );
+    }
   }
 
   for (const child of childrenArray) {
@@ -59,5 +83,8 @@ export function FormSwitch<T extends Record<string, any>>({
     }
   }
 
+  if (fallback) {
+    return typeof fallback === "function" ? (fallback as any)(form) : fallback;
+  }
   return null;
 }
