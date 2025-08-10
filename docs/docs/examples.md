@@ -1,5 +1,12 @@
 ---
 sidebar_position: 6
+title: Examples
+description: Practical example forms demonstrating registration, contact, profile editing and more with El Form.
+keywords:
+  - form examples
+  - el form examples
+  - react form demos
+  - autoform examples
 ---
 
 import { InteractivePreview } from '@site/src/components';

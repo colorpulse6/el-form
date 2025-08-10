@@ -1,5 +1,12 @@
 ---
 sidebar_position: 7
+title: Integrating UI Libraries
+description: Patterns for integrating El Form with Material UI, Ant Design, Shadcn/ui and other component libraries.
+keywords:
+  - material ui forms
+  - ant design forms
+  - shadcn forms
+  - el form integration
 ---
 
 # Integration with UI Libraries

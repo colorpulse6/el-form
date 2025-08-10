@@ -1,5 +1,12 @@
 ---
 sidebar_position: 7
+title: FAQ
+description: Frequently asked questions about El Form—features, installation, customization, and best practices.
+keywords:
+  - el form faq
+  - react form questions
+  - form library comparison
+  - autoform faq
 ---
 
 # Frequently Asked Questions

@@ -1,3 +1,11 @@
+---
+title: Changelog
+description: Version history and notable changes for El Form following semantic versioning and Keep a Changelog format.
+keywords:
+  - el form changelog
+  - release notes
+  - version history
+---
 # Changelog
 
 All notable changes to the el-form project will be documented in this file.

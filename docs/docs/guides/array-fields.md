@@ -1,5 +1,12 @@
 ---
 sidebar_position: 5
+title: Array Fields Guide
+description: Learn how to build and manage dynamic array and nested field structures in El Form with add/remove operations and validation patterns.
+keywords:
+  - array fields
+  - dynamic form fields
+  - nested form arrays
+  - el form arrays
 ---
 
 # Array Fields Guide
