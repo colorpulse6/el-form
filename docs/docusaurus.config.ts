@@ -2,6 +2,11 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import path from "path";
 
+// Algolia env vars (public search key is safe in client bundle but keep pattern consistent)
+const algoliaAppId = process.env.DOCSEARCH_APP_ID;
+const algoliaApiKey = process.env.DOCSEARCH_API_KEY; // search-only key
+const algoliaIndexName = process.env.DOCSEARCH_INDEX_NAME || "el_form";
+
 const config: Config = {
   title: "El Form",
   tagline: "Elegant React forms, powered by Zod",
@@ -9,8 +14,11 @@ const config: Config = {
   // Algolia site verification meta tag (safe to keep after verification)
   headTags: [
     {
-      tagName: 'meta',
-      attributes: { name: 'algolia-site-verification', content: 'A184A8061FD9E493' },
+      tagName: "meta",
+      attributes: {
+        name: "algolia-site-verification",
+        content: "A184A8061FD9E493",
+      },
     },
   ],
 
@@ -53,7 +61,7 @@ const config: Config = {
   ],
 
   plugins: [
-    async function tailwindPlugin(context, options) {
+    async function tailwindPlugin() {
       return {
         name: "docusaurus-tailwindcss",
         configurePostCss(postcssOptions) {
@@ -63,10 +71,10 @@ const config: Config = {
       };
     },
     // Custom plugin to handle monorepo Webpack configuration
-    async function monorepoWebpack(context, options) {
+    async function monorepoWebpack() {
       return {
         name: "docusaurus-monorepo-webpack",
-        configureWebpack(config, isServer, utils) {
+        configureWebpack(_config, _isServer, _utils) {
           return {
             resolve: {
               alias: {
@@ -98,6 +106,23 @@ const config: Config = {
       darkTheme: require("prism-react-renderer").themes.vsDark,
       additionalLanguages: ["typescript", "jsx", "tsx"],
     },
+    // Conditionally enable Algolia DocSearch when env vars are provided
+    algolia:
+      algoliaAppId && algoliaApiKey
+        ? {
+            appId: algoliaAppId,
+            apiKey: algoliaApiKey,
+            indexName: algoliaIndexName,
+            contextualSearch: true,
+            insights: true,
+            searchParameters: {},
+            replaceSearchResultPathname: {
+              // Type expects string patterns; keep consistent base path
+              from: "/el-form/",
+              to: "/el-form/",
+            },
+          }
+        : undefined,
     navbar: {
       title: "El Form",
       logo: {
