@@ -84,7 +84,11 @@ export function FormSwitch<T extends Record<string, any>>({
   }
 
   if (fallback) {
-    return typeof fallback === "function" ? (fallback as any)(form) : fallback;
+    if (typeof fallback === "function") {
+      // Narrow to the function variant of the fallback union
+      return (fallback as (form: UseFormReturn<T>) => React.ReactNode)(form);
+    }
+    return fallback;
   }
   return null;
 }
