@@ -23,14 +23,42 @@ type ZodDiscriminatedUnionLike = z.ZodTypeAny & {
   };
 };
 
-function extractDiscriminatedUnionDef(schema: z.ZodTypeAny):
-  | { discriminator: string; options: z.ZodObject<any, any, any, any>[] }
-  | null {
+function extractDiscriminatedUnionDef(
+  schema: z.ZodTypeAny
+): {
+  discriminator: string;
+  options: z.ZodObject<any, any, any, any>[];
+} | null {
   const def = (schema as ZodDiscriminatedUnionLike)?._def;
   if (!def || def.typeName !== "ZodDiscriminatedUnion") return null;
   const { discriminator, options } = def;
   if (!discriminator || !Array.isArray(options)) return null;
-  return { discriminator, options: options as z.ZodObject<any, any, any, any>[] };
+
+  // Validate each option is a ZodObject (future-proof against internal changes / misusage)
+  const validOptions: z.ZodObject<any, any, any, any>[] = [];
+  for (const opt of options) {
+    if (opt instanceof z.ZodObject) {
+      validOptions.push(opt);
+    } else if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[el-form] AutoForm: encountered non-ZodObject entry in discriminated union options; it will be ignored.",
+        opt
+      );
+    }
+  }
+
+  if (!validOptions.length) {
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error(
+        "[el-form] AutoForm: discriminated union has no valid ZodObject options after filtering; skipping field generation."
+      );
+    }
+    return null;
+  }
+
+  return { discriminator, options: validOptions };
 }
 
 // Default error component
@@ -367,9 +395,9 @@ function generateFieldsFromSchema<T extends z.ZodType<any, any>>(
 
   // Handle discriminated union at the root level
   if (typeName === "ZodDiscriminatedUnion") {
-  const du = extractDiscriminatedUnionDef(schema);
-  if (!du) return [];
-  const { discriminator: discriminatorField, options } = du;
+    const du = extractDiscriminatedUnionDef(schema);
+    if (!du) return [];
+    const { discriminator: discriminatorField, options } = du;
 
     const fieldConfig: AutoFormFieldConfig = {
       name: "__discriminatedUnion__", // Special name for root-level discriminated union
