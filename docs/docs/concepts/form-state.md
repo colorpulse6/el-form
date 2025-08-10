@@ -1,5 +1,13 @@
 ---
 sidebar_position: 3
+title: Form State
+description: Overview of El Form's form state model—values, errors, touched fields, submission and change tracking with high performance.
+keywords:
+  - form state
+  - react form state management
+  - el form state
+  - dirty fields tracking
+  - validation state
 ---
 
 # Form State

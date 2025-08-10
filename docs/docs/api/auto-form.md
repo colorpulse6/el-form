@@ -1,5 +1,12 @@
 ---
 sidebar_position: 3
+title: AutoForm API
+description: Detailed API reference for the AutoForm component including props, field configuration, validation, customization and layout options.
+keywords:
+  - autoform api
+  - el form autoform props
+  - schema generated forms
+  - react form generation api
 ---
 
 # AutoForm API
