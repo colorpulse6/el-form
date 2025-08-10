@@ -12,6 +12,27 @@ import {
 import { z } from "zod";
 import { FormSwitch, FormCase } from "./Form";
 
+// ------------------------------
+// Internal Zod helpers
+// ------------------------------
+type ZodDiscriminatedUnionLike = z.ZodTypeAny & {
+  _def?: {
+    typeName?: string;
+    discriminator?: string;
+    options?: z.ZodObject<any, any, any, any>[];
+  };
+};
+
+function extractDiscriminatedUnionDef(schema: z.ZodTypeAny):
+  | { discriminator: string; options: z.ZodObject<any, any, any, any>[] }
+  | null {
+  const def = (schema as ZodDiscriminatedUnionLike)?._def;
+  if (!def || def.typeName !== "ZodDiscriminatedUnion") return null;
+  const { discriminator, options } = def;
+  if (!discriminator || !Array.isArray(options)) return null;
+  return { discriminator, options: options as z.ZodObject<any, any, any, any>[] };
+}
+
 // Default error component
 const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({
   errors,
@@ -346,8 +367,9 @@ function generateFieldsFromSchema<T extends z.ZodType<any, any>>(
 
   // Handle discriminated union at the root level
   if (typeName === "ZodDiscriminatedUnion") {
-    const discriminatorField = (schema._def as any).discriminator;
-    const options = (schema._def as any).options;
+  const du = extractDiscriminatedUnionDef(schema);
+  if (!du) return [];
+  const { discriminator: discriminatorField, options } = du;
 
     const fieldConfig: AutoFormFieldConfig = {
       name: "__discriminatedUnion__", // Special name for root-level discriminated union
@@ -418,8 +440,12 @@ function generateFieldsFromSchema<T extends z.ZodType<any, any>>(
         fieldConfig.type = "date";
       } else if (typeName === "ZodDiscriminatedUnion") {
         fieldConfig.type = "discriminatedUnion";
-        const discriminatorField = (zodType._def as any).discriminator;
-        const options = (zodType._def as any).options;
+        const duInner = extractDiscriminatedUnionDef(zodType);
+        if (!duInner) {
+          // Defensive: if structure changed, skip this field
+          continue;
+        }
+        const { discriminator: discriminatorField, options } = duInner;
 
         fieldConfig.discriminatorField = discriminatorField;
         fieldConfig.unionOptions = {};
@@ -835,8 +861,17 @@ export function AutoForm<T extends Record<string, any>>({
           {isRootDiscriminatedUnion
             ? // Special handling for root-level discriminated unions
               (() => {
-                const discriminatorField = (schema._def as any).discriminator;
-                const options = (schema._def as any).options;
+                const duRoot = extractDiscriminatedUnionDef(schema);
+                if (!duRoot) {
+                  if (process.env.NODE_ENV !== "production") {
+                    // eslint-disable-next-line no-console
+                    console.warn(
+                      "[el-form] AutoForm: expected root discriminated union schema but could not extract definition."
+                    );
+                  }
+                  return null;
+                }
+                const { discriminator: discriminatorField, options } = duRoot;
 
                 const fieldConfig: AutoFormFieldConfig = {
                   name: discriminatorField,
