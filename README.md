@@ -724,4 +724,4 @@ This form library is **production-ready** with comprehensive features including:
 
 ---
 
-**Get started:** `npm install el-form-react` and see the [documentation](https://el-form.dev) for examples and guides.
+**Get started:** `npm install el-form-react` and see the [documentation](https://colorpulse6.github.io/el-form/) (GitHub Pages) or the in-repo [docs/intro](./docs/docs/intro.md) for examples and guides.
