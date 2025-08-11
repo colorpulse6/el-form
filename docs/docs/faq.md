@@ -412,6 +412,6 @@ This eliminates the need for manual coercion in most cases while maintaining typ
 
 ### Still need help?
 
-- Check our [GitHub Issues](https://github.com/your-username/el-form/issues)
-- Join our [Discord community](https://discord.gg/el-form)
+- Check our [GitHub Issues](https://github.com/colorpulse6/el-form/issues)
+- Join our [Discord community](https://discord.gg/el-form) (Coming Soon)
 - Read the [examples](./examples.md) for common patterns
