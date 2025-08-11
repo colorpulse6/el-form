@@ -5,7 +5,7 @@ Decision: Low user base -> favor simplicity & cleaner internals. Release will be
 
 ## Goals
 
-- Drop Zod 3 support; require Zod ^4.0.0.
+- Drop Zod 3 support; require Zod ^4.0.0 (implemented: peerDependencies updated).
 - Refactor internal schema introspection to v4 internals (`_zod.def`).
 - Remove all direct `. _def` usages.
 - Update peerDependencies, remove direct prod deps on `zod` (peer + dev only).
@@ -73,8 +73,8 @@ Other coupling:
 ## Execution Order
 
 1. Helpers file.
-2. Refactor AutoForm & adapters.
-3. Update peer deps & remove direct zod deps.
+2. Refactor AutoForm & adapters (in progress - AutoForm updated).
+3. Update peer deps & remove direct zod deps (done).
 4. Add tests.
 5. Docs & CHANGELOG.
 6. Version bump & release.

@@ -86,11 +86,11 @@
   "dependencies": {
     "el-form-core": "workspace:^",
     "el-form-react-hooks": "workspace:^",
-    "el-form-react-components": "workspace:^",
-    "zod": "^3.22.0"
+    "el-form-react-components": "workspace:^"
   },
   "peerDependencies": {
-    "react": ">=16.8.0"
+    "react": ">=16.8.0",
+    "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "tailwindcss": {
