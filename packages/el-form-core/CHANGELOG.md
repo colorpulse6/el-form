@@ -1,5 +1,18 @@
 # el-form-core
 
+## 2.0.0
+
+### Major Changes
+
+- e886c1d: Migrate to Zod 4
+
+  - Drop Zod 3 support; require `zod@^4.0.0`.
+  - Internal introspection migrated to Zod 4 (`_zod.def` + robust fallbacks).
+  - AutoForm uses helper-based checks; discriminated unions remain stable.
+  - Docs and examples updated for Zod 4 enum options and error shape.
+
+  ***
+
 ## 2.0.0 - 2025-08-12
 
 ### Breaking Changes
