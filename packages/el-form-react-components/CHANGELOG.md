@@ -1,5 +1,21 @@
 # el-form-react-components
 
+## 4.0.0 - 2025-08-12
+
+### Breaking Changes
+
+- Drop Zod 3 support; require `zod@^4.0.0`.
+
+### Improvements
+
+- AutoForm: remove `instanceof` checks; use Zod 4 introspection helpers for better compatibility (classic/mini).
+- AutoForm: object `shape` read via `getDef(schema).shape` to avoid brittle casts.
+- Discriminated unions: use Zod 4 internals via helpers; behavior unchanged.
+
+### Migration
+
+- Install Zod v4: `pnpm add zod@^4`.
+
 ## 3.8.0
 
 ### Minor Changes
