@@ -27,8 +27,8 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
       zod:
-        specifier: ^3.22.4
-        version: 3.25.56
+        specifier: ^4.0.0
+        version: 4.0.17
     devDependencies:
       '@changesets/cli':
         specifier: ^2.26.2
@@ -112,8 +112,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       zod:
-        specifier: ^3.22.0
-        version: 3.25.67
+        specifier: ^4.0.0
+        version: 4.0.17
     devDependencies:
       '@docusaurus/module-type-aliases':
         specifier: 3.6.3
@@ -146,8 +146,8 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
       zod:
-        specifier: ^3.22.4
-        version: 3.25.67
+        specifier: ^4.0.0
+        version: 4.0.17
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.11
@@ -213,8 +213,8 @@ importers:
         specifier: ^6.23.1
         version: 6.30.1(react-dom@18.3.1)(react@18.3.1)
       zod:
-        specifier: ^3.22.4
-        version: 3.25.67
+        specifier: ^4.0.17
+        version: 4.0.17
     devDependencies:
       '@types/react':
         specifier: ^18.2.66
@@ -259,8 +259,8 @@ importers:
   packages/el-form-core:
     dependencies:
       zod:
-        specifier: ^3.22.0
-        version: 3.25.67
+        specifier: ^4.0.0
+        version: 4.0.17
     devDependencies:
       tsup:
         specifier: ^8.0.0
@@ -284,8 +284,8 @@ importers:
         specifier: '>=16.8.0'
         version: 18.3.1
       zod:
-        specifier: ^3.22.0
-        version: 3.25.67
+        specifier: ^4.0.0
+        version: 4.0.17
     devDependencies:
       '@types/react':
         specifier: ^18.0.0
@@ -309,8 +309,8 @@ importers:
         specifier: '>=16.8.0'
         version: 18.3.1
       zod:
-        specifier: ^3.22.0
-        version: 3.25.67
+        specifier: ^4.0.0
+        version: 4.0.17
     devDependencies:
       '@tailwindcss/cli':
         specifier: ^4.1.8
@@ -13923,12 +13923,8 @@ packages:
     engines: {node: '>=12.20'}
     dev: false
 
-  /zod@3.25.56:
-    resolution: {integrity: sha512-rd6eEF3BTNvQnR2e2wwolfTmUTnp70aUTqr0oaGbHifzC3BKJsoV+Gat8vxUMR1hwOKBs6El+qWehrHbCpW6SQ==}
-    dev: false
-
-  /zod@3.25.67:
-    resolution: {integrity: sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==}
+  /zod@4.0.17:
+    resolution: {integrity: sha512-1PHjlYRevNxxdy2JZ8JcNAw7rX8V9P1AKkP+x/xZfxB0K5FYfuV+Ug6P/6NVSR2jHQ+FzDDoDHS04nYUsOIyLQ==}
     dev: false
 
   /zwitch@2.0.4:

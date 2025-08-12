@@ -19,7 +19,7 @@ const basicSchema = z
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
     role: z.enum(["admin", "user", "moderator"], {
-      errorMap: () => ({ message: "Please select a valid role" }),
+      message: "Please select a valid role",
     }),
     // Conditional fields that will be shown/hidden based on watch values
     adminCode: z.string().optional().or(z.literal("")),
@@ -30,7 +30,7 @@ const basicSchema = z
         z.object({
           name: z.string().min(1, "Skill name is required"),
           level: z.enum(["beginner", "intermediate", "advanced"], {
-            errorMap: () => ({ message: "Please select a skill level" }),
+            message: "Please select a skill level",
           }),
           yearsExperience: z
             .number()
