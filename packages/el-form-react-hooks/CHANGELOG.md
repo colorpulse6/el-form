@@ -1,5 +1,15 @@
 # el-form-react-hooks
 
+## 3.7.0 - 2025-08-12
+
+### Breaking Changes
+
+- Peer dependency now requires `zod@^4.0.0` (no API changes in this package).
+
+### Internal
+
+- Align validation adapters to Zod 4 detection utility.
+
 ## 3.6.0
 
 ### Minor Changes

@@ -1,5 +1,15 @@
 # el-form-react
 
+## 4.0.0 - 2025-08-12
+
+### Breaking Changes
+
+- Peer dependency now requires `zod@^4.0.0`.
+
+### Internal
+
+- Re-exported packages updated to Zod 4 ecosystem.
+
 ## 3.4.3
 
 ### Patch Changes

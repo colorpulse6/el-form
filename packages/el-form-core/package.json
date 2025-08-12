@@ -42,11 +42,12 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "test": "vitest"
   },
   "dependencies": {},
   "peerDependencies": {
-    "zod": "^3.22.0"
+    "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -54,6 +55,7 @@
     }
   },
   "devDependencies": {
+    "vitest": "^2.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
   }

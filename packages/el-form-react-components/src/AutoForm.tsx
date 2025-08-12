@@ -9,45 +9,19 @@ import {
   GridColumns,
   ComponentMap,
 } from "./types";
-import { z } from "zod";
+import { z } from "zod"; // Classic import for parsing conveniences
+import {
+  getTypeName,
+  getDiscriminatedUnionInfo,
+  getEnumValues,
+  getLiteralValue,
+  getArrayElementType,
+  getStringChecks,
+  getDef,
+} from "el-form-core";
 import { FormSwitch, FormCase } from "./Form";
 
-// ------------------------------
-// Internal Zod helpers
-// ------------------------------
-type ZodDiscriminatedUnionLike = z.ZodTypeAny & {
-  _def?: {
-    typeName?: string;
-    discriminator?: string;
-    options?: z.ZodObject<any, any, any, any>[];
-  };
-};
-
-function extractDiscriminatedUnionDef(
-  schema: z.ZodTypeAny
-): {
-  discriminator: string;
-  options: z.ZodObject<any, any, any, any>[];
-} | null {
-  const def = (schema as ZodDiscriminatedUnionLike)?._def;
-  if (!def || def.typeName !== "ZodDiscriminatedUnion") return null;
-  const { discriminator, options } = def;
-  if (!discriminator || !Array.isArray(options)) return null;
-
-  // Validate each option is a ZodObject (future-proof against internal changes / misusage)
-  const validOptions: z.ZodObject<any, any, any, any>[] = [];
-  for (const opt of options) {
-    if (opt instanceof z.ZodObject) {
-      validOptions.push(opt);
-    }
-  }
-
-  if (!validOptions.length) {
-    return null;
-  }
-
-  return { discriminator, options: validOptions };
-}
+// Zod helpers now come from el-form-core (Zod 4 only)
 
 // Default error component
 const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({
@@ -376,147 +350,124 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
   );
 };
 
-function generateFieldsFromSchema<T extends z.ZodType<any, any>>(
+function generateFieldsFromSchema<T extends z.ZodTypeAny>(
   schema: T
 ): AutoFormFieldConfig[] {
-  const typeName = schema._def.typeName;
+  const rootType = getTypeName(schema as any);
 
-  // Handle discriminated union at the root level
-  if (typeName === "ZodDiscriminatedUnion") {
-    const du = extractDiscriminatedUnionDef(schema);
+  // Handle discriminated union at root
+  if (rootType === "ZodDiscriminatedUnion") {
+    const du = getDiscriminatedUnionInfo(schema as any);
     if (!du) return [];
     const { discriminator: discriminatorField, options } = du;
-
     const fieldConfig: AutoFormFieldConfig = {
-      name: "__discriminatedUnion__", // Special name for root-level discriminated union
+      name: "__discriminatedUnion__",
       type: "discriminatedUnion",
-      discriminatorField: discriminatorField,
+      discriminatorField,
       unionOptions: {},
     };
 
-    // Generate select options for the discriminator field
-    fieldConfig.options = options.map((option: z.ZodObject<any, any>) => {
-      const discriminatorValue = option.shape[discriminatorField]._def.value;
+    fieldConfig.options = options.map((option: any) => {
+      const discriminatorValue = getLiteralValue(
+        option.shape[discriminatorField]
+      );
       return {
         value: discriminatorValue,
         label:
-          discriminatorValue.charAt(0).toUpperCase() +
-          discriminatorValue.slice(1),
+          String(discriminatorValue).charAt(0).toUpperCase() +
+          String(discriminatorValue).slice(1),
       };
     });
 
-    // Generate field configs for each union option
-    options.forEach((option: z.ZodObject<any, any>) => {
-      const discriminatorValue = option.shape[discriminatorField]._def.value;
-      fieldConfig.unionOptions![discriminatorValue] =
-        generateFieldsFromSchema(option);
+    options.forEach((option: any) => {
+      const discriminatorValue = getLiteralValue(
+        option.shape[discriminatorField]
+      );
+      fieldConfig.unionOptions![String(discriminatorValue)] =
+        generateFieldsFromSchema(option as any);
     });
 
     return [fieldConfig];
   }
 
-  if (!(schema instanceof z.ZodObject)) {
-    return [];
-  }
+  if (getTypeName(schema as any) !== "ZodObject") return [];
 
-  const shape = (schema as z.ZodObject<any, any>).shape;
+  const shape = getDef(schema as any)?.shape as Record<string, z.ZodTypeAny>;
   const fields: AutoFormFieldConfig[] = [];
-
   for (const key in shape) {
-    if (Object.prototype.hasOwnProperty.call(shape, key)) {
-      const zodType = shape[key] as z.ZodTypeAny;
-      const typeName = zodType._def.typeName;
+    if (!Object.prototype.hasOwnProperty.call(shape, key)) continue;
+    const zodType = shape[key] as z.ZodTypeAny;
+    const typeName = getTypeName(zodType as any);
+    const fieldConfig: AutoFormFieldConfig = {
+      name: key,
+      label: key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (s) => s.toUpperCase()),
+      type: "text",
+    };
 
-      const fieldConfig: AutoFormFieldConfig = {
-        name: key,
-        label: key
-          .replace(/([A-Z])/g, " $1")
-          .replace(/^./, (str) => str.toUpperCase()),
-        type: "text", // Default to text
-      };
-
-      if (typeName === "ZodString") {
-        const checks = (zodType._def as any).checks || [];
-        if (checks.some((c: { kind: string }) => c.kind === "email")) {
-          fieldConfig.type = "email";
-        } else if (checks.some((c: { kind: string }) => c.kind === "url")) {
-          fieldConfig.type = "url";
-        }
-      } else if (typeName === "ZodNumber") {
-        fieldConfig.type = "number";
-      } else if (typeName === "ZodBoolean") {
-        fieldConfig.type = "checkbox";
-      } else if (typeName === "ZodEnum") {
-        fieldConfig.type = "select";
-        fieldConfig.options = (zodType._def as any).values.map((v: string) => ({
-          value: v,
-          label: v,
-        }));
-      } else if (typeName === "ZodDate") {
-        fieldConfig.type = "date";
-      } else if (typeName === "ZodDiscriminatedUnion") {
-        fieldConfig.type = "discriminatedUnion";
-        const duInner = extractDiscriminatedUnionDef(zodType);
-        if (!duInner) {
-          // Defensive: if structure changed, skip this field
-          continue;
-        }
-        const { discriminator: discriminatorField, options } = duInner;
-
-        fieldConfig.discriminatorField = discriminatorField;
-        fieldConfig.unionOptions = {};
-
-        // Generate select options for the discriminator field
-        fieldConfig.options = options.map((option: z.ZodObject<any, any>) => {
-          const discriminatorValue =
-            option.shape[discriminatorField]._def.value;
-          return {
-            value: discriminatorValue,
-            label:
-              discriminatorValue.charAt(0).toUpperCase() +
-              discriminatorValue.slice(1),
-          };
-        });
-
-        // Generate field configs for each union option
-        options.forEach((option: z.ZodObject<any, any>) => {
-          const discriminatorValue =
-            option.shape[discriminatorField]._def.value;
-          fieldConfig.unionOptions![discriminatorValue] =
-            generateFieldsFromSchema(option);
-        });
-      } else if (typeName === "ZodArray") {
-        fieldConfig.type = "array";
-        const arrayElementType = (zodType._def as any).type;
-        if (arrayElementType instanceof z.ZodObject) {
-          fieldConfig.fields = generateFieldsFromSchema(arrayElementType);
-        } else {
-          // For primitive arrays (string, number, etc.), create a simple field config
-          const elementTypeName = arrayElementType._def.typeName;
-          let elementType: "text" | "number" | "checkbox" = "text";
-
-          if (elementTypeName === "ZodString") {
-            elementType = "text";
-          } else if (elementTypeName === "ZodNumber") {
-            elementType = "number";
-          } else if (elementTypeName === "ZodBoolean") {
-            elementType = "checkbox";
-          }
-
-          fieldConfig.fields = [
-            {
-              name: "value",
-              type: elementType,
-              label: "Value",
-            },
-          ];
-        }
+    if (typeName === "ZodString") {
+      const checks = getStringChecks(zodType as any);
+      if (checks.some((c: any) => c.kind === "email"))
+        fieldConfig.type = "email";
+      else if (checks.some((c: any) => c.kind === "url"))
+        fieldConfig.type = "url";
+    } else if (typeName === "ZodNumber") fieldConfig.type = "number";
+    else if (typeName === "ZodBoolean") fieldConfig.type = "checkbox";
+    else if (typeName === "ZodEnum") {
+      fieldConfig.type = "select";
+      fieldConfig.options = getEnumValues(zodType as any).map((v: string) => ({
+        value: v,
+        label: v,
+      }));
+    } else if (typeName === "ZodDate") fieldConfig.type = "date";
+    else if (typeName === "ZodDiscriminatedUnion") {
+      fieldConfig.type = "discriminatedUnion";
+      const inner = getDiscriminatedUnionInfo(zodType as any);
+      if (!inner) {
+        continue;
       }
-
-      fields.push(fieldConfig);
+      const { discriminator: discriminatorField, options } = inner;
+      fieldConfig.discriminatorField = discriminatorField;
+      fieldConfig.unionOptions = {};
+      fieldConfig.options = options.map((option: any) => {
+        const discriminatorValue = getLiteralValue(
+          option.shape[discriminatorField]
+        );
+        return {
+          value: discriminatorValue,
+          label:
+            String(discriminatorValue).charAt(0).toUpperCase() +
+            String(discriminatorValue).slice(1),
+        };
+      });
+      options.forEach((option: any) => {
+        const discriminatorValue = getLiteralValue(
+          option.shape[discriminatorField]
+        );
+        fieldConfig.unionOptions![String(discriminatorValue)] =
+          generateFieldsFromSchema(option as any);
+      });
+    } else if (typeName === "ZodArray") {
+      fieldConfig.type = "array";
+      const arrayElementType = getArrayElementType(zodType as any);
+      if (
+        arrayElementType &&
+        getTypeName(arrayElementType as any) === "ZodObject"
+      ) {
+        fieldConfig.fields = generateFieldsFromSchema(arrayElementType as any);
+      } else if (arrayElementType) {
+        const elementTypeName = getTypeName(arrayElementType as any);
+        let elementType: "text" | "number" | "checkbox" = "text";
+        if (elementTypeName === "ZodNumber") elementType = "number";
+        else if (elementTypeName === "ZodBoolean") elementType = "checkbox";
+        fieldConfig.fields = [
+          { name: "value", type: elementType, label: "Value" },
+        ];
+      }
     }
+    fields.push(fieldConfig);
   }
-
   return fields;
 }
 
@@ -669,7 +620,7 @@ export function AutoForm<T extends Record<string, any>>({
 }: AutoFormProps<T>) {
   // Special handling for root-level discriminated unions
   const isRootDiscriminatedUnion =
-    schema._def.typeName === "ZodDiscriminatedUnion";
+    getTypeName(schema as any) === "ZodDiscriminatedUnion";
 
   // Create validator config for the form
   // If custom validators are provided, use them; otherwise use the schema
@@ -877,21 +828,22 @@ export function AutoForm<T extends Record<string, any>>({
           {isRootDiscriminatedUnion
             ? // Special handling for root-level discriminated unions
               (() => {
-                const duRoot = extractDiscriminatedUnionDef(schema);
+                const duRoot = getDiscriminatedUnionInfo(schema as any);
                 if (!duRoot) {
-                  
                   return null;
                 }
-                const { discriminator: discriminatorField, options } = duRoot;
+                const { discriminator: discriminatorField, options } =
+                  duRoot as any;
 
                 const fieldConfig: AutoFormFieldConfig = {
                   name: discriminatorField,
                   type: "discriminatedUnion",
                   discriminatorField: discriminatorField,
                   unionOptions: {},
-                  options: options.map((option: z.ZodObject<any, any>) => {
-                    const discriminatorValue =
-                      option.shape[discriminatorField]._def.value;
+                  options: (options as any).map((option: any) => {
+                    const discriminatorValue = getLiteralValue(
+                      option.shape[discriminatorField]
+                    );
                     return {
                       value: discriminatorValue,
                       label:
@@ -902,9 +854,10 @@ export function AutoForm<T extends Record<string, any>>({
                 };
 
                 // Generate field configs for each union option
-                options.forEach((option: z.ZodObject<any, any>) => {
-                  const discriminatorValue =
-                    option.shape[discriminatorField]._def.value;
+                (options as any).forEach((option: any) => {
+                  const discriminatorValue = getLiteralValue(
+                    option.shape[discriminatorField]
+                  );
                   fieldConfig.unionOptions![discriminatorValue] =
                     generateFieldsFromSchema(option);
                 });

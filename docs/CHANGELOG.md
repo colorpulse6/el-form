@@ -1,5 +1,12 @@
 # el-form-docs
 
+## 0.7.0 - 2025-08-12
+
+### Minor Changes
+
+- Update docs to Zod 4: examples use `{ message }`/`{ required_error }` enum options; remove Zod 3 references.
+- Build now uses Zod v4 across examples and guides.
+
 ## 0.6.1
 
 ### Patch Changes
