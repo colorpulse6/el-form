@@ -85,6 +85,7 @@ const config: Config = {
         highlightSearchTermsOnTargetPage: true,
         docsRouteBasePath: ["docs"],
         indexBlog: false,
+        searchContextByPaths: ["docs"],
       },
     ],
   ],
