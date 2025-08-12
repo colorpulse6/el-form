@@ -114,7 +114,8 @@ const config: Config = {
       style: "dark",
       items: [
         {
-          type: "search",
+          label: "Search",
+          to: "/search",
           position: "right",
         },
         {
