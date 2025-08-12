@@ -2,25 +2,10 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import path from "path";
 
-// Algolia env vars (public search key is safe in client bundle but keep pattern consistent)
-const algoliaAppId = process.env.DOCSEARCH_APP_ID;
-const algoliaApiKey = process.env.DOCSEARCH_API_KEY; // search-only key
-const algoliaIndexName = process.env.DOCSEARCH_INDEX_NAME || "el_form";
-
 const config: Config = {
   title: "El Form",
   tagline: "Elegant React forms, powered by Zod",
   favicon: "img/favicon.ico",
-  // Algolia site verification meta tag (safe to keep after verification)
-  headTags: [
-    {
-      tagName: "meta",
-      attributes: {
-        name: "algolia-site-verification",
-        content: "A184A8061FD9E493",
-      },
-    },
-  ],
 
   // Set the production url of your site here
   url: "https://colorpulse6.github.io",
@@ -92,6 +77,16 @@ const config: Config = {
         },
       };
     },
+    [
+      "@easyops-cn/docusaurus-search-local",
+      {
+        hashed: true,
+        language: ["en"],
+        highlightSearchTermsOnTargetPage: true,
+        docsRouteBasePath: ["/docs"],
+        indexBlog: false,
+      },
+    ],
   ],
 
   themeConfig: {
@@ -106,23 +101,7 @@ const config: Config = {
       darkTheme: require("prism-react-renderer").themes.vsDark,
       additionalLanguages: ["typescript", "jsx", "tsx"],
     },
-    // Conditionally enable Algolia DocSearch when env vars are provided
-    algolia:
-      algoliaAppId && algoliaApiKey
-        ? {
-            appId: algoliaAppId,
-            apiKey: algoliaApiKey,
-            indexName: algoliaIndexName,
-            contextualSearch: true,
-            insights: true,
-            searchParameters: {},
-            replaceSearchResultPathname: {
-              // Type expects string patterns; keep consistent base path
-              from: "/el-form/",
-              to: "/el-form/",
-            },
-          }
-        : undefined,
+    // Algolia DocSearch disabled (using local search plugin instead)
     navbar: {
       title: "El Form",
       logo: {
@@ -133,6 +112,10 @@ const config: Config = {
       hideOnScroll: false,
       style: "dark",
       items: [
+        {
+          type: "search",
+          position: "right",
+        },
         {
           type: "html",
           position: "right",

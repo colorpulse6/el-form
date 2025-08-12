@@ -3,10 +3,10 @@ sidebar_position: 4
 title: Performance
 description: How El Form minimizes re-renders, debounces validation, and provides selective subscriptions for high-performance form state management.
 keywords:
-	- form performance
-	- react form performance
-	- el form optimization
-	- minimal re-renders
+  - form performance
+  - react form performance
+  - el form optimization
+  - minimal re-renders
 ---
 
 # Performance
