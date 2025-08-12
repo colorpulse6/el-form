@@ -83,7 +83,7 @@ const config: Config = {
         hashed: true,
         language: ["en"],
         highlightSearchTermsOnTargetPage: true,
-        docsRouteBasePath: ["/docs"],
+        docsRouteBasePath: ["docs"],
         indexBlog: false,
       },
     ],
