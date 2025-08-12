@@ -1,5 +1,40 @@
 # el-form-react-components
 
+## 4.0.0
+
+### Major Changes
+
+- e886c1d: Migrate to Zod 4
+
+  - Drop Zod 3 support; require `zod@^4.0.0`.
+  - Internal introspection migrated to Zod 4 (`_zod.def` + robust fallbacks).
+  - AutoForm uses helper-based checks; discriminated unions remain stable.
+  - Docs and examples updated for Zod 4 enum options and error shape.
+
+  ***
+
+### Patch Changes
+
+- Updated dependencies [e886c1d]
+  - el-form-core@2.0.0
+  - el-form-react-hooks@3.7.0
+
+## 4.0.0 - 2025-08-12
+
+### Breaking Changes
+
+- Drop Zod 3 support; require `zod@^4.0.0`.
+
+### Improvements
+
+- AutoForm: remove `instanceof` checks; use Zod 4 introspection helpers for better compatibility (classic/mini).
+- AutoForm: object `shape` read via `getDef(schema).shape` to avoid brittle casts.
+- Discriminated unions: use Zod 4 internals via helpers; behavior unchanged.
+
+### Migration
+
+- Install Zod v4: `pnpm add zod@^4`.
+
 ## 3.8.0
 
 ### Minor Changes

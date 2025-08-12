@@ -1,0 +1,38 @@
+---
+description: Change management flow for repo-wide changes (code, tests, changelogs, changesets, CI)
+globs:
+alwaysApply: false
+---
+
+- Follow `scripts/change-management-flow.md` for any repo-wide change:
+
+  - Dependencies, schema internals, validation engines, API surfaces
+  - Version upgrades (e.g., Zod major)
+  - Changes touching multiple packages, examples, and docs
+
+- Enforce these steps in order:
+
+  1. Build workspace early: `pnpm -w -r build`
+  2. Add/update tests in owning package, run `pnpm --filter <pkg> test` (or `pnpm test`)
+  3. Rebuild examples & docs (included in workspace build)
+  4. Update changelogs: `packages/*/CHANGELOG.md`, `docs/CHANGELOG.md`, optionally `docs/docs/changelog.md`
+  5. Create Changeset: `pnpm changeset:add` (or `--empty`) and verify `pnpm changeset:status`
+  6. CI validation: ensure `.github/workflows/ci.yml` builds and runs tests
+  7. Version & release: `pnpm release:version` then `pnpm release`, or push and let CI handle (see `scripts/release.md`)
+
+- Conventions & guardrails:
+
+  - Use pnpm (no npm/yarn), non-interactive commands in CI
+  - Avoid `instanceof` on Zod schemas; use `el-form-core/src/zodHelpers.ts`
+  - Prefer `_zod.def` or helper fallbacks for Zod internals
+  - Keep edits minimal and localized; avoid reformatting
+  - Ensure examples/docs use current library APIs (e.g., Zod 4 enum options `{ message }`/`{ required_error }`)
+
+- Acceptance criteria:
+  - Workspace build passes
+  - Relevant package tests pass
+  - Changelogs updated
+  - Changeset committed and `changeset:status` looks correct
+  - CI green (build + tests)
+
+@scripts/change-management-flow.md

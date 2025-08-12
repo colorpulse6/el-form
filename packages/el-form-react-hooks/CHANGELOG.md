@@ -1,5 +1,33 @@
 # el-form-react-hooks
 
+## 3.7.0
+
+### Minor Changes
+
+- e886c1d: Migrate to Zod 4
+
+  - Drop Zod 3 support; require `zod@^4.0.0`.
+  - Internal introspection migrated to Zod 4 (`_zod.def` + robust fallbacks).
+  - AutoForm uses helper-based checks; discriminated unions remain stable.
+  - Docs and examples updated for Zod 4 enum options and error shape.
+
+  ***
+
+### Patch Changes
+
+- Updated dependencies [e886c1d]
+  - el-form-core@2.0.0
+
+## 3.7.0 - 2025-08-12
+
+### Breaking Changes
+
+- Peer dependency now requires `zod@^4.0.0` (no API changes in this package).
+
+### Internal
+
+- Align validation adapters to Zod 4 detection utility.
+
 ## 3.6.0
 
 ### Minor Changes

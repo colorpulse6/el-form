@@ -1,5 +1,31 @@
 # el-form-docs
 
+## 0.7.0
+
+### Minor Changes
+
+- e886c1d: Migrate to Zod 4
+
+  - Drop Zod 3 support; require `zod@^4.0.0`.
+  - Internal introspection migrated to Zod 4 (`_zod.def` + robust fallbacks).
+  - AutoForm uses helper-based checks; discriminated unions remain stable.
+  - Docs and examples updated for Zod 4 enum options and error shape.
+
+  ***
+
+### Patch Changes
+
+- Updated dependencies [e886c1d]
+  - el-form-core@2.0.0
+  - el-form-react@4.0.0
+
+## 0.7.0 - 2025-08-12
+
+### Minor Changes
+
+- Update docs to Zod 4: examples use `{ message }`/`{ required_error }` enum options; remove Zod 3 references.
+- Build now uses Zod v4 across examples and guides.
+
 ## 0.6.1
 
 ### Patch Changes

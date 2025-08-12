@@ -5,9 +5,7 @@ export function isZodSchema(schema: any): boolean {
   return (
     schema &&
     typeof schema === "object" &&
-    typeof schema.parse === "function" &&
-    typeof schema.safeParse === "function" &&
-    schema._def !== undefined
+    (schema as any)._zod?.def !== undefined
   );
 }
 

@@ -13,6 +13,19 @@ All notable changes to the el-form project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2025-08-12
+
+### ⚠️ Breaking
+
+- Require `zod@^4.0.0`. If you are on Zod 3, upgrade with `pnpm add zod@^4`.
+
+### ✨ Changes
+
+- Internal: Zod 4 introspection (no breaking surface changes to AutoForm/useForm APIs).
+- Discriminated unions: more robust introspection; behavior unchanged for users.
+
+---
+
 ## [3.6.0] - 2025-08-06
 
 ### ✨ New Features

@@ -4,10 +4,11 @@ import { z } from "zod";
 export function parseZodErrors(error: z.ZodError): Record<string, string> {
   const errors: Record<string, string> = {};
 
-  error.errors.forEach((err) => {
-    const path = err.path.join(".");
-    errors[path] = err.message;
-  });
+  // Zod v4 exposes issues on the `issues` array (not `errors`)
+  for (const issue of error.issues) {
+    const path = issue.path.join(".") || "form";
+    errors[path] = issue.message;
+  }
 
   return errors;
 }
