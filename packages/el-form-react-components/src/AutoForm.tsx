@@ -392,7 +392,7 @@ function generateFieldsFromSchema<T extends z.ZodTypeAny>(
 
   if (getTypeName(schema as any) !== "ZodObject") return [];
 
-  const shape = (getDef(schema as any)?.shape) as Record<string, z.ZodTypeAny>;
+  const shape = getDef(schema as any)?.shape as Record<string, z.ZodTypeAny>;
   const fields: AutoFormFieldConfig[] = [];
   for (const key in shape) {
     if (!Object.prototype.hasOwnProperty.call(shape, key)) continue;
@@ -451,7 +451,10 @@ function generateFieldsFromSchema<T extends z.ZodTypeAny>(
     } else if (typeName === "ZodArray") {
       fieldConfig.type = "array";
       const arrayElementType = getArrayElementType(zodType as any);
-      if (arrayElementType && getTypeName(arrayElementType as any) === "ZodObject") {
+      if (
+        arrayElementType &&
+        getTypeName(arrayElementType as any) === "ZodObject"
+      ) {
         fieldConfig.fields = generateFieldsFromSchema(arrayElementType as any);
       } else if (arrayElementType) {
         const elementTypeName = getTypeName(arrayElementType as any);
