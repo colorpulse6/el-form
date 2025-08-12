@@ -77,17 +77,7 @@ const config: Config = {
         },
       };
     },
-    [
-      "@easyops-cn/docusaurus-search-local",
-      {
-        hashed: true,
-        language: ["en"],
-        highlightSearchTermsOnTargetPage: true,
-        docsRouteBasePath: ["docs"],
-        indexBlog: false,
-        searchContextByPaths: ["docs"],
-      },
-    ],
+    // Search temporarily disabled for stability during deployment
   ],
 
   themeConfig: {
@@ -113,11 +103,7 @@ const config: Config = {
       hideOnScroll: false,
       style: "dark",
       items: [
-        {
-          label: "Search",
-          to: "/search",
-          position: "right",
-        },
+        // Search disabled for now
         {
           type: "html",
           position: "right",
