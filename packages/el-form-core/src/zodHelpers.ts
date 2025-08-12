@@ -11,25 +11,76 @@ export type AnyZodSchema = z4.$ZodType<any, any, any>;
 
 // Access internal definition safely
 export function getDef(schema: AnyZodSchema): any {
-  return (schema as any)?._zod?.def;
+  const anySchema = schema as any;
+  // Prefer Zod 4 core/classic internals on `_zod.def` when available (works for mini + classic)
+  // Fallbacks for environments/builds that expose `.def` (classic) or legacy `._def` (safety)
+  return anySchema?._zod?.def ?? anySchema?.def ?? anySchema?._def;
 }
 
 export function getTypeName(schema: AnyZodSchema): string | undefined {
-  return getDef(schema)?.typeName;
+  const def = getDef(schema);
+  if (!def) return undefined;
+  // In Zod v4 core/classic, `def.type` is a lowercase token. Map to legacy-like names we used in v3.
+  if (def.discriminator !== undefined) return "ZodDiscriminatedUnion";
+  const t = def.type as string | undefined;
+  switch (t) {
+    case "object":
+      return "ZodObject";
+    case "array":
+      return "ZodArray";
+    case "string":
+      return "ZodString";
+    case "number":
+      return "ZodNumber";
+    case "boolean":
+      return "ZodBoolean";
+    case "date":
+      return "ZodDate";
+    case "enum":
+      return "ZodEnum";
+    case "literal":
+      return "ZodLiteral";
+    case "union":
+      return "ZodUnion";
+    case "tuple":
+      return "ZodTuple";
+    case "nullable":
+      return "ZodNullable";
+    case "optional":
+      return "ZodOptional";
+    default:
+      return undefined;
+  }
 }
 
 export function getEnumValues(schema: AnyZodSchema): string[] {
-  return getDef(schema)?.values || [];
+  const def = getDef(schema);
+  if (!def) return [];
+  // v4 core/classic enums expose `entries` on def
+  if (def.entries) {
+    if (Array.isArray(def.entries)) return def.entries as string[];
+    // Enum-like object
+    return Object.values(def.entries as Record<string, string>) as string[];
+  }
+  // fallback to values array if present
+  if (Array.isArray(def.values)) return def.values as string[];
+  return [];
 }
 
 export function getLiteralValue(schema: AnyZodSchema): any {
-  return getDef(schema)?.value;
+  const def = getDef(schema);
+  if (!def) return undefined;
+  if ("value" in def) return (def as any).value;
+  if (Array.isArray((def as any).values)) return (def as any).values[0];
+  return undefined;
 }
 
 export function getArrayElementType(
   schema: AnyZodSchema
 ): AnyZodSchema | undefined {
-  return getDef(schema)?.type;
+  const def = getDef(schema);
+  // v3 used `.type`, v4 core uses `.element`
+  return def?.element ?? def?.type;
 }
 
 export function getStringChecks(schema: AnyZodSchema): any[] {
@@ -44,7 +95,6 @@ export interface DiscriminatedUnionInfo {
 export function getDiscriminatedUnionInfo(
   schema: AnyZodSchema
 ): DiscriminatedUnionInfo | null {
-  if (getTypeName(schema) !== "ZodDiscriminatedUnion") return null;
   const def = getDef(schema);
   const discriminator = def?.discriminator;
   const options = Array.isArray(def?.options)
@@ -55,7 +105,11 @@ export function getDiscriminatedUnionInfo(
 }
 
 export function isZod4Schema(schema: any): boolean {
-  return Boolean(schema && schema._zod && schema._zod.def);
+  if (!schema || typeof schema !== "object") return false;
+  // Accept either `_zod.def` (preferred) or classic `.def` + `safeParse`
+  return Boolean(
+    (schema._zod && schema._zod.def) || (schema.def && typeof schema.safeParse === "function")
+  );
 }
 
 // Export z4 namespace for advanced typing needs in downstream code (internal use recommended).

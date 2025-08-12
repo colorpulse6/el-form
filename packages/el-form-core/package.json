@@ -42,7 +42,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "test": "vitest"
   },
   "dependencies": {},
   "peerDependencies": {
@@ -54,6 +55,7 @@
     }
   },
   "devDependencies": {
+    "vitest": "^2.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
   }
