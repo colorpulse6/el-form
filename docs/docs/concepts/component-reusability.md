@@ -1,5 +1,13 @@
 ---
 sidebar_position: 5
+title: Component Reusability
+description: Patterns for reusable form components in El Form—context, prop-passing, and hybrid approaches with trade-offs and examples.
+keywords:
+  - reusable form components
+  - form context pattern
+  - prop passing pattern
+  - hybrid form components
+  - el form reusability
 ---
 
 # Component Reusability

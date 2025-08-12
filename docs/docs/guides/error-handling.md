@@ -1,5 +1,12 @@
 ---
 sidebar_position: 3
+title: Error Handling Guide
+description: Comprehensive strategies for validation, manual errors, server errors, and accessible feedback using El Form.
+keywords:
+  - form errors
+  - error handling
+  - validation errors
+  - el form error management
 ---
 
 import { InteractivePreview } from '@site/src/components';

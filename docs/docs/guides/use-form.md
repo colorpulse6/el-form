@@ -1,5 +1,13 @@
 ---
 sidebar_position: 1
+title: useForm Guide
+description: Comprehensive guide to building custom React forms with El Form's useForm hook—state management, validation, arrays, errors and performance tips.
+keywords:
+  - useform guide
+  - el form useform
+  - react form hook
+  - form validation hook
+  - custom form building
 ---
 
 import { InteractivePreview } from '@site/src/components';

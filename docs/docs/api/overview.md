@@ -1,5 +1,12 @@
 ---
 sidebar_position: 1
+title: API Overview
+description: Complete reference summary of El Form APIs including useForm methods, AutoForm, components, and utilities.
+keywords:
+  - el form api
+  - useform api
+  - react form api reference
+  - autoform api
 ---
 
 # API Overview

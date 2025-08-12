@@ -1,5 +1,12 @@
 ---
 sidebar_position: 4
+title: FormProvider API
+description: API reference for FormProvider and useFormContext—share form state via React Context and build reusable field components.
+keywords:
+  - formprovider api
+  - useformcontext
+  - react form context
+  - el form provider
 ---
 
 # FormProvider API

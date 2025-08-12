@@ -1,5 +1,14 @@
 ---
 sidebar_position: 1
+title: Introduction
+description: Overview of El Form – a schema-agnostic, type-safe, high-performance React form library with AutoForm generation and flexible useForm APIs.
+keywords:
+  - react forms
+  - form library
+  - type-safe forms
+  - zod
+  - auto form generation
+  - el form
 ---
 
 # Introduction

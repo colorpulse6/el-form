@@ -1,5 +1,12 @@
 ---
 sidebar_position: 8
+title: Conditional Rendering (FormSwitch)
+description: Create dynamic discriminated union forms and conditional sections using FormSwitch and FormCase components in El Form.
+keywords:
+  - conditional form rendering
+  - discriminated union forms
+  - formswitch
+  - dynamic forms
 ---
 
 # Conditional Rendering with FormSwitch

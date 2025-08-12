@@ -1,5 +1,12 @@
 ---
 sidebar_position: 6
+title: Custom Components Guide
+description: Build reusable custom field components compatible with both AutoForm and useForm patterns in El Form.
+keywords:
+  - custom form components
+  - reusable form fields
+  - el form components
+  - autoform custom field
 ---
 
 # Custom Components Guide

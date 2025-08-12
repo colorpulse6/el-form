@@ -1,5 +1,13 @@
 ---
 sidebar_position: 2
+title: Validation Concepts
+description: Schema-agnostic validation in El Form—using Zod, Yup, Valibot, and custom functions with flexible timing (onChange, onBlur, onSubmit).
+keywords:
+  - schema agnostic validation
+  - zod validation
+  - yup validation
+  - custom form validation
+  - el form validation concepts
 ---
 
 # Validation

@@ -6,13 +6,6 @@ const config: Config = {
   title: "El Form",
   tagline: "Elegant React forms, powered by Zod",
   favicon: "img/favicon.ico",
-  // Algolia site verification meta tag (safe to keep after verification)
-  headTags: [
-    {
-      tagName: 'meta',
-      attributes: { name: 'algolia-site-verification', content: 'A184A8061FD9E493' },
-    },
-  ],
 
   // Set the production url of your site here
   url: "https://colorpulse6.github.io",
@@ -53,7 +46,7 @@ const config: Config = {
   ],
 
   plugins: [
-    async function tailwindPlugin(context, options) {
+    async function tailwindPlugin() {
       return {
         name: "docusaurus-tailwindcss",
         configurePostCss(postcssOptions) {
@@ -63,10 +56,10 @@ const config: Config = {
       };
     },
     // Custom plugin to handle monorepo Webpack configuration
-    async function monorepoWebpack(context, options) {
+    async function monorepoWebpack() {
       return {
         name: "docusaurus-monorepo-webpack",
-        configureWebpack(config, isServer, utils) {
+        configureWebpack(_config, _isServer, _utils) {
           return {
             resolve: {
               alias: {
@@ -84,6 +77,16 @@ const config: Config = {
         },
       };
     },
+    [
+      "@easyops-cn/docusaurus-search-local",
+      {
+        hashed: true,
+        language: ["en"],
+        highlightSearchTermsOnTargetPage: true,
+        docsRouteBasePath: ["/docs"],
+        indexBlog: false,
+      },
+    ],
   ],
 
   themeConfig: {
@@ -98,6 +101,7 @@ const config: Config = {
       darkTheme: require("prism-react-renderer").themes.vsDark,
       additionalLanguages: ["typescript", "jsx", "tsx"],
     },
+    // Algolia DocSearch disabled (using local search plugin instead)
     navbar: {
       title: "El Form",
       logo: {
@@ -108,6 +112,10 @@ const config: Config = {
       hideOnScroll: false,
       style: "dark",
       items: [
+        {
+          type: "search",
+          position: "right",
+        },
         {
           type: "html",
           position: "right",

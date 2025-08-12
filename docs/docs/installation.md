@@ -1,5 +1,13 @@
 ---
 sidebar_position: 2
+title: Installation
+description: Install El Form packages (el-form-react, hooks, components, core) with guidance on choosing the right package, optional validation libraries, and styling.
+keywords:
+  - el form installation
+  - react form library install
+  - autoform install
+  - useform setup
+  - form validation setup
 ---
 
 # Installation
