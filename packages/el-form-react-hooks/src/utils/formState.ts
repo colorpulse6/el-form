@@ -1,7 +1,7 @@
 import { FormState, UseFormReturn } from "../types";
 import { DirtyStateManager } from "./dirtyState";
 import { setNestedValue } from "el-form-core";
-import type { Path, PathValue } from "../types/path";
+import type { Path } from "../types/path";
 import { getNestedValue } from "el-form-core";
 
 /**

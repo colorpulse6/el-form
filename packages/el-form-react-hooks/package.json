@@ -47,7 +47,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "test": "pnpm run build && vitest --environment jsdom --run && tsd --files tsd.test-d.ts"
   },
   "dependencies": {
     "el-form-core": "workspace:^"
@@ -56,8 +57,12 @@
     "react": ">=16.8.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^14.1.2",
     "@types/react": "^18.0.0",
+    "jsdom": "^24.0.0",
+    "tsd": "^0.31.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
   }
 }
