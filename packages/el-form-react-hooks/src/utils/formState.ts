@@ -1,6 +1,8 @@
 import { FormState, UseFormReturn } from "../types";
 import { DirtyStateManager } from "./dirtyState";
 import { setNestedValue } from "el-form-core";
+import type { Path, PathValue } from "../types/path";
+import { getNestedValue } from "el-form-core";
 
 /**
  * Form state management utilities
@@ -69,16 +71,16 @@ export function createFormStateManager<T extends Record<string, any>>(
       });
     },
 
-    watch: ((nameOrNames?: keyof T | (keyof T)[]) => {
+    watch: ((nameOrNames?: Path<T> | Path<T>[]) => {
       if (!nameOrNames) return formState.values;
       if (Array.isArray(nameOrNames)) {
-        const result: Partial<T> = {};
-        nameOrNames.forEach((name) => {
-          result[name] = formState.values[name];
-        });
-        return result;
+        const entries = nameOrNames.map(
+          (name) =>
+            [name, getNestedValue(formState.values, name as any)] as const
+        );
+        return Object.fromEntries(entries) as any;
       }
-      return formState.values[nameOrNames];
+      return getNestedValue(formState.values, nameOrNames as any) as any;
     }) as UseFormReturn<T>["watch"],
   };
 }

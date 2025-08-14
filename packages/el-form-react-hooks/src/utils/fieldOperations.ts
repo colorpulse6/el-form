@@ -1,6 +1,7 @@
 import { FormState, FieldState } from "../types";
 import { DirtyStateManager } from "./dirtyState";
 import { setNestedValue } from "el-form-core";
+import { getNestedValue } from "el-form-core";
 
 /**
  * Field operations utilities for form state management
@@ -41,19 +42,19 @@ export function createFieldOperationsManager<T extends Record<string, any>>(
   return {
     // Form State Utilities
     isFieldDirty: (name: string): boolean => {
-      return dirtyManager.checkFieldIsDirty(
-        name as keyof T,
-        formState.values[name as keyof T],
-        (defaultValues as any)[name]
-      );
+      const curr = getNestedValue(formState.values, name);
+      const def = getNestedValue(defaultValues as any, name);
+      return dirtyManager.checkFieldIsDirty(name as any, curr, def);
     },
 
     isFieldTouched: (name: string): boolean => {
-      return !!formState.touched[name as keyof T];
+      const touched = getNestedValue(formState.touched as any, name);
+      return Boolean(touched);
     },
 
     isFieldValid: (name: string): boolean => {
-      return !formState.errors[name as keyof T];
+      const err = getNestedValue(formState.errors as any, name);
+      return !err;
     },
 
     hasErrors: (): boolean => {

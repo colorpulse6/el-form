@@ -13,3 +13,4 @@ export type {
   SetFocusOptions,
   FormContextValue,
 } from "./types";
+export type { Path, PathValue, RegisterReturn } from "./types/path";

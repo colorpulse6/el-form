@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useForm } from "el-form-react-hooks";
+import type { UseFormReturn } from "el-form-react-hooks";
 import type { ValidatorConfig } from "el-form-core";
 import {
   AutoFormProps,
@@ -161,7 +162,7 @@ interface ArrayFieldProps {
   path: string;
   onAddItem: (path: string, item: any) => void;
   onRemoveItem: (path: string, index: number) => void;
-  onValueChange: (path: string, value: any) => void;
+  onValueChange: UseFormReturn<any>["setValue"];
   register: any;
   formState: any;
 }
