@@ -2,52 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [ main, register-type-safety ]
+    branches:
+      - "**"
   pull_request:
-    branches: [ main ]
-
-jobs:
-  build-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
-
-      - name: Install
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm -w -r build
-
-      - name: Test core
-        run: pnpm --filter el-form-core test -- --run
-
-      - name: Test react-hooks (runtime + tsd)
-        run: pnpm --filter el-form-react-hooks test -- --run
-
-name: CI
-
-on:
-  push:
-    branches: ["**"]
-  pull_request:
-    branches: ["**"]
+    branches:
+      - "**"
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,9 +29,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build packages
-        run: pnpm build:packages
+      - name: Build workspace
+        run: pnpm -w -r build
 
-      - name: Run tests (Vitest)
-        run: pnpm test
+      - name: Test core (vitest)
+        run: pnpm --filter el-form-core test -- --run
 
+      - name: Test react-hooks (runtime + tsd)
+        run: pnpm --filter el-form-react-hooks test
