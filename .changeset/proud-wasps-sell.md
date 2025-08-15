@@ -25,7 +25,7 @@ const { value } = register("user.name");
 
 // After: typed paths, narrowed return types
 const { value } = register("user.name"); // value: string
-const { checked } = register("prefs.notify"); // checked: boolean  
+const { checked } = register("prefs.notify"); // checked: boolean
 const { files } = register("avatar"); // files: File | FileList | File[] | null
 ```
 

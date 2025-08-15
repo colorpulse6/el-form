@@ -1,5 +1,30 @@
 # el-form-react-hooks
 
+## 3.8.0
+
+### Minor Changes
+
+- 859ed6e: Add typed register with Path<T> and RegisterReturn<Value>
+
+  - Add typed `Path<T>` and `PathValue<T, P>` utilities for nested object/array paths
+  - Strongly type `register()` with conditional `RegisterReturn<Value>` based on field type
+  - Support both dot-number (`skills.0.name`) and bracket (`skills[0].name`) array indexing
+  - Type `setValue`, `resetField`, and `watch` APIs to accept valid paths only
+  - Add runtime tests (Vitest) and type tests (tsd) for register behavior
+  - No breaking changes; existing code continues to work with improved type safety
+
+  **Migration:**
+
+  ```tsx
+  // Before: string-based paths, any return type
+  const { value } = register("user.name");
+
+  // After: typed paths, narrowed return types
+  const { value } = register("user.name"); // value: string
+  const { checked } = register("prefs.notify"); // checked: boolean
+  const { files } = register("avatar"); // files: File | FileList | File[] | null
+  ```
+
 ## 3.7.0
 
 ### Minor Changes
