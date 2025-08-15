@@ -198,7 +198,23 @@ The `useForm` hook returns an object with the following properties and methods:
 
 ##### register
 
-**Type:** `(name: string) => RegisterReturn`
+**Type (overload):**
+
+```ts
+// Typed literal paths → precise return
+register<Name extends Path<T>>(name: Name): RegisterReturn<PathValue<T, Name>>
+
+// Dynamic strings (e.g., template strings for array indices) → spreadable fallback
+register(name: string): {
+  name: string;
+  onChange: (e: React.ChangeEvent<any>) => void;
+  onBlur: (e: React.FocusEvent<any>) => void;
+} & (
+  | { checked: boolean; value?: never; files?: never }
+  | { value: any; checked?: never; files?: never }
+  | { files: FileList | File | File[] | null; value?: never; checked?: never }
+)
+```
 
 Registers a field with the form and returns props to spread on input elements.
 
@@ -220,7 +236,7 @@ const { register } = useForm();
 <input {...register('avatar')} type="file" accept="image/*" />
 ```
 
-**Return Type:**
+**Return Type (conditional for typed paths):**
 
 ```typescript
 {
@@ -228,10 +244,42 @@ const { register } = useForm();
   onChange: (e: React.ChangeEvent<any>) => void;
   onBlur: (e: React.FocusEvent<any>) => void;
 } & (
-  | { checked: boolean; value?: never; files?: never }      // Checkbox
-  | { value: any; checked?: never; files?: never }          // Text/Number/etc
+  | { checked: boolean; value?: never; files?: never }                      // Checkbox
+  | { value: any; checked?: never; files?: never }                          // Text/Number/etc
   | { files: FileList | File | File[] | null; value?: never; checked?: never } // File
 )
+```
+
+Note: When using dynamic template-string paths for arrays (e.g., `skills.${i}.name`), TypeScript treats the path as a generic string. The overload returns a spreadable fallback shape so existing JSX spreads continue to compile. For full type safety with dynamic indices, consider a helper API in a future release.
+
+###### Typed usage examples
+
+```typescript
+interface ProfileForm {
+  name: string;
+  terms: boolean;
+  avatar: File | null;
+}
+
+const { register } = useForm<ProfileForm>({
+  defaultValues: { name: "", terms: false, avatar: null },
+});
+
+// Boolean fields → `checked`
+<input type="checkbox" {...register("terms")} />
+//            ^ returns { checked: boolean, name, onChange, onBlur }
+
+// File fields → `files`
+<input type="file" {...register("avatar")} />
+//          ^ returns { files: File | FileList | File[] | null, name, onChange, onBlur }
+
+// Text/number/etc → `value`
+<input type="text" {...register("name")} />
+//         ^ returns { value: string, name, onChange, onBlur }
+
+// Dynamic array paths (template strings) are supported via the fallback
+// which returns a spreadable object for JSX, while keeping strict typing
+// for literal paths.
 ```
 
 ##### handleSubmit
@@ -325,7 +373,7 @@ console.log(formState.isSubmitting); // Is submission in progress?
 
 ##### setValue
 
-**Type:** `(path: string, value: any) => void`
+**Type:** `<Name extends Path<T>>(path: Name, value: PathValue<T, Name>) => void`
 
 Set the value of a specific field, including nested fields.
 
@@ -480,7 +528,7 @@ resetValues({ name: "Default Name", email: "" });
 
 ##### resetField
 
-**Type:** `<Name extends keyof T>(name: Name) => void`
+**Type:** `<Name extends Path<T>>(name: Name) => void`
 
 Reset a specific field to its default value.
 
