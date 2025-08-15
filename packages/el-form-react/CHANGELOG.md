@@ -1,5 +1,13 @@
 # el-form-react
 
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [9892bd1]
+  - el-form-react-hooks@3.8.0
+  - el-form-react-components@4.0.1
+
 ## 4.0.0
 
 ### Major Changes
