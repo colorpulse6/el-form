@@ -6,6 +6,7 @@ keywords:
   - release notes
   - version history
 ---
+
 # Changelog
 
 All notable changes to the el-form project will be documented in this file.
@@ -23,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Internal: Zod 4 introspection (no breaking surface changes to AutoForm/useForm APIs).
 - Discriminated unions: more robust introspection; behavior unchanged for users.
+- TypeScript: `useForm.register` is now type-safe for known paths
+  - Literal field names and dot-paths infer exact field value type and return the appropriate props (`value`, `checked`, or `files`).
+  - Dynamic string paths remain supported and return a broadly-typed object to preserve backwards compatibility (no app code changes required).
+  - Other APIs now accept typed paths where applicable: `setValue`, `watch`, `resetField`.
 
 ---
 
