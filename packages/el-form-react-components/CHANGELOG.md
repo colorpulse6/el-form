@@ -1,5 +1,15 @@
 # el-form-react-components
 
+## 4.1.0
+
+### Minor Changes
+
+- 859ed6e: Update to use typed register APIs
+
+  - Update AutoForm and components to leverage new typed `register()` from el-form-react-hooks
+  - Improved type safety for form field registration and value handling
+  - No breaking changes; existing components continue to work with enhanced typing
+
 ## 4.0.0
 
 ### Major Changes

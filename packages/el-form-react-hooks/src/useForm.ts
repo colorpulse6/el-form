@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import type { Path, PathValue, RegisterReturn } from "./types/path";
 import {
   FormState,
   UseFormOptions,
@@ -119,8 +120,8 @@ export function useForm<T extends Record<string, any>>(
     dirtyManager,
   });
 
-  // Register field function - main registration logic
-  const register = useCallback(
+  // Register field function - main registration logic (base implementation)
+  const registerImpl = useCallback(
     (name: string) => {
       const fieldName = name as keyof T;
       const fieldValue =
@@ -374,6 +375,25 @@ export function useForm<T extends Record<string, any>>(
       formState.values,
     ]
   );
+
+  // Provide typed overload surface for consumers
+  const register = registerImpl as unknown as {
+    <Name extends string>(name: Name): Name extends Path<T>
+      ? RegisterReturn<PathValue<T, Name & Path<T>>>
+      : {
+          name: string;
+          onChange: (e: React.ChangeEvent<any>) => void;
+          onBlur: (e: React.FocusEvent<any>) => void;
+        } & (
+          | { checked: boolean; value?: never; files?: never }
+          | { value: any; checked?: never; files?: never }
+          | {
+              files: FileList | File | File[] | null;
+              value?: never;
+              checked?: never;
+            }
+        );
+  };
 
   // File management methods
   const addFile = useCallback(

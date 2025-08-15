@@ -37,7 +37,7 @@ export function FormHistoryTest() {
       age: 25,
       bio: "Software developer with passion for React",
       preferences: {
-        theme: "light" as const,
+        theme: "light",
         notifications: true,
       },
     },

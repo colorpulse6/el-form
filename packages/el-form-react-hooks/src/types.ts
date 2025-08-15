@@ -1,5 +1,6 @@
 import { ValidatorConfig } from "el-form-core";
 import { FileValidationOptions } from "./utils/fileUtils";
+import type { Path, PathValue, RegisterReturn } from "./types/path";
 
 // Form Context types
 export interface FormContextValue<T extends Record<string, any>> {
@@ -61,15 +62,24 @@ export interface SetFocusOptions {
 }
 
 export interface UseFormReturn<T extends Record<string, any>> {
-  register: (name: string) => {
-    name: string;
-    onChange: (e: React.ChangeEvent<any>) => void;
-    onBlur: (e: React.FocusEvent<any>) => void;
-  } & (
-    | { checked: boolean; value?: never; files?: never }
-    | { value: any; checked?: never; files?: never }
-    | { files: FileList | File | File[] | null; value?: never; checked?: never }
-  );
+  // Strongly-typed register with conditional typing for known paths; falls back for dynamic strings
+  register<Name extends string>(
+    name: Name
+  ): Name extends Path<T>
+    ? RegisterReturn<PathValue<T, Name & Path<T>>>
+    : {
+        name: string;
+        onChange: (e: React.ChangeEvent<any>) => void;
+        onBlur: (e: React.FocusEvent<any>) => void;
+      } & (
+        | { checked: boolean; value?: never; files?: never }
+        | { value: any; checked?: never; files?: never }
+        | {
+            files: FileList | File | File[] | null;
+            value?: never;
+            checked?: never;
+          }
+      );
   handleSubmit: (
     onValid: (data: T) => void,
     onError?: (errors: Record<keyof T, string>) => void
@@ -78,14 +88,17 @@ export interface UseFormReturn<T extends Record<string, any>> {
 
   // Basic form control
   reset: (options?: ResetOptions<T>) => void;
-  setValue: (path: string, value: any) => void;
+  setValue: <Name extends Path<T>>(
+    path: Name,
+    value: PathValue<T, Name>
+  ) => void;
   setValues: (values: Partial<T>) => void;
 
   // Watch system
   watch: {
     (): Partial<T>; // Watch all values
-    <Name extends keyof T>(name: Name): T[Name]; // Watch specific field
-    <Names extends keyof T>(names: Names[]): Pick<T, Names>; // Watch multiple fields
+    <Name extends Path<T>>(name: Name): PathValue<T, Name>; // Watch specific field by path
+    <Names extends Path<T>>(names: Names[]): { [K in Names]: PathValue<T, K> };
   };
 
   // Reset utilities
@@ -127,7 +140,7 @@ export interface UseFormReturn<T extends Record<string, any>> {
   // Array operations
   addArrayItem: (path: string, item: any) => void;
   removeArrayItem: (path: string, index: number) => void;
-  resetField: <Name extends keyof T>(name: Name) => void;
+  resetField: <Name extends Path<T>>(name: Name) => void;
 
   // Advanced form control methods
   submit: () => Promise<void>;
