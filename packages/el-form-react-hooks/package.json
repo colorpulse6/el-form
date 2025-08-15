@@ -48,7 +48,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "pnpm run build && vitest --environment jsdom --run && tsd --files tsd.test-d.ts"
+    "test": "pnpm -w -r build && vitest --environment jsdom --run && tsd --files tsd.test-d.ts"
   },
   "dependencies": {
     "el-form-core": "workspace:^"
