@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import React, { useRef } from "react";
+import { useFormContext } from "../FormContext";
 import {
   useForm,
   FormProvider,
@@ -21,6 +22,7 @@ describe("selector subscriptions", () => {
       const X = React.memo(function X() {
         xCount.current += 1;
         const { value } = useField<any, any>("x" as any);
+        const { form } = useFormContext<any>();
         const props = form.register("x");
         return (
           <div>
@@ -37,6 +39,7 @@ describe("selector subscriptions", () => {
 
       const Y = React.memo(function Y() {
         yCount.current += 1;
+        const { form } = useFormContext<any>();
         const props = form.register("y");
         return (
           <div>
