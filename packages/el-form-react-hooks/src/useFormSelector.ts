@@ -19,9 +19,7 @@ export function useFormSelector<TSelected>(
     if (subscribe) {
       // Gate notifications by selector/equality so consumers only re-render when needed
       return subscribe(() => {
-        const state = (
-          getState ? getState() : form.formState
-        ) as FormState<any>;
+        const state = getState() as FormState<any>;
         const nextSelected = selector(state);
         const prevSelected = lastSelectedRef.current;
         if (
