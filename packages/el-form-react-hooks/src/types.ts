@@ -6,6 +6,9 @@ import type { Path, PathValue, RegisterReturn } from "./types/path";
 export interface FormContextValue<T extends Record<string, any>> {
   form: UseFormReturn<T>;
   formId?: string;
+  // Optional subscription helpers provided by the context provider
+  subscribe?: (cb: () => void) => () => void;
+  getState?: () => FormState<T>;
 }
 
 // UseForm types

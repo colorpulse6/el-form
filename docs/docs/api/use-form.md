@@ -1222,16 +1222,59 @@ const form = useForm<ContactForm>({
 });
 ```
 
-### 2. Optimize Re-renders with Selective Watching
+### 2. Optimize Re-renders with Selector Subscriptions
 
 ```typescript
-// Instead of watching all values
-const allValues = watch(); // Re-renders on any change
+import {
+  FormProvider,
+  useFormSelector,
+  useField,
+  shallowEqual,
+} from "el-form-react-hooks";
 
-// Watch only what you need
-const email = watch("email"); // Only re-renders when email changes
-const [name, age] = watch(["name", "age"]); // Only these fields
+const form = useForm<{ items: Array<{ id: number }>; email: string }>({
+  defaultValues: { items: [{ id: 1 }], email: "" },
+});
+
+// Subscribe to a specific field's slice (value/error/touched)
+function EmailField() {
+  const { value, error, touched } = useField<any, any>("email" as any);
+  const props = form.register("email");
+  return (
+    <div>
+      <input {...(props as any)} />
+      {touched && error && <span className="error">{error}</span>}
+    </div>
+  );
+}
+
+// Subscribe to a selected slice with custom equality
+function ItemsList() {
+  const items = useFormSelector((s) => s.values.items ?? [], shallowEqual);
+  return (
+    <ul>
+      {items.map((it) => (
+        <li key={it.id}>{it.id}</li>
+      ))}
+    </ul>
+  );
+}
+
+function App() {
+  return (
+    <FormProvider form={form}>
+      <EmailField />
+      <ItemsList />
+    </FormProvider>
+  );
+}
 ```
+
+Notes:
+
+- `useField(path)` re-renders only when that field’s value, error, or touched changes.
+- `useFormSelector(selector, equality?)` re-renders when the selector result changes; pass `shallowEqual` for arrays/objects to avoid unnecessary updates.
+- SSR: the server snapshot matches the client’s initial selector result to avoid hydration mismatches.
 
 ### 3. Handle Loading States Properly
 

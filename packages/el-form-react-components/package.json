@@ -50,7 +50,8 @@
     "build": "tsup && pnpm run build:css",
     "build:css": "pnpm dlx @tailwindcss/cli -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --minify",
     "dev": "tsup --watch",
-    "dev:css": "pnpm dlx @tailwindcss/cli -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --watch"
+    "dev:css": "pnpm dlx @tailwindcss/cli -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --watch",
+    "test": "pnpm -w -r build && vitest --environment jsdom --run"
   },
   "dependencies": {
     "el-form-core": "workspace:^",
@@ -70,6 +71,9 @@
     "tailwindcss": "^4.1.8",
     "@tailwindcss/cli": "^4.1.8",
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0",
+    "@testing-library/react": "^14.1.2",
+    "jsdom": "^24.0.0"
   }
 }

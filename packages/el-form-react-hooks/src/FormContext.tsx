@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect, useRef } from "react";
 import { UseFormReturn, FormContextValue } from "./types";
 
 // Context with proper generic typing
@@ -14,8 +14,24 @@ export function FormProvider<T extends Record<string, any>>({
   form: UseFormReturn<T>;
   formId?: string;
 }) {
+  const listenersRef = useRef(new Set<() => void>());
+
+  // Notify subscribers whenever the formState object changes
+  useEffect(() => {
+    listenersRef.current.forEach((cb) => cb());
+  }, [form.formState]);
+
+  const subscribe = (cb: () => void) => {
+    listenersRef.current.add(cb);
+    return () => {
+      listenersRef.current.delete(cb);
+    };
+  };
+
+  const getState = () => form.formState;
+
   return (
-    <FormContext.Provider value={{ form, formId }}>
+    <FormContext.Provider value={{ form, formId, subscribe, getState }}>
       {children}
     </FormContext.Provider>
   );
