@@ -16,7 +16,23 @@ export function useFormSelector<TSelected>(
   const lastSelectedRef = useRef<TSelected | undefined>(undefined);
 
   const subscribeFn = (onStoreChange: () => void) => {
-    if (subscribe) return subscribe(onStoreChange);
+    if (subscribe) {
+      // Gate notifications by selector/equality so consumers only re-render when needed
+      return subscribe(() => {
+        const state = (
+          getState ? getState() : form.formState
+        ) as FormState<any>;
+        const nextSelected = selector(state);
+        const prevSelected = lastSelectedRef.current;
+        if (
+          prevSelected === undefined ||
+          !equalityFn(prevSelected, nextSelected)
+        ) {
+          lastSelectedRef.current = nextSelected;
+          onStoreChange();
+        }
+      });
+    }
     // Fallback: no-op unsubscribe if no provider subscribe is available
     return () => {};
   };

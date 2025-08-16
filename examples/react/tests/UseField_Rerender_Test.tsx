@@ -11,14 +11,14 @@ export default function UseFieldRerenderTest() {
   function AField() {
     aRenders.current += 1;
     const { value } = useField<any, any>("a" as any);
-    const props = form.register("a");
+    const fieldPropsA = form.register("a");
     return (
       <div>
         <div aria-label="a-count">{aRenders.current}</div>
         <input
           aria-label="a"
-          value={(props as any).value}
-          onChange={(props as any).onChange}
+          value={(fieldPropsA as any).value}
+          onChange={(fieldPropsA as any).onChange}
         />
         <div aria-label="a-value">{String(value)}</div>
       </div>
@@ -27,14 +27,14 @@ export default function UseFieldRerenderTest() {
 
   function BField() {
     bRenders.current += 1;
-    const props = form.register("b");
+    const fieldPropsB = form.register("b");
     return (
       <div>
         <div aria-label="b-count">{bRenders.current}</div>
         <input
           aria-label="b"
-          value={(props as any).value}
-          onChange={(props as any).onChange}
+          value={(fieldPropsB as any).value}
+          onChange={(fieldPropsB as any).onChange}
         />
       </div>
     );

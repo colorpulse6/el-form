@@ -1,5 +1,5 @@
 import React from "react";
-import { useForm, FormProvider, useFormSelector } from "el-form-react-hooks";
+import { useForm, FormProvider } from "el-form-react-hooks";
 import { FormSwitch, FormCase } from "el-form-react-components";
 
 export default function FormSwitchSelectExample() {
