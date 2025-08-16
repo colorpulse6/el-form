@@ -18,7 +18,7 @@ describe("selector subscriptions", () => {
       const xCount = useRef(0);
       const yCount = useRef(0);
 
-      function X() {
+      const X = React.memo(function X() {
         xCount.current += 1;
         const { value } = useField<any, any>("x" as any);
         const props = form.register("x");
@@ -33,9 +33,9 @@ describe("selector subscriptions", () => {
             <div aria-label="x-value">{String(value)}</div>
           </div>
         );
-      }
+      });
 
-      function Y() {
+      const Y = React.memo(function Y() {
         yCount.current += 1;
         const props = form.register("y");
         return (
@@ -48,7 +48,7 @@ describe("selector subscriptions", () => {
             />
           </div>
         );
-      }
+      });
 
       return (
         <FormProvider form={form}>
@@ -85,7 +85,19 @@ describe("selector subscriptions", () => {
         defaultValues: { items: [{ id: 1 }] },
       });
       const count = useRef(0);
-      const items = useFormSelector((s) => s.values.items ?? [], shallowEqual);
+      function ItemsView() {
+        const items = useFormSelector(
+          (s) => s.values.items ?? [],
+          shallowEqual
+        );
+        count.current += 1;
+        return (
+          <>
+            <div aria-label="items-render-count">{count.current}</div>
+            <div aria-label="items-length">{items.length}</div>
+          </>
+        );
+      }
       function AddSame() {
         return (
           <button
@@ -99,11 +111,9 @@ describe("selector subscriptions", () => {
           </button>
         );
       }
-      count.current += 1;
       return (
         <FormProvider form={form}>
-          <div aria-label="items-render-count">{count.current}</div>
-          <div aria-label="items-length">{items.length}</div>
+          <ItemsView />
           <AddSame />
         </FormProvider>
       );
