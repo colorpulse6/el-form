@@ -27,7 +27,7 @@ The `FormSwitch` component allows you to conditionally render different parts of
 ## Basic Usage
 
 ```typescript
-import { useForm } from "el-form-react-hooks";
+import { useForm, FormProvider } from "el-form-react-hooks";
 import { FormSwitch, FormCase } from "el-form-react-components";
 
 function ConditionalForm() {
@@ -39,36 +39,37 @@ function ConditionalForm() {
     },
   });
 
-  const paymentMethod = form.watch("paymentMethod");
-
   return (
-    <form>
-      <select {...form.register("paymentMethod")}>
-        <option value="credit-card">Credit Card</option>
-        <option value="bank-transfer">Bank Transfer</option>
-      </select>
+    <FormProvider form={form}>
+      <form>
+        <select {...form.register("paymentMethod")}>
+          <option value="credit-card">Credit Card</option>
+          <option value="bank-transfer">Bank Transfer</option>
+        </select>
 
-      <FormSwitch on={paymentMethod} form={form}>
-        <FormCase value="credit-card">
-          {(cardForm) => (
-            <div>
-              <label>Card Number</label>
-              <input {...cardForm.register("cardNumber")} />
-            </div>
-          )}
-        </FormCase>
-        <FormCase value="bank-transfer">
-          {(bankForm) => (
-            <div>
-              <label>Bank Account</label>
-              <input {...bankForm.register("bankAccount")} />
-            </div>
-          )}
-        </FormCase>
-      </FormSwitch>
+        {/* New API: subscribe internally using field path */}
+        <FormSwitch field="paymentMethod">
+          <FormCase value="credit-card">
+            {(cardForm) => (
+              <div>
+                <label>Card Number</label>
+                <input {...cardForm.register("cardNumber")} />
+              </div>
+            )}
+          </FormCase>
+          <FormCase value="bank-transfer">
+            {(bankForm) => (
+              <div>
+                <label>Bank Account</label>
+                <input {...bankForm.register("bankAccount")} />
+              </div>
+            )}
+          </FormCase>
+        </FormSwitch>
 
-      <button type="submit">Submit</button>
-    </form>
+        <button type="submit">Submit</button>
+      </form>
+    </FormProvider>
   );
 }
 ```
@@ -83,17 +84,24 @@ The main component that handles conditional logic. Supports string, number, or b
 type DiscriminatorPrimitive = string | number | boolean;
 
 interface FormSwitchProps<T extends Record<string, any>> {
-  on: DiscriminatorPrimitive | null | undefined; // Current discriminator value
-  form: UseFormReturn<T>; // Form instance
-  children: React.ReactNode; // One or more FormCase elements
-  fallback?: React.ReactNode | ((form: UseFormReturn<T>) => React.ReactNode); // Optional when no case matches
+  // New (preferred)
+  field?: Path<T>;
+  select?: (state: FormState<T>) => DiscriminatorPrimitive;
+
+  // Deprecated (backwards compatible for one minor)
+  on?: DiscriminatorPrimitive | null | undefined;
+  form?: UseFormReturn<T>;
+
+  children: React.ReactNode;
+  fallback?: React.ReactNode | ((form: UseFormReturn<T>) => React.ReactNode);
 }
 ```
 
 **Props:**
 
-- `on`: Current value used to select a matching `FormCase`. If `null`/`undefined`, nothing renders (or fallback if provided).
-- `form`: The active form API.
+- `field` (preferred): Path to the discriminator field. Subscribes only to that field’s value.
+- `select`: Custom selector for advanced cases. Subscribes to the selector result.
+- `on` + `form` (deprecated): Legacy API; logs a dev warning. Will be removed in a future minor.
 - `children`: `FormCase` elements (each declares a `value`).
 - `fallback` (optional): Rendered (or invoked if a function) when no `FormCase` value matches.
 
@@ -466,9 +474,13 @@ Each `value` must be unique. Duplicates log an error in development; only the fi
 
 ## Performance Considerations
 
-- FormSwitch only renders the matching FormCase, so unused cases don't impact performance
-- The form instance is shared across all cases, maintaining state consistency
-- Consider memoizing complex FormCase children if they contain expensive computations
+- FormSwitch subscribes to the discriminator slice only (`field`/`select`), avoiding unrelated re-renders.
+- Only the matching `FormCase` renders.
+- For heavy branches, you can still memoize child components.
+
+### Backwards Compatibility
+
+- The legacy `on` + `form` props remain supported for one minor release and will log a dev-only warning. Prefer `field`/`select`.
 
 ## Troubleshooting
 
