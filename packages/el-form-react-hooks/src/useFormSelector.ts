@@ -1,5 +1,6 @@
 import { useRef, useSyncExternalStore } from "react";
 import { useFormContext } from "./FormContext";
+import { useSubscriptionContext } from "./SubscriptionContext";
 import type { FormState } from "./types";
 
 /**
@@ -11,7 +12,8 @@ export function useFormSelector<TSelected>(
   selector: (s: FormState<any>) => TSelected,
   equalityFn: (a: TSelected, b: TSelected) => boolean = Object.is
 ): TSelected {
-  const { form, subscribe, getState } = useFormContext<any>();
+  const { form } = useFormContext<any>();
+  const { subscribe, getState } = useSubscriptionContext<any>();
 
   const lastSelectedRef = useRef<TSelected | undefined>(undefined);
 

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef } from "react";
+import { SubscriptionContext } from "./SubscriptionContext";
 import { UseFormReturn, FormContextValue } from "./types";
 
 // Context with proper generic typing
@@ -31,8 +32,10 @@ export function FormProvider<T extends Record<string, any>>({
   const getState = () => form.formState;
 
   return (
-    <FormContext.Provider value={{ form, formId, subscribe, getState }}>
-      {children}
+    <FormContext.Provider value={{ form, formId }}>
+      <SubscriptionContext.Provider value={{ subscribe, getState }}>
+        {children}
+      </SubscriptionContext.Provider>
     </FormContext.Provider>
   );
 }
