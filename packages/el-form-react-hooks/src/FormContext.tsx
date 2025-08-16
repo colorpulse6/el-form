@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { SubscriptionContext } from "./SubscriptionContext";
 import { UseFormReturn, FormContextValue } from "./types";
 
@@ -16,24 +23,35 @@ export function FormProvider<T extends Record<string, any>>({
   formId?: string;
 }) {
   const listenersRef = useRef(new Set<() => void>());
+  const latestFormRef = useRef(form);
+
+  useEffect(() => {
+    latestFormRef.current = form;
+  }, [form]);
 
   // Notify subscribers whenever the formState object changes
   useEffect(() => {
     listenersRef.current.forEach((cb) => cb());
   }, [form.formState]);
 
-  const subscribe = (cb: () => void) => {
+  const subscribe = useCallback((cb: () => void) => {
     listenersRef.current.add(cb);
     return () => {
       listenersRef.current.delete(cb);
     };
-  };
+  }, []);
 
-  const getState = () => form.formState;
+  const getState = useCallback(() => latestFormRef.current.formState, []);
+
+  const formContextValue = useMemo(() => ({ form, formId }), [form, formId]);
+  const subscriptionContextValue = useMemo(
+    () => ({ subscribe, getState }),
+    [subscribe, getState]
+  );
 
   return (
-    <FormContext.Provider value={{ form, formId }}>
-      <SubscriptionContext.Provider value={{ subscribe, getState }}>
+    <FormContext.Provider value={formContextValue}>
+      <SubscriptionContext.Provider value={subscriptionContextValue}>
         {children}
       </SubscriptionContext.Provider>
     </FormContext.Provider>
