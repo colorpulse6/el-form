@@ -66,6 +66,9 @@ describe("selector subscriptions", () => {
 
     // Change y only
     fireEvent.change(yInput, { target: { value: "y2" } });
+    // Flush microtasks to allow any subscription notifications
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    queueMicrotask(() => {});
     const afterYChangeXCount = Number(
       screen.getByLabelText("x-count").textContent
     );
