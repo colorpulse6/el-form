@@ -3,9 +3,12 @@ import { ValidationResult, ValidatorContext } from "./types";
 // Schema type detection utilities
 export function isZodSchema(schema: any): boolean {
   return (
-    schema &&
+    !!schema &&
     typeof schema === "object" &&
-    (schema as any)._zod?.def !== undefined
+    typeof (schema as any).safeParse === "function" &&
+    (((schema as any)._zod && (schema as any)._zod.def !== undefined) ||
+      (schema as any).def !== undefined ||
+      (schema as any)._def !== undefined)
   );
 }
 
@@ -200,9 +203,10 @@ export class SchemaAdapter {
 
     if (!result.success) {
       const errors: Record<string, string> = {};
-      result.error.errors.forEach((err: any) => {
-        const path = err.path.join(".") || "form";
-        errors[path] = err.message;
+      const issues = (result.error as any).issues || [];
+      issues.forEach((err: any) => {
+        const path = Array.isArray(err.path) ? err.path.join(".") : "form";
+        errors[path || "form"] = err.message;
       });
 
       return { isValid: false, errors };

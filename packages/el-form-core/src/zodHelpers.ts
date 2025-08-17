@@ -1,28 +1,33 @@
-// Zod 4 helper utilities (v4-only). We intentionally rely on _zod.def.
-// If Zod Mini support is added later, these should continue to work as both Classic & Mini share core internals.
-// We keep everything in one place for easier future maintenance.
+// Zod helper utilities with dual support for v3 and v4.
+// Centralize all introspection here; callers should not access internal defs directly.
 
-// Types imported from zod/v4/core for stable introspection. Users of the library
-// will still import { z } from "zod" in their apps; we isolate internals here.
-import * as z4 from "zod/v4/core";
+// Avoid importing v4-only entrypoints. Use public "zod" and runtime-safe checks.
+import type { ZodTypeAny, ZodError } from "zod";
 
-// Narrow base type for any Zod 4 schema
-export type AnyZodSchema = z4.$ZodType<any, any, any>;
+// Narrow base type we operate on; use public type when available, fall back to any.
+export type AnyZodSchema = ZodTypeAny | any;
 
 // Access internal definition safely
 export function getDef(schema: AnyZodSchema): any {
   const anySchema = schema as any;
-  // Prefer Zod 4 core/classic internals on `_zod.def` when available (works for mini + classic)
-  // Fallbacks for environments/builds that expose `.def` (classic) or legacy `._def` (safety)
+  // Prefer Zod 4 internals on `_zod.def` when available (works for mini + classic)
+  // Fallbacks for environments/builds that expose `.def` (classic) or legacy `._def` (v3)
   return anySchema?._zod?.def ?? anySchema?.def ?? anySchema?._def;
 }
 
 export function getTypeName(schema: AnyZodSchema): string | undefined {
   const def = getDef(schema);
   if (!def) return undefined;
-  // In Zod v4 core/classic, `def.type` is a lowercase token. Map to legacy-like names we used in v3.
+  // If discriminator present, treat as DU regardless of version
   if (def.discriminator !== undefined) return "ZodDiscriminatedUnion";
-  const t = def.type as string | undefined;
+
+  // v4 uses lowercase tokens in def.type; v3 commonly stores def.typeName
+  const t = (def.type as string | undefined) || (def.typeName as string | undefined);
+
+  // If v3 style typeName already matches our legacy names, return it
+  if (t && t.startsWith("Zod")) return t;
+
+  // Map v4 lowercase tokens to legacy-like names
   switch (t) {
     case "object":
       return "ZodObject";
@@ -56,13 +61,12 @@ export function getTypeName(schema: AnyZodSchema): string | undefined {
 export function getEnumValues(schema: AnyZodSchema): string[] {
   const def = getDef(schema);
   if (!def) return [];
-  // v4 core/classic enums expose `entries` on def
+  // v4 enums expose `entries`; may be array or object map
   if (def.entries) {
     if (Array.isArray(def.entries)) return def.entries as string[];
-    // Enum-like object
     return Object.values(def.entries as Record<string, string>) as string[];
   }
-  // fallback to values array if present
+  // v3 fallback: `values`
   if (Array.isArray(def.values)) return def.values as string[];
   return [];
 }
@@ -79,7 +83,7 @@ export function getArrayElementType(
   schema: AnyZodSchema
 ): AnyZodSchema | undefined {
   const def = getDef(schema);
-  // v3 used `.type`, v4 core uses `.element`
+  // v4 uses `.element`; v3 uses `.type` for arrays
   return def?.element ?? def?.type;
 }
 
@@ -89,7 +93,7 @@ export function getStringChecks(schema: AnyZodSchema): any[] {
 
 export interface DiscriminatedUnionInfo {
   discriminator: string;
-  options: z4.$ZodObject<any, any>[];
+  options: any[];
 }
 
 export function getDiscriminatedUnionInfo(
@@ -104,13 +108,16 @@ export function getDiscriminatedUnionInfo(
   return { discriminator, options } as DiscriminatedUnionInfo;
 }
 
-export function isZod4Schema(schema: any): boolean {
+export function isZodSchemaLike(schema: any): boolean {
   if (!schema || typeof schema !== "object") return false;
-  // Accept either `_zod.def` (preferred) or classic `.def` + `safeParse`
+  // Detect both v3 and v4: require safeParse and any def location
   return Boolean(
-    (schema._zod && schema._zod.def) || (schema.def && typeof schema.safeParse === "function")
+    typeof (schema as any).safeParse === "function" &&
+      ((schema as any)._zod?.def || (schema as any).def || (schema as any)._def)
   );
 }
 
-// Export z4 namespace for advanced typing needs in downstream code (internal use recommended).
-export { z4 };
+export function getZodIssues(error: ZodError<any>): { path: (string | number)[]; message: string }[] {
+  // Standardize on .issues across versions
+  return (error as any).issues || [];
+}
