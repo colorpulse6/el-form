@@ -11,6 +11,9 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        zod: ["^3.22.0", "^4.0.0"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,6 +28,9 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+
+      - name: Set Zod version to ${{ matrix.zod }}
+        run: pnpm add -w zod@${{ matrix.zod }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

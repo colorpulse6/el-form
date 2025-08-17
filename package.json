@@ -32,11 +32,11 @@
   "dependencies": {
     "el-form-core": "workspace:^",
     "el-form-react": "workspace:^",
-    "el-form-react-hooks": "workspace:^",
     "el-form-react-components": "workspace:^",
+    "el-form-react-hooks": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zod": "^4.0.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.2",

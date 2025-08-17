@@ -100,6 +100,10 @@ npm install valibot
 ```
 
 :::info
+Zod 3 and Zod 4 are both supported. We recommend Zod 4 for new projects, but if your stack (e.g., some Astro integrations) still uses Zod 3, El Form will work without requiring parallel schemas.
+:::
+
+:::tip
 You don't need to install any validation library if you plan to use custom validation functions or no validation at all.
 :::
 

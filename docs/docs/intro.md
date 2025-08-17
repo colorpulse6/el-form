@@ -26,7 +26,7 @@ El Form is designed to solve the real problems developers face when building for
 
 **Works with any validation:**
 
-- Zod, Yup, Valibot schemas
+- Zod (v3 and v4), Yup, Valibot schemas
 - Custom validation functions
 - No validation at all
 
