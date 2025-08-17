@@ -1,4 +1,4 @@
-import React from "react";
+// Example showing backward compatibility with deprecated FormSwitch props
 import { useForm } from "el-form-react-hooks";
 import { FormSwitch, FormCase } from "el-form-react-components";
 

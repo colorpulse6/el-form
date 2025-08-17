@@ -1,5 +1,10 @@
 import React from "react";
-import { UseFormReturn, useFormSelector, useField } from "el-form-react-hooks";
+import {
+  UseFormReturn,
+  useFormSelector,
+  useField,
+  useFormContext,
+} from "el-form-react-hooks";
 import type { Path } from "el-form-react-hooks";
 
 // Supported primitive discriminator types
@@ -30,6 +35,12 @@ export function FormSwitch<T extends Record<string, any>>({
   // Prefer new API: field/select
   let current: DiscriminatorPrimitive | undefined | null = undefined;
   let formApi: UseFormReturn<T> | undefined = form;
+
+  // Get form instance from context if not provided and using field/select
+  if (!formApi && (field || select)) {
+    const ctx = useFormContext<T>();
+    formApi = ctx?.form;
+  }
 
   if (field) {
     const slice = useField<any, any>(field as any);

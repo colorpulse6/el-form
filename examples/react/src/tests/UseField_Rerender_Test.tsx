@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+// Example showing useField re-render optimization
+import { useRef } from "react";
 import { useForm, FormProvider, useField } from "el-form-react-hooks";
 
 export default function UseFieldRerenderTest() {

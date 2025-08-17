@@ -1,4 +1,4 @@
-import React from "react";
+// Example showing FormSwitch with custom selector function
 import { useForm, FormProvider } from "el-form-react-hooks";
 import { FormSwitch, FormCase } from "el-form-react-components";
 

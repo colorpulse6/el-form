@@ -6,6 +6,7 @@ import ZodFileValidationTest from "./forms/ZodFileValidationTest";
 import { DiscriminatedUnionForm } from "./forms/DiscriminatedUnionForm";
 import { AutoDiscriminatedUnionForm } from "./forms/AutoDiscriminatedUnionForm";
 import { useState } from "react";
+import FormSwitchFieldExample from "./tests/FormSwitch_Field_Example";
 
 function App() {
   const [currentTest, setCurrentTest] = useState<
@@ -16,6 +17,7 @@ function App() {
     | "history"
     | "discriminated"
     | "auto-discriminated"
+    | "form-switch"
   >("basic");
 
   return (
@@ -153,6 +155,24 @@ function App() {
           >
             🤖 Auto Discriminated
           </button>
+          <button
+            onClick={() => setCurrentTest("form-switch")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "form-switch"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color: currentTest === "form-switch" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            🔀 Form Switch
+          </button>
         </nav>
       </div>
 
@@ -163,6 +183,7 @@ function App() {
       {currentTest === "history" && <FormHistoryTest />}
       {currentTest === "discriminated" && <DiscriminatedUnionForm />}
       {currentTest === "auto-discriminated" && <AutoDiscriminatedUnionForm />}
+      {currentTest === "form-switch" && <FormSwitchFieldExample />}
     </div>
   );
 }
