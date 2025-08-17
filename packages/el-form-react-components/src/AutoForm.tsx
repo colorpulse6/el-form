@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useForm } from "el-form-react-hooks";
-import type { UseFormReturn } from "el-form-react-hooks";
+import type { UseFormReturn, Path } from "el-form-react-hooks";
 import type { ValidatorConfig } from "el-form-core";
 import {
   AutoFormProps,
@@ -708,7 +708,7 @@ export function AutoForm<T extends Record<string, any>>({
 
     // Handle array fields
     if (fieldConfig.type === "array") {
-      const fieldProps = register(String(fieldName));
+      const fieldProps = register(fieldName as Path<T>);
       const fieldValue = "value" in fieldProps ? fieldProps.value : [];
       const arrayValue = Array.isArray(fieldValue) ? fieldValue : [];
       return (
@@ -741,7 +741,7 @@ export function AutoForm<T extends Record<string, any>>({
     }
 
     // Handle regular fields
-    const fieldProps = register(String(fieldName));
+    const fieldProps = register(fieldName as Path<T>);
     const error = formState.errors[fieldName];
     const touched = formState.touched[fieldName];
 
