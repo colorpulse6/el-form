@@ -137,7 +137,7 @@ import { useForm, AutoForm } from "el-form-react";
 
 ## 🔗 Links
 
-- [Documentation](https://colorpulse6.github.io/el-form/)
+- [Documentation](https://elform.dev/)
 - [GitHub Repository](https://github.com/colorpulse6/el-form)
 - [npm Package](https://www.npmjs.com/package/el-form-core)
 - [React Hook Form Alternative Guide](https://github.com/colorpulse6/el-form#why-choose-el-form)

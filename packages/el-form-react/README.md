@@ -317,7 +317,7 @@ npm install el-form-react-components
 
 ## 🔗 Links
 
-- [Documentation](https://colorpulse6.github.io/el-form/)
+- [Documentation](https://elform.dev/)
 - [GitHub](https://github.com/colorpulse6/el-form)
 - [npm](https://www.npmjs.com/package/el-form-react)
 
