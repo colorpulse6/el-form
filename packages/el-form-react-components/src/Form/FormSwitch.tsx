@@ -37,15 +37,13 @@ export function FormSwitch<T extends Record<string, any>>({
   } else if (select) {
     current = useFormSelector(select as any) as any;
   } else {
-    // Backward compatibility
-    if (process.env.NODE_ENV !== "production") {
-      if (form) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          "FormSwitch: 'form' and 'on' props are deprecated; use 'field' or 'select' instead."
-        );
-      }
+    if (form) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "FormSwitch: 'form' and 'on' props are deprecated; use 'field' or 'select' instead."
+      );
     }
+
     current = on as any;
   }
 
