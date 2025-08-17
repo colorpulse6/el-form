@@ -6,6 +6,10 @@ import ZodFileValidationTest from "./forms/ZodFileValidationTest";
 import { DiscriminatedUnionForm } from "./forms/DiscriminatedUnionForm";
 import { AutoDiscriminatedUnionForm } from "./forms/AutoDiscriminatedUnionForm";
 import { useState } from "react";
+import FormSwitchFieldExample from "./tests/FormSwitch_Field_Example";
+import FormSwitchSelectExample from "./tests/FormSwitch_Select_Example";
+import FormSwitchBackCompatExample from "./tests/FormSwitch_BackCompat_Example";
+import UseFieldRerenderTest from "./tests/UseField_Rerender_Test";
 
 function App() {
   const [currentTest, setCurrentTest] = useState<
@@ -16,6 +20,10 @@ function App() {
     | "history"
     | "discriminated"
     | "auto-discriminated"
+    | "form-switch-field"
+    | "form-switch-select"
+    | "form-switch-compat"
+    | "use-field-rerender"
   >("basic");
 
   return (
@@ -153,6 +161,82 @@ function App() {
           >
             🤖 Auto Discriminated
           </button>
+          <button
+            onClick={() => setCurrentTest("form-switch-field")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "form-switch-field"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color:
+                currentTest === "form-switch-field" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            🔀 FormSwitch (field)
+          </button>
+          <button
+            onClick={() => setCurrentTest("form-switch-select")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "form-switch-select"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color:
+                currentTest === "form-switch-select" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            🔍 FormSwitch (select)
+          </button>
+          <button
+            onClick={() => setCurrentTest("form-switch-compat")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "form-switch-compat"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color:
+                currentTest === "form-switch-compat" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            ⚙️ FormSwitch (compat)
+          </button>
+          <button
+            onClick={() => setCurrentTest("use-field-rerender")}
+            style={{
+              padding: "8px 4px",
+              borderBottom:
+                currentTest === "use-field-rerender"
+                  ? "2px solid #3b82f6"
+                  : "2px solid transparent",
+              color:
+                currentTest === "use-field-rerender" ? "#2563eb" : "#6b7280",
+              fontSize: "14px",
+              fontWeight: "500",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            ⚡ useField (rerender)
+          </button>
         </nav>
       </div>
 
@@ -163,6 +247,10 @@ function App() {
       {currentTest === "history" && <FormHistoryTest />}
       {currentTest === "discriminated" && <DiscriminatedUnionForm />}
       {currentTest === "auto-discriminated" && <AutoDiscriminatedUnionForm />}
+      {currentTest === "form-switch-field" && <FormSwitchFieldExample />}
+      {currentTest === "form-switch-select" && <FormSwitchSelectExample />}
+      {currentTest === "form-switch-compat" && <FormSwitchBackCompatExample />}
+      {currentTest === "use-field-rerender" && <UseFieldRerenderTest />}
     </div>
   );
 }

@@ -85,15 +85,20 @@ const {
 
 ### 🎯 Core Methods
 
-#### `register(name: string)`
+#### `register<Name extends Path<T>>(name: Name)`
 
-**Returns:** Input props for form fields  
-**Description:** Registers a field with the form and returns props to spread on input elements.
+**Returns:** Input props for form fields (typed to the field's value kind)  
+**Description:** Registers a field with the form and returns props to spread on input elements. Only valid paths from your form type are accepted; invalid paths cause TypeScript errors.
 
 ```typescript
 <input {...register('email')} />
 <textarea {...register('bio')} />
 <input {...register('avatar')} type="file" />
+
+// Arrays
+<input {...register('users.0.email')} />
+const i = 0 as const;
+<input {...register(`users.${i}.email`)} />
 ```
 
 #### `handleSubmit(onValid, onError?)`
@@ -132,7 +137,7 @@ const {
 
 ### 📝 Value Management
 
-#### `setValue(path: string, value: any)`
+#### `setValue<Name extends Path<T>>(path: Name, value: PathValue<T, Name>)`
 
 **Description:** Set the value of a specific field (supports nested paths).
 
@@ -180,7 +185,7 @@ resetValues(); // Reset to defaults
 resetValues({ name: "Default Name" }); // Reset to specific values
 ```
 
-#### `resetField(name: keyof T)`
+#### `resetField<Name extends Path<T>>(name: Name)`
 
 **Description:** Reset a specific field to its default value.
 

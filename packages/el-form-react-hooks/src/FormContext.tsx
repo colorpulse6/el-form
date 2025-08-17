@@ -1,4 +1,12 @@
-import React, { createContext, useContext } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
+import { SubscriptionContext } from "./SubscriptionContext";
 import { UseFormReturn, FormContextValue } from "./types";
 
 // Context with proper generic typing
@@ -14,9 +22,57 @@ export function FormProvider<T extends Record<string, any>>({
   form: UseFormReturn<T>;
   formId?: string;
 }) {
+  const listenersRef = useRef(new Set<() => void>());
+  const latestFormRef = useRef(form);
+
+  useEffect(() => {
+    latestFormRef.current = form;
+  }, [form]);
+
+  // Notify subscribers whenever the formState object changes
+  useEffect(() => {
+    listenersRef.current.forEach((cb) => cb());
+  }, [form.formState]);
+
+  const subscribe = useCallback((cb: () => void) => {
+    listenersRef.current.add(cb);
+    return () => {
+      listenersRef.current.delete(cb);
+    };
+  }, []);
+
+  const getState = useCallback(() => latestFormRef.current.formState, []);
+
+  // Stable context value that always exposes the latest form via getter without changing identity
+  const stableContextRef = useRef<{
+    form: UseFormReturn<T>;
+    formId?: string;
+  }>();
+  if (!stableContextRef.current) {
+    const holder: any = {};
+    Object.defineProperty(holder, "form", {
+      get: () => latestFormRef.current,
+      enumerable: true,
+    });
+    Object.defineProperty(holder, "formId", {
+      get: () => formId,
+      enumerable: true,
+    });
+    stableContextRef.current = holder as {
+      form: UseFormReturn<T>;
+      formId?: string;
+    };
+  }
+  const subscriptionContextValue = useMemo(
+    () => ({ subscribe, getState }),
+    [subscribe, getState]
+  );
+
   return (
-    <FormContext.Provider value={{ form, formId }}>
-      {children}
+    <FormContext.Provider value={stableContextRef.current as any}>
+      <SubscriptionContext.Provider value={subscriptionContextValue}>
+        {children}
+      </SubscriptionContext.Provider>
     </FormContext.Provider>
   );
 }

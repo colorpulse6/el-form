@@ -198,22 +198,10 @@ The `useForm` hook returns an object with the following properties and methods:
 
 ##### register
 
-**Type (overload):**
+**Type:**
 
 ```ts
-// Typed literal paths → precise return
 register<Name extends Path<T>>(name: Name): RegisterReturn<PathValue<T, Name>>
-
-// Dynamic strings (e.g., template strings for array indices) → spreadable fallback
-register(name: string): {
-  name: string;
-  onChange: (e: React.ChangeEvent<any>) => void;
-  onBlur: (e: React.FocusEvent<any>) => void;
-} & (
-  | { checked: boolean; value?: never; files?: never }
-  | { value: any; checked?: never; files?: never }
-  | { files: FileList | File | File[] | null; value?: never; checked?: never }
-)
 ```
 
 Registers a field with the form and returns props to spread on input elements.
@@ -250,7 +238,7 @@ const { register } = useForm();
 )
 ```
 
-Note: When using dynamic template-string paths for arrays (e.g., `skills.${i}.name`), TypeScript treats the path as a generic string. The overload returns a spreadable fallback shape so existing JSX spreads continue to compile. For full type safety with dynamic indices, consider a helper API in a future release.
+Note: `register` is strictly typed. It only accepts valid paths defined by your form type `T`. Array paths are supported (e.g., `skills.0.name` or template strings like `skills.${i}.name`) as long as they resolve to valid paths. Invalid paths will produce TypeScript errors.
 
 ###### Typed usage examples
 
@@ -277,9 +265,8 @@ const { register } = useForm<ProfileForm>({
 <input type="text" {...register("name")} />
 //         ^ returns { value: string, name, onChange, onBlur }
 
-// Dynamic array paths (template strings) are supported via the fallback
-// which returns a spreadable object for JSX, while keeping strict typing
-// for literal paths.
+// Array paths (including template strings) are supported when they resolve
+// to valid paths in your form type. Invalid paths will error at compile time.
 ```
 
 ##### handleSubmit
@@ -1222,16 +1209,59 @@ const form = useForm<ContactForm>({
 });
 ```
 
-### 2. Optimize Re-renders with Selective Watching
+### 2. Optimize Re-renders with Selector Subscriptions
 
 ```typescript
-// Instead of watching all values
-const allValues = watch(); // Re-renders on any change
+import {
+  FormProvider,
+  useFormSelector,
+  useField,
+  shallowEqual,
+} from "el-form-react-hooks";
 
-// Watch only what you need
-const email = watch("email"); // Only re-renders when email changes
-const [name, age] = watch(["name", "age"]); // Only these fields
+const form = useForm<{ items: Array<{ id: number }>; email: string }>({
+  defaultValues: { items: [{ id: 1 }], email: "" },
+});
+
+// Subscribe to a specific field's slice (value/error/touched)
+function EmailField() {
+  const { value, error, touched } = useField<any, any>("email" as any);
+  const props = form.register("email");
+  return (
+    <div>
+      <input {...(props as any)} />
+      {touched && error && <span className="error">{error}</span>}
+    </div>
+  );
+}
+
+// Subscribe to a selected slice with custom equality
+function ItemsList() {
+  const items = useFormSelector((s) => s.values.items ?? [], shallowEqual);
+  return (
+    <ul>
+      {items.map((it) => (
+        <li key={it.id}>{it.id}</li>
+      ))}
+    </ul>
+  );
+}
+
+function App() {
+  return (
+    <FormProvider form={form}>
+      <EmailField />
+      <ItemsList />
+    </FormProvider>
+  );
+}
 ```
+
+Notes:
+
+- `useField(path)` re-renders only when that field’s value, error, or touched changes.
+- `useFormSelector(selector, equality?)` re-renders when the selector result changes; pass `shallowEqual` for arrays/objects to avoid unnecessary updates.
+- SSR: the server snapshot matches the client’s initial selector result to avoid hydration mismatches.
 
 ### 3. Handle Loading States Properly
 

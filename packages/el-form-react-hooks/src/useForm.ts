@@ -378,21 +378,7 @@ export function useForm<T extends Record<string, any>>(
 
   // Provide typed overload surface for consumers
   const register = registerImpl as unknown as {
-    <Name extends string>(name: Name): Name extends Path<T>
-      ? RegisterReturn<PathValue<T, Name & Path<T>>>
-      : {
-          name: string;
-          onChange: (e: React.ChangeEvent<any>) => void;
-          onBlur: (e: React.FocusEvent<any>) => void;
-        } & (
-          | { checked: boolean; value?: never; files?: never }
-          | { value: any; checked?: never; files?: never }
-          | {
-              files: FileList | File | File[] | null;
-              value?: never;
-              checked?: never;
-            }
-        );
+    <Name extends Path<T>>(name: Name): RegisterReturn<PathValue<T, Name>>;
   };
 
   // File management methods

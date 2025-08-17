@@ -62,24 +62,10 @@ export interface SetFocusOptions {
 }
 
 export interface UseFormReturn<T extends Record<string, any>> {
-  // Strongly-typed register with conditional typing for known paths; falls back for dynamic strings
-  register<Name extends string>(
+  // Strongly-typed register that only accepts valid paths
+  register<Name extends Path<T>>(
     name: Name
-  ): Name extends Path<T>
-    ? RegisterReturn<PathValue<T, Name & Path<T>>>
-    : {
-        name: string;
-        onChange: (e: React.ChangeEvent<any>) => void;
-        onBlur: (e: React.FocusEvent<any>) => void;
-      } & (
-        | { checked: boolean; value?: never; files?: never }
-        | { value: any; checked?: never; files?: never }
-        | {
-            files: FileList | File | File[] | null;
-            value?: never;
-            checked?: never;
-          }
-      );
+  ): RegisterReturn<PathValue<T, Name>>;
   handleSubmit: (
     onValid: (data: T) => void,
     onError?: (errors: Record<keyof T, string>) => void

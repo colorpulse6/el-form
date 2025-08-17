@@ -31,6 +31,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.1.0] - 2025-08-16
+
+### ✨ New Features
+
+- Selector-based subscriptions to minimize re-renders
+
+  - New hooks in `el-form-react-hooks`:
+    - `useFormSelector(selector, equality?)`: subscribe to a selected slice of form state
+    - `useField(path)`: subscribe to `{ value, error, touched }` for a field path
+  - Export `shallowEqual` for common array/object selector equality
+  - SSR-safe snapshots: server snapshot equals client initial selector result
+
+- `FormSwitch` optimization (in `el-form-react-components`)
+  - New props: `field?: Path<T>` and `select?: (state) => string | number | boolean`
+  - Re-renders only when the discriminator changes
+  - Deprecated (back-compat for one minor): `on` and `form` props; dev-only `console.warn`
+
+### 🧪 Examples & Tests
+
+- Added examples under `examples/react/tests` demonstrating `field`, `select`, back-compat, and `useField` re-render isolation
+- Added unit tests for selector subscriptions and `FormSwitch` runtime behavior
+
+### 📚 Docs
+
+- Updated `Conditional Rendering (FormSwitch)` guide to prefer `field`/`select`
+- Updated `Field Components API` for new `FormSwitch` props
+- Updated `useForm` API with selector subscription guidance and `shallowEqual` note
+- Updated `useForm` API to reflect strict `register<Name extends Path<T>>` typing (no string fallback). Invalid paths now error; array paths are supported when valid.
+
 ## [3.6.0] - 2025-08-06
 
 ### ✨ New Features

@@ -177,23 +177,21 @@ function UserForm() {
 
 ```typescript
 interface FormSwitchProps<T extends Record<string, any>> {
-  on: string; // The value to switch on
-  form: UseFormReturn<T>; // The form instance
-  children: React.ReactNode; // FormCase components
+  // Preferred
+  field?: Path<T>;
+  select?: (state: FormState<T>) => string | number | boolean;
+
+  // Back-compat (deprecated)
+  on?: string | number | boolean | null | undefined;
+  form?: UseFormReturn<T>;
+
+  children: React.ReactNode;
 }
 
 interface FormCaseProps<T extends Record<string, any>> {
-  value: string; // The value this case matches
-  children: (form: UseFormReturn<T>) => React.ReactNode; // Render prop
+  value: string | number | boolean;
+  children: (form: UseFormReturn<T>) => React.ReactNode;
 }
-
-function FormSwitch<T extends Record<string, any>>(
-  props: FormSwitchProps<T>
-): JSX.Element;
-
-function FormCase<T extends Record<string, any>>(
-  props: FormCaseProps<T>
-): JSX.Element;
 ```
 
 **Usage:**
@@ -211,8 +209,6 @@ function ConditionalForm() {
     },
   });
 
-  const userType = form.watch("userType");
-
   return (
     <FormProvider form={form}>
       <SelectField
@@ -224,7 +220,7 @@ function ConditionalForm() {
         ]}
       />
 
-      <FormSwitch on={userType} form={form}>
+      <FormSwitch field="userType">
         <FormCase value="individual">
           {(individualForm) => (
             <TextField name="firstName" label="First Name" required />

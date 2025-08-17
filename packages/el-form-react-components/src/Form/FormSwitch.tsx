@@ -1,5 +1,11 @@
 import React from "react";
-import { UseFormReturn } from "el-form-react-hooks";
+import {
+  UseFormReturn,
+  useFormSelector,
+  useField,
+  useFormContext,
+} from "el-form-react-hooks";
+import type { Path } from "el-form-react-hooks";
 
 // Supported primitive discriminator types
 type DiscriminatorPrimitive = string | number | boolean;
@@ -9,8 +15,10 @@ interface FormSwitchProps<T extends Record<string, any>> {
    * Current discriminator value. May be temporarily undefined during initial render
    * if the form field has not been initialized yet, so we allow undefined for robustness.
    */
-  on: DiscriminatorPrimitive | undefined | null;
-  form: UseFormReturn<T>;
+  on?: DiscriminatorPrimitive | undefined | null; // deprecated
+  form?: UseFormReturn<T>; // deprecated
+  field?: Path<T>;
+  select?: (state: { values: Partial<T> } & any) => DiscriminatorPrimitive;
   children: React.ReactNode;
   /** Optional fallback rendered when no case matches */
   fallback?: React.ReactNode | ((form: UseFormReturn<T>) => React.ReactNode);
@@ -19,11 +27,40 @@ interface FormSwitchProps<T extends Record<string, any>> {
 export function FormSwitch<T extends Record<string, any>>({
   on,
   form,
+  field,
+  select,
   children,
   fallback,
 }: FormSwitchProps<T>) {
+  // Prefer new API: field/select
+  let current: DiscriminatorPrimitive | undefined | null = undefined;
+  let formApi: UseFormReturn<T> | undefined = form;
+
+  // Get form instance from context if not provided and using field/select
+  if (!formApi && (field || select)) {
+    const ctx = useFormContext<T>();
+    formApi = ctx?.form;
+  }
+
+  if (field) {
+    const slice = useField<any, any>(field as any);
+    current = slice.value as any;
+  } else if (select) {
+    current = useFormSelector(select as any) as any;
+  } else {
+    // Only warn if using deprecated on prop (not when using field/select)
+    if (on !== undefined) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "FormSwitch: 'form' and 'on' props are deprecated; use 'field' or 'select' instead."
+      );
+    }
+
+    current = on as any;
+  }
+
   // If the discriminator hasn't been set yet, don't attempt to render a branch.
-  if (on == null) return null;
+  if (current == null) return null;
 
   const childrenArray = React.Children.toArray(children);
 
@@ -45,9 +82,9 @@ export function FormSwitch<T extends Record<string, any>>({
 
   for (const child of childrenArray) {
     if (!isFormCaseElement(child)) continue;
-    if (child.props.value === on) {
+    if (child.props.value === current) {
       // Fully typed now without casting
-      return child.props.children(form);
+      return child.props.children(formApi as any);
     }
   }
 
@@ -56,7 +93,9 @@ export function FormSwitch<T extends Record<string, any>>({
   if (fallback) {
     if (typeof fallback === "function") {
       // Narrow to the function variant of the fallback union
-      return (fallback as (form: UseFormReturn<T>) => React.ReactNode)(form);
+      return (fallback as (form: UseFormReturn<T>) => React.ReactNode)(
+        formApi as any
+      );
     }
     return fallback;
   }
