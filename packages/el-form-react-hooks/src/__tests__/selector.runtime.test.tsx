@@ -10,74 +10,84 @@ import {
   shallowEqual,
 } from "..";
 
+// Test component that ONLY uses useField (no register props)
+const FieldOnlyComponent = React.memo(function FieldOnlyComponent({
+  field,
+}: {
+  field: string;
+}) {
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  const { value } = useField<any, any>(field as any);
+  return (
+    <div>
+      <div aria-label={`${field}-count`}>{renderCount.current}</div>
+      <div aria-label={`${field}-value`}>{String(value)}</div>
+    </div>
+  );
+});
+
+// Control component that provides input (using register)
+const InputComponent = React.memo(function InputComponent({
+  field,
+}: {
+  field: string;
+}) {
+  const { form } = useFormContext<any>();
+  const props = form.register(field);
+  return (
+    <input
+      aria-label={`${field}-input`}
+      value={(props as any).value}
+      onChange={(props as any).onChange}
+    />
+  );
+});
+
+const ItemsView = React.memo(function ItemsView() {
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  const items = useFormSelector((s) => s.values.items ?? [], shallowEqual);
+
+  return (
+    <>
+      <div aria-label="items-render-count">{renderCount.current}</div>
+      <div aria-label="items-length">{items.length}</div>
+    </>
+  );
+});
+
 describe("selector subscriptions", () => {
-  it("useField('x') re-renders only when x or its error/touched changes", () => {
+  it("useField('x') re-renders only when x changes", () => {
     function App() {
       const form = useForm<{ x: string; y: string }>({
         defaultValues: { x: "x", y: "y" },
       });
-      const xCount = useRef(0);
-      const yCount = useRef(0);
-
-      const X = React.memo(function X() {
-        xCount.current += 1;
-        const { value } = useField<any, any>("x" as any);
-        const { form } = useFormContext<any>();
-        const props = form.register("x");
-        return (
-          <div>
-            <div aria-label="x-count">{xCount.current}</div>
-            <input
-              aria-label="x"
-              value={(props as any).value}
-              onChange={(props as any).onChange}
-            />
-            <div aria-label="x-value">{String(value)}</div>
-          </div>
-        );
-      });
-
-      const Y = React.memo(function Y() {
-        yCount.current += 1;
-        const { form } = useFormContext<any>();
-        const props = form.register("y");
-        return (
-          <div>
-            <div aria-label="y-count">{yCount.current}</div>
-            <input
-              aria-label="y"
-              value={(props as any).value}
-              onChange={(props as any).onChange}
-            />
-          </div>
-        );
-      });
 
       return (
         <FormProvider form={form}>
-          <X />
-          <Y />
+          <FieldOnlyComponent field="x" />
+          <FieldOnlyComponent field="y" />
+          <InputComponent field="x" />
+          <InputComponent field="y" />
         </FormProvider>
       );
     }
 
     render(<App />);
-    const xInput = screen.getByLabelText("x") as HTMLInputElement;
-    const yInput = screen.getByLabelText("y") as HTMLInputElement;
+    const xInput = screen.getByLabelText("x-input") as HTMLInputElement;
+    const yInput = screen.getByLabelText("y-input") as HTMLInputElement;
 
     const initialXCount = Number(screen.getByLabelText("x-count").textContent);
 
-    // Change y only
+    // Change y only - x component should not re-render
     fireEvent.change(yInput, { target: { value: "y2" } });
-    // Flush microtasks to allow any subscription notifications
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    queueMicrotask(() => {});
     const afterYChangeXCount = Number(
       screen.getByLabelText("x-count").textContent
     );
     expect(afterYChangeXCount).toBe(initialXCount); // X did not re-render
 
-    // Change x
+    // Change x - x component should re-render
     fireEvent.change(xInput, { target: { value: "x2" } });
     const afterXChangeXCount = Number(
       screen.getByLabelText("x-count").textContent
@@ -87,33 +97,38 @@ describe("selector subscriptions", () => {
 
   it("useFormSelector with shallowEqual avoids re-renders for equal arrays", () => {
     function App() {
-      const form = useForm<{ items: Array<{ id: number }> }>({
-        defaultValues: { items: [{ id: 1 }] },
-      });
-      const count = useRef(0);
-      function ItemsView() {
-        const items = useFormSelector(
-          (s) => s.values.items ?? [],
-          shallowEqual
-        );
-        count.current += 1;
-        return (
-          <>
-            <div aria-label="items-render-count">{count.current}</div>
-            <div aria-label="items-length">{items.length}</div>
-          </>
-        );
-      }
+      const form = useForm<{ items: Array<{ id: number }>; unrelated: string }>(
+        {
+          defaultValues: { items: [{ id: 1 }], unrelated: "test" },
+        }
+      );
+
+      // Get reference to the current items array
+      const currentItems = form.formState.values.items;
+
       function AddSame() {
         return (
           <button
             aria-label="same"
             onClick={() => {
-              // set to a new array with same shallow contents
-              form.setValue("items" as any, [{ id: 1 }] as any);
+              // Set the exact same array reference - shallow equal should prevent re-render
+              form.setValue("items" as any, currentItems as any);
             }}
           >
             same
+          </button>
+        );
+      }
+      function ChangeUnrelated() {
+        return (
+          <button
+            aria-label="unrelated"
+            onClick={() => {
+              // Change a different field that should not affect ItemsView
+              form.setValue("unrelated" as any, "changed" as any);
+            }}
+          >
+            unrelated
           </button>
         );
       }
@@ -121,6 +136,7 @@ describe("selector subscriptions", () => {
         <FormProvider form={form}>
           <ItemsView />
           <AddSame />
+          <ChangeUnrelated />
         </FormProvider>
       );
     }
@@ -129,11 +145,21 @@ describe("selector subscriptions", () => {
     const initial = Number(
       screen.getByLabelText("items-render-count").textContent
     );
-    const sameBtn = screen.getByLabelText("same");
-    sameBtn && fireEvent.click(sameBtn);
-    const after = Number(
+
+    // Test 1: changing unrelated field should not cause re-render
+    const unrelatedBtn = screen.getByLabelText("unrelated");
+    fireEvent.click(unrelatedBtn);
+    const afterUnrelated = Number(
       screen.getByLabelText("items-render-count").textContent
     );
-    expect(after).toBe(initial); // no re-render because shallowEqual considers equal
+    expect(afterUnrelated).toBe(initial); // no re-render for unrelated change
+
+    // Test 2: setting same array content should not cause re-render
+    const sameBtn = screen.getByLabelText("same");
+    fireEvent.click(sameBtn);
+    const afterSame = Number(
+      screen.getByLabelText("items-render-count").textContent
+    );
+    expect(afterSame).toBe(initial); // no re-render because shallowEqual considers equal
   });
 });

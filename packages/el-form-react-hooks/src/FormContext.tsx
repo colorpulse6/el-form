@@ -43,14 +43,33 @@ export function FormProvider<T extends Record<string, any>>({
 
   const getState = useCallback(() => latestFormRef.current.formState, []);
 
-  const formContextValue = useMemo(() => ({ form, formId }), [form, formId]);
+  // Stable context value that always exposes the latest form via getter without changing identity
+  const stableContextRef = useRef<{
+    form: UseFormReturn<T>;
+    formId?: string;
+  }>();
+  if (!stableContextRef.current) {
+    const holder: any = {};
+    Object.defineProperty(holder, "form", {
+      get: () => latestFormRef.current,
+      enumerable: true,
+    });
+    Object.defineProperty(holder, "formId", {
+      get: () => formId,
+      enumerable: true,
+    });
+    stableContextRef.current = holder as {
+      form: UseFormReturn<T>;
+      formId?: string;
+    };
+  }
   const subscriptionContextValue = useMemo(
     () => ({ subscribe, getState }),
     [subscribe, getState]
   );
 
   return (
-    <FormContext.Provider value={formContextValue}>
+    <FormContext.Provider value={stableContextRef.current as any}>
       <SubscriptionContext.Provider value={subscriptionContextValue}>
         {children}
       </SubscriptionContext.Provider>
