@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import React, { useRef } from "react";
 import { useForm, FormProvider } from "el-form-react-hooks";
 import { FormSwitch, FormCase } from "../Form";
 

@@ -9,11 +9,13 @@
 ## 🚀 New Features
 
 ### New Hooks for Granular Subscriptions
+
 - **`useFormSelector`**: Subscribe to specific slices of form state with custom equality functions
 - **`useField`**: Optimized hook for field-specific subscriptions (value, error, touched)
 - **`shallowEqual`**: Exported utility for preventing unnecessary re-renders with objects/arrays
 
 ### FormSwitch Optimization
+
 - **New `field` prop**: Direct field subscription for better performance
 - **New `select` prop**: Custom selector function for complex state access
 - **Backward Compatibility**: `on` and `form` props still work but show deprecation warning

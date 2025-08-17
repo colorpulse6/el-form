@@ -22,18 +22,9 @@ export function useFormSelector<TSelected>(
         const state = getState() as FormState<any>;
         const nextSelected = selector(state);
         const prevSelected = lastSelectedRef.current;
-        const isEqual = prevSelected !== undefined && equalityFn(prevSelected, nextSelected);
-        
-        console.log('useFormSelector subscribe callback:', {
-          prevSelected,
-          nextSelected,
-          isEqual,
-          willNotify: !isEqual
-        });
-        
         if (
           prevSelected === undefined ||
-          !isEqual
+          !equalityFn(prevSelected, nextSelected)
         ) {
           lastSelectedRef.current = nextSelected;
           onStoreChange();
