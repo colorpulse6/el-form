@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `Conditional Rendering (FormSwitch)` guide to prefer `field`/`select`
 - Updated `Field Components API` for new `FormSwitch` props
 - Updated `useForm` API with selector subscription guidance and `shallowEqual` note
+- Updated `useForm` API to reflect strict `register<Name extends Path<T>>` typing (no string fallback). Invalid paths now error; array paths are supported when valid.
 
 ## [3.6.0] - 2025-08-06
 

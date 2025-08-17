@@ -8,16 +8,16 @@
 
   What's Changed
 
-  - el-form-react-hooks: Add `Path<T>` and `PathValue<T, P>` utilities for nested object/array paths
-  - el-form-react-hooks: Strongly type `register()` with conditional `RegisterReturn<Value>` based on field type (value/checked/files)
-  - el-form-react-hooks: Preserve backward compatibility for dynamic string paths (array template strings) via a spreadable fallback shape
-  - el-form-react-hooks: Type `setValue`, `watch`, and `resetField` to accept valid paths
-  - el-form-react-components: No code changes required, but verified compatibility with the new `register` overloads
-  - docs: Update useForm API docs to show overloads, conditional returns, and typed path APIs
+  - Add `Path<T>` and `PathValue<T, P>` utilities for nested object/array paths
+  - Strongly type `register()` and narrow return via `RegisterReturn<Value>` based on field type (value/checked/files)
+  - Type `setValue`, `watch`, and `resetField` to accept valid paths
+  - Docs: Update useForm API docs to show typed path APIs and conditional return behavior
 
-  Migration
+  Follow-up in same minor (no version bump):
 
-  ## No breaking changes. Existing code continues to work, including array/template-string paths. Literal paths now benefit from stronger typing and narrowed register props.
+  - Make `register` strict: only accepts valid `Path<T>`; invalid paths now produce TypeScript errors
+  - Array paths supported (e.g., `users.0.email`, `users[0].email`, or template strings like `users.${i}.email` when resolvable)
+  - No runtime behavior changes; this is a TypeScript-only tightening aligning with documentation
 
 ## 3.8.0
 

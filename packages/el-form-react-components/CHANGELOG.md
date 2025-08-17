@@ -30,7 +30,7 @@
 
   - Update AutoForm and components to leverage new typed `register()` from el-form-react-hooks
   - Improved type safety for form field registration and value handling
-  - No breaking changes; existing components continue to work with enhanced typing
+  - Strict `register<Name extends Path<T>>` typing in hooks; invalid paths now error (TS-only). Components unchanged at runtime
 
 ## 4.0.0
 

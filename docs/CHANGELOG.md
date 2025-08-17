@@ -6,6 +6,14 @@
 
 - el-form-react@4.0.1
 
+## 0.7.2
+
+### Patch Changes
+
+- Documentation updates in the same release window:
+  - useForm API: update `register` typing to strict `register<Name extends Path<T>>` (no generic string fallback)
+  - Clarify that invalid paths now produce TypeScript errors; array paths are supported when valid (e.g., `users.0.email`, `users.${i}.email`)
+
 ## 0.7.0
 
 ### Minor Changes

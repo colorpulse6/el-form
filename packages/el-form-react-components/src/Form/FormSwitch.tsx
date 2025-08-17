@@ -48,7 +48,8 @@ export function FormSwitch<T extends Record<string, any>>({
   } else if (select) {
     current = useFormSelector(select as any) as any;
   } else {
-    if (form) {
+    // Only warn if using deprecated on prop (not when using field/select)
+    if (on !== undefined) {
       // eslint-disable-next-line no-console
       console.warn(
         "FormSwitch: 'form' and 'on' props are deprecated; use 'field' or 'select' instead."
