@@ -80,54 +80,56 @@ function ConditionalForm() {
 
 The main component that handles conditional logic. Supports string, number, or boolean discriminators.
 
-```typescript
+```ts
 type DiscriminatorPrimitive = string | number | boolean;
 
-interface FormSwitchProps<T extends Record<string, any>> {
-  // New (preferred)
-  field?: Path<T>;
-  select?: (state: FormState<T>) => DiscriminatorPrimitive;
-
-  // Deprecated (backwards compatible for one minor)
-  on?: DiscriminatorPrimitive | null | undefined;
-  form?: UseFormReturn<T>;
-
-  children: React.ReactNode;
-  fallback?: React.ReactNode | ((form: UseFormReturn<T>) => React.ReactNode);
+// Preferred anchored API with type safety and narrowing
+interface FormSwitchProps<T extends Record<string, any>, P extends Path<T>> {
+  field: P;
+  select?: (state: { values: Partial<T> }) => PathValue<T, P>;
+  values?: readonly DiscriminatorPrimitive[]; // provide as const to enable compile-time checks
+  children: ReactElement<FormCaseProps<T, P, any>> | ReactElement<FormCaseProps<T, P, any>>[];
 }
+
+// Back-compat union (deprecated): { on?: DiscriminatorPrimitive; form?: UseFormReturn<T>; children: ReactNode }
 ```
 
 **Props:**
 
-- `field` (preferred): Path to the discriminator field. Subscribes only to that field’s value.
-- `select`: Custom selector for advanced cases. Subscribes to the selector result.
-- `on` + `form` (deprecated): Legacy API; logs a dev warning. Will be removed in a future minor.
-- `children`: `FormCase` elements (each declares a `value`).
-- `fallback` (optional): Rendered (or invoked if a function) when no `FormCase` value matches.
+- `field` (required): Path to the discriminator field. Subscribes only to that field’s value.
+- `select` (optional): Custom selector for advanced cases. Must return the same type as the `field` value.
+- `values` (optional): A readonly tuple (use `as const`) of allowed case values. Enables compile-time duplicate detection and exhaustiveness hints.
+- `children`: One or more `FormCase` elements.
+- `on` + `form` (deprecated): Legacy API; logs a dev warning. Prefer `field` and optional `select`.
 
 ### FormCase
 
 Declarative case definition consumed by `FormSwitch`. It does not render its function itself; `FormSwitch` invokes it only when matched.
 
-```typescript
+```ts
 type DiscriminatorPrimitive = string | number | boolean;
 
-interface FormCaseProps<T extends Record<string, any>> {
-  value: DiscriminatorPrimitive; // Value to match against `on`
-  children: (form: UseFormReturn<T>) => React.ReactNode; // Render function for this branch
+// Narrowed children typing per case value V at path P
+interface FormCaseProps<
+  T extends Record<string, any>,
+  P extends Path<T>,
+  V extends Extract<PathValue<T, P>, DiscriminatorPrimitive>
+> {
+  value: V;
+  children: (form: UseFormReturn<CaseOf<T, P, V>>) => React.ReactNode;
 }
 ```
 
 **Props:**
 
 - `value`: Primitive discriminator value (string | number | boolean).
-- `children`: Render function receiving the form instance for this branch.
+- `children`: Render function receiving a narrowed form instance for this branch.
 
 ### Dev Diagnostics
 
-- If two `FormCase` elements share the same `value`, a dev-time error is logged.
-- If no case matches, a dev-time warning lists available values (unless a `fallback` prop handles it).
-- These diagnostics are stripped in production builds.
+- Duplicate `FormCase` values log a dev warning (only the first match renders).
+- When `values` is provided, dev warnings are shown if children use values outside the tuple, or if the current discriminant is not in the tuple.
+- In TypeScript, providing `values` as a readonly tuple (`as const`) enables compile-time duplicate detection.
 
 ## Advanced Examples
 
@@ -158,8 +160,6 @@ function AnimalForm() {
     defaultValues: { type: "cat", meow: "" },
   });
 
-  const type = form.watch("type");
-
   return (
     <form>
       <select {...form.register("type")}>
@@ -167,11 +167,7 @@ function AnimalForm() {
         <option value="dog">Dog</option>
       </select>
 
-      <FormSwitch
-        on={type}
-        form={form}
-        fallback={<p>Select an animal type.</p>}
-      >
+      <FormSwitch<z.infer<typeof animalSchema>> field="type" values={["cat", "dog"] as const}>
         <FormCase value="cat">
           {(catForm) => (
             <div>
@@ -220,24 +216,17 @@ function WizardForm() {
     },
   });
 
-  const currentStep = form.watch("step");
-
   const nextStep = () => {
-    if (currentStep === "personal") form.setValue("step", "professional");
-    if (currentStep === "professional") form.setValue("step", "review");
+    const s = form.watch("step");
+    if (s === "personal") form.setValue("step", "professional");
+    if (s === "professional") form.setValue("step", "review");
   };
 
   return (
     <form>
-      <div className="step-indicator">Step: {currentStep}</div>
+      <div className="step-indicator">Step: {form.watch("step")}</div>
 
-      <FormSwitch
-        on={currentStep}
-        form={form}
-        fallback={(f) => (
-          <p className="error">Unknown step: {String(f.watch("step"))}</p>
-        )}
-      >
+      <FormSwitch field="step" values={["personal", "professional", "review"] as const}>
         <FormCase value="personal">
           {(personalForm) => (
             <div>
@@ -285,12 +274,12 @@ function WizardForm() {
         </FormCase>
       </FormSwitch>
 
-      {currentStep !== "review" && (
+      {form.watch("step") !== "review" && (
         <button type="button" onClick={nextStep}>
           Next Step
         </button>
       )}
-      {currentStep === "review" && <button type="submit">Submit</button>}
+      {form.watch("step") === "review" && <button type="submit">Submit</button>}
     </form>
   );
 }
@@ -315,8 +304,6 @@ function FeatureToggleForm() {
     },
   });
 
-  const userRole = form.watch("userRole");
-
   return (
     <form>
       <select {...form.register("userRole")}>
@@ -329,7 +316,7 @@ function FeatureToggleForm() {
       <input {...form.register("title")} placeholder="Title" />
       <textarea {...form.register("content")} placeholder="Content" />
 
-      <FormSwitch on={userRole} form={form} fallback={<p>No role selected.</p>}>
+      <FormSwitch field="userRole" values={["basic", "editor", "admin"] as const}>
         <FormCase value="basic">
           {() => (
             <p className="info">Basic users can only edit title and content.</p>
@@ -377,20 +364,31 @@ function FeatureToggleForm() {
 
 ## Type Safety
 
-`FormSwitch` and `FormCase` rely on the same generic `T` you passed to `useForm<T>()`. Each render function receives a fully typed `UseFormReturn<T>`. When using Zod discriminated unions, you still get compile-time safety for shared fields. If you need _branch-level_ narrowed types, refine inside the render function using a type guard or by splitting your form into sub-schemas.
+`FormSwitch` and `FormCase` rely on the same generic `T` you passed to `useForm<T>()`. In anchored mode, each case’s render function receives a narrowed `UseFormReturn<CaseOf<T, P, V>>`, where `P` is the `field` path and `V` is the case’s `value`. This means `register()` only accepts keys valid for that branch.
 
-```typescript
-// With Zod discriminated unions, you get automatic type narrowing
-const schema = z.discriminatedUnion("type", [schemaA, schemaB]);
-type FormData = z.infer<typeof schema>;
+```ts
+type FormData =
+  | { kind: "a"; aValue: string }
+  | { kind: "b"; bValue: string };
 
-// The form will be properly typed based on the discriminator
-<FormCase value="typeA">
-  {(form) => {
-    // form is now typed as the specific union branch
-    return <input {...form.register("fieldSpecificToTypeA")} />;
-  }}
-</FormCase>;
+<FormSwitch<FormData> field="kind">
+  <FormCase value="a">
+    {(f) => {
+      f.register("aValue");
+      // @ts-expect-error "bValue" does not exist in the "a" branch
+      f.register("bValue");
+      return null;
+    }}
+  </FormCase>
+  <FormCase value="b">
+    {(f) => {
+      f.register("bValue");
+      // @ts-expect-error "aValue" does not exist in the "b" branch
+      f.register("aValue");
+      return null;
+    }}
+  </FormCase>
+</FormSwitch>
 ```
 
 ## Best Practices
@@ -401,7 +399,7 @@ Choose clear, descriptive values for your switch cases:
 
 ```typescript
 // Good
-<FormSwitch on={paymentMethod} form={form}>
+<FormSwitch field={"paymentMethod"}>
   <FormCase value="credit-card">
   <FormCase value="bank-transfer">
   <FormCase value="paypal">
@@ -414,13 +412,14 @@ Choose clear, descriptive values for your switch cases:
 </FormSwitch>
 ```
 
-### 2. Provide a Fallback
+### 2. Prefer Exhaustive `values` Tuple
 
-Use the `fallback` prop instead of crafting a pseudo "default" case:
+Provide a readonly tuple of allowed values to catch duplicates and enforce exhaustiveness at compile time:
 
 ```tsx
-<FormSwitch on={type} form={form} fallback={<p>Please select a type above.</p>}>
-  <FormCase value="specific">{(f) => <SpecificFields form={f} />}</FormCase>
+<FormSwitch<FormData> field="kind" values={["a", "b"] as const}>
+  <FormCase value="a">{(f) => <AFields form={f} />}</FormCase>
+  <FormCase value="b">{(f) => <BFields form={f} />}</FormCase>
 </FormSwitch>
 ```
 
@@ -480,7 +479,7 @@ Each `value` must be unique. Duplicates log an error in development; only the fi
 
 ### Backwards Compatibility
 
-- The legacy `on` + `form` props remain supported for one minor release and will log a dev-only warning. Prefer `field`/`select`.
+- The legacy `on` + `form` props remain supported (temporary) and will log a dev-only warning. Prefer `field`/`select`.
 
 ## Troubleshooting
 
@@ -489,7 +488,7 @@ Each `value` must be unique. Duplicates log an error in development; only the fi
 If your FormCase isn't rendering, check that:
 
 1. The `value` prop exactly matches the watched field value (strict equality)
-2. The watched field is not `null`/`undefined` (or use `fallback`)
+2. The watched field is not `null`/`undefined` (initialize a default or ensure your selector returns a value)
 3. The `FormCase` is a direct child of `FormSwitch`
 4. No typos or casing differences ("Dog" vs "dog")
 5. No duplicate `value` overshadowing your intended case
