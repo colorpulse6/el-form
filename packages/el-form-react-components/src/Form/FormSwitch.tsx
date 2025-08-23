@@ -49,7 +49,7 @@ export type FormSwitchProps<
   P extends Path<T> = Path<T>,
   V extends readonly Allowed<T, P>[] = readonly Allowed<T, P>[]
 > =
-  | (AnchoredBaseProps<T, P> & { values: V & Unique<V> })
+  | (AnchoredBaseProps<T, P> & { values?: V & Unique<V> })
   | BackCompatProps<T>;
 
 // Overload: Anchored WITH values (infer V and enforce uniqueness)
@@ -60,6 +60,12 @@ export function FormSwitch<
 >(
   props: AnchoredBaseProps<T, P> & { values: readonly [...V] & Unique<readonly [...V]> }
 ): JSX.Element | null;
+
+// Overload: Anchored WITHOUT values
+export function FormSwitch<
+  T extends Record<string, any>,
+  P extends Path<T>
+>(props: AnchoredBaseProps<T, P>): JSX.Element | null;
 
 // Overload: Back-compat API
 export function FormSwitch<T extends Record<string, any>>(
