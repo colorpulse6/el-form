@@ -1,12 +1,12 @@
 ---
-"el-form-react-components": major
+"el-form-react-components": minor
 ---
 
-feat: require values for FormSwitch anchored API
+feat: make `values` optional for FormSwitch anchored API
 
-- Remove anchored-without-values overload; the anchored API now requires `field` and a `values` tuple.
+- Allow anchored `FormSwitch` without a `values` tuple; `values` is optional and recommended for compile-time checks (duplicates/exhaustiveness).
 - Disambiguate overloads so JSX reliably selects the anchored branch; explicitly forbid anchored props in the legacy API.
-- Enforce compile-time duplicate detection using `Unique<readonly [...V]>` while preserving tuple inference with `readonly [...V]`.
+- Preserve compile-time duplicate detection when `values` is provided using `Unique<readonly [...V]>` while preserving tuple inference with `readonly [...V]`.
 - Update examples/tests to assert narrowing and error locations clearly.
 
-BREAKING CHANGE: For the anchored API, `FormSwitch` must now be called with a `values` tuple. The legacy back-compat API (`on` + `form`) remains available unchanged.
+No breaking changes. The legacy back-compat API (`on` + `form`) remains available unchanged.
