@@ -1,16 +1,21 @@
 import React from "react";
-import { UseFormReturn } from "el-form-react-hooks";
+import type { UseFormReturn, Path } from "el-form-react-hooks";
+import type { CaseOf, Allowed } from "./types";
 
-type DiscriminatorPrimitive = string | number | boolean;
-
-interface FormCaseProps<T extends Record<string, any>> {
-  value: DiscriminatorPrimitive;
-  children: (form: UseFormReturn<T>) => React.ReactNode;
+export interface FormCaseProps<
+  T extends Record<string, any>,
+  P extends Path<T>,
+  V extends Allowed<T, P>
+> {
+  value: V;
+  children: (form: UseFormReturn<CaseOf<T, P, V>>) => React.ReactNode;
 }
 
-export function FormCase<T extends Record<string, any>>(
-  _props: FormCaseProps<T>
-) {
+export function FormCase<
+  T extends Record<string, any>,
+  P extends Path<T>,
+  const V extends Allowed<T, P>
+>(_props: FormCaseProps<T, P, V>) {
   // Shell component: intentionally renders nothing.
   // The render function (children) is invoked by FormSwitch when its value matches.
   return null;

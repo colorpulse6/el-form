@@ -5,67 +5,173 @@ import {
   useField,
   useFormContext,
 } from "el-form-react-hooks";
-import type { Path } from "el-form-react-hooks";
+import type { Path, PathValue } from "el-form-react-hooks";
+import type { Allowed, Unique } from "./types";
+import type { FormCaseProps } from "./FormCase";
 
 // Supported primitive discriminator types
 type DiscriminatorPrimitive = string | number | boolean;
 
-interface FormSwitchProps<T extends Record<string, any>> {
-  /**
-   * Current discriminator value. May be temporarily undefined during initial render
-   * if the form field has not been initialized yet, so we allow undefined for robustness.
-   */
-  on?: DiscriminatorPrimitive | undefined | null; // deprecated
-  form?: UseFormReturn<T>; // deprecated
-  field?: Path<T>;
-  select?: (state: { values: Partial<T> } & any) => DiscriminatorPrimitive;
+// Preserve per-child V inference for narrowing via a mapped union with captured V
+type CaseElement<
+  T extends Record<string, any>,
+  P extends Path<T>
+> = Allowed<T, P> extends infer V
+  ? V extends Allowed<T, P>
+    ? React.ReactElement<FormCaseProps<T, P, V>>
+    : never
+  : never;
+
+// Anchored, type-safe props (preferred)
+type AnchoredBaseProps<
+  T extends Record<string, any>,
+  P extends Path<T> = Path<T>
+> = {
+  field: P;
+  select?: (state: { values: Partial<T> }) => PathValue<T, P>;
+  children: CaseElement<T, P> | CaseElement<T, P>[];
+};
+
+
+// Back-compat props (no narrowing)
+type BackCompatProps<T extends Record<string, any>> = {
+  on?: DiscriminatorPrimitive | undefined | null;
+  form?: UseFormReturn<T>;
   children: React.ReactNode;
-  /** Optional fallback rendered when no case matches */
-  fallback?: React.ReactNode | ((form: UseFormReturn<T>) => React.ReactNode);
-}
+  // Explicitly forbid anchored props so this overload can't match when they are present
+  field?: never;
+  select?: never;
+  values?: never;
+};
 
-export function FormSwitch<T extends Record<string, any>>({
-  on,
-  form,
-  field,
-  select,
-  children,
-  fallback,
-}: FormSwitchProps<T>) {
-  // Prefer new API: field/select
-  let current: DiscriminatorPrimitive | undefined | null = undefined;
-  let formApi: UseFormReturn<T> | undefined = form;
+export type FormSwitchProps<
+  T extends Record<string, any>,
+  P extends Path<T> = Path<T>,
+  V extends readonly Allowed<T, P>[] = readonly Allowed<T, P>[]
+> =
+  | (AnchoredBaseProps<T, P> & { values: V & Unique<V> })
+  | BackCompatProps<T>;
 
-  // Get form instance from context if not provided and using field/select
-  if (!formApi && (field || select)) {
+// Overload: Anchored WITH values (infer V and enforce uniqueness)
+export function FormSwitch<
+  T extends Record<string, any>,
+  P extends Path<T>,
+  const V extends readonly Allowed<T, P>[] = readonly Allowed<T, P>[]
+>(
+  props: AnchoredBaseProps<T, P> & { values: readonly [...V] & Unique<readonly [...V]> }
+): JSX.Element | null;
+
+// Overload: Back-compat API
+export function FormSwitch<T extends Record<string, any>>(
+  props: BackCompatProps<T>
+): JSX.Element | null;
+
+// Implementation
+export function FormSwitch<
+  T extends Record<string, any>,
+  P extends Path<T> = Path<T>
+>(props: any) {
+  // Prefer new API: anchored by field
+  if ("field" in props) {
+    const { field, select, values, children } = props;
     const ctx = useFormContext<T>();
-    formApi = ctx?.form;
-  }
+    const formApi = ctx?.form as UseFormReturn<T> | undefined;
 
-  if (field) {
-    const slice = useField<any, any>(field as any);
-    current = slice.value as any;
-  } else if (select) {
-    current = useFormSelector(select as any) as any;
-  } else {
-    // Only warn if using deprecated on prop (not when using field/select)
-    if (on !== undefined) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        "FormSwitch: 'form' and 'on' props are deprecated; use 'field' or 'select' instead."
+    // Read current discriminant value
+    let current: Allowed<T, P> | undefined | null = undefined;
+    if (select) {
+      current = useFormSelector((state: any) =>
+        select({ values: (state as any).values as Partial<T> })
+      ) as any;
+    } else {
+      const slice = useField<T, P>(field);
+      current = slice.value as any;
+    }
+
+    // If the discriminator hasn't been set yet, don't attempt to render a branch.
+    if (current == null) return null;
+
+    const childrenArray = React.Children.toArray(children);
+
+    // Detect duplicate case values at runtime for developer feedback
+    const seen = new Set<DiscriminatorPrimitive>();
+    for (const child of childrenArray) {
+      if (!React.isValidElement(child)) continue;
+      const val = (child as any).props?.value as DiscriminatorPrimitive;
+      if (val === undefined) continue;
+      if (seen.has(val)) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "FormSwitch: duplicate case value detected:",
+          val,
+          "— ensure case values are unique."
+        );
+      }
+      seen.add(val);
+    }
+
+    // If a values tuple was provided, perform dev-time checks
+    if (values && Array.isArray(values)) {
+      const allowedSet = new Set(values as readonly DiscriminatorPrimitive[]);
+      for (const child of childrenArray) {
+        if (!React.isValidElement(child)) continue;
+        const val = (child as any).props?.value as DiscriminatorPrimitive;
+        if (val !== undefined && !allowedSet.has(val)) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            "FormSwitch: child case value not present in provided 'values' tuple:",
+            val
+          );
+        }
+      }
+      if (!allowedSet.has(current as any)) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "FormSwitch: current discriminant value not present in provided 'values' tuple:",
+          current
+        );
+      }
+    }
+
+    // Type guard for FormCase elements in anchored mode
+    function isFormCaseElement<V extends Allowed<T, P>>(
+      el: unknown
+    ): el is React.ReactElement<FormCaseProps<T, P, V>> {
+      if (!React.isValidElement(el)) return false;
+      const props: any = el.props;
+      return (
+        props &&
+        ["string", "number", "boolean"].includes(typeof props.value) &&
+        typeof props.children === "function"
       );
     }
 
-    current = on as any;
+    for (const child of childrenArray) {
+      if (!isFormCaseElement(child)) continue;
+      if ((child.props as any).value === (current as any)) {
+        return (child.props.children as any)(formApi as any);
+      }
+    }
+
+    return null;
   }
 
-  // If the discriminator hasn't been set yet, don't attempt to render a branch.
+  // Back-compat branch: on + form, no narrowing
+  const { on, form, children } = props as BackCompatProps<T>;
+  if (on !== undefined) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "FormSwitch: 'form' and 'on' props are deprecated; use the 'field' prop for type-safe narrowing."
+    );
+  }
+
+  const current: DiscriminatorPrimitive | undefined | null = on as any;
   if (current == null) return null;
+  const formApi = (form as UseFormReturn<T> | undefined) ??
+    useFormContext<T>()?.form;
 
   const childrenArray = React.Children.toArray(children);
-
-  // Type guard to ensure an element matches the expected FormCase shape
-  function isFormCaseElement(el: unknown): el is React.ReactElement<{
+  function isFormCaseElementCompat(el: unknown): el is React.ReactElement<{
     value: DiscriminatorPrimitive;
     children: (form: UseFormReturn<T>) => React.ReactNode;
   }> {
@@ -78,26 +184,12 @@ export function FormSwitch<T extends Record<string, any>>({
     );
   }
 
-  // Duplicate detection removed.
-
   for (const child of childrenArray) {
-    if (!isFormCaseElement(child)) continue;
+    if (!isFormCaseElementCompat(child)) continue;
     if (child.props.value === current) {
-      // Fully typed now without casting
-      return child.props.children(formApi as any);
+      return child.props.children((formApi as any) as UseFormReturn<T>);
     }
   }
 
-  // Dev warning removed.
-
-  if (fallback) {
-    if (typeof fallback === "function") {
-      // Narrow to the function variant of the fallback union
-      return (fallback as (form: UseFormReturn<T>) => React.ReactNode)(
-        formApi as any
-      );
-    }
-    return fallback;
-  }
   return null;
 }
