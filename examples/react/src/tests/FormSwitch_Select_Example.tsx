@@ -3,15 +3,18 @@ import { useForm, FormProvider } from "el-form-react-hooks";
 import { FormSwitch, FormCase } from "el-form-react-components";
 
 export default function FormSwitchSelectExample() {
-  const form = useForm<{
+  type FormData = {
     profile: { type: "guest" | "member" };
     guestCode?: string;
     memberId?: string;
-  }>({
+  };
+
+  const form = useForm<FormData>({
     defaultValues: { profile: { type: "guest" }, guestCode: "", memberId: "" },
   });
 
-  const selector = (s: any) => s.values.profile?.type ?? "guest";
+  const selector = (s: { values: Partial<FormData> }): FormData["profile"]["type"] =>
+    s.values.profile?.type ?? "guest";
 
   return (
     <FormProvider form={form}>
@@ -24,7 +27,7 @@ export default function FormSwitchSelectExample() {
           </select>
         </label>
 
-        <FormSwitch select={selector}>
+        <FormSwitch<FormData, "profile.type"> field="profile.type" select={selector} values={["guest", "member"] as const}>
           <FormCase value="guest">
             {(f) => (
               <label>

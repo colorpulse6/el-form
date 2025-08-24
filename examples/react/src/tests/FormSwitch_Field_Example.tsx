@@ -2,8 +2,12 @@ import { useForm, FormProvider } from "el-form-react-hooks";
 import { FormSwitch, FormCase } from "el-form-react-components";
 
 export default function FormSwitchFieldExample() {
-  const form = useForm<{ kind: "a" | "b"; aValue?: string; bValue?: string }>({
-    defaultValues: { kind: "a", aValue: "", bValue: "" },
+  type FormData =
+    | { kind: "a"; aValue: string }
+    | { kind: "b"; bValue: string };
+
+  const form = useForm<FormData>({
+    defaultValues: { kind: "a", aValue: "" },
   });
 
   const kindField = form.register("kind");
@@ -19,7 +23,7 @@ export default function FormSwitchFieldExample() {
           </select>
         </label>
 
-        <FormSwitch field="kind">
+        <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const}>
           <FormCase value="a">
             {(f) => (
               <label>

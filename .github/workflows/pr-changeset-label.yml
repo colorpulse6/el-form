@@ -1,0 +1,82 @@
+name: PR Changeset Label
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label PR when changeset present
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.info('No pull_request in context; skipping');
+              return;
+            }
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = pr.number;
+
+            // List all files in the PR (handle pagination)
+            let page = 1;
+            const files = [];
+            while (true) {
+              const { data } = await github.rest.pulls.listFiles({
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+                page,
+              });
+              if (!data.length) break;
+              files.push(...data);
+              if (data.length < 100) break;
+              page++;
+            }
+
+            const hasChangeset = files.some((f) =>
+              f.filename.startsWith('.changeset/') && f.filename.endsWith('.md') && f.status !== 'removed'
+            );
+
+            const labelName = 'ready to publish';
+            const labelColor = '0E8A16'; // green
+            const labelDescription = 'This PR contains a Changeset and is ready to be published.';
+
+            // Ensure the label exists (create if missing)
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: labelName });
+            } catch (err) {
+              if (err.status === 404) {
+                await github.rest.issues.createLabel({ owner, repo, name: labelName, color: labelColor, description: labelDescription });
+              } else {
+                throw err;
+              }
+            }
+
+            // Current labels on the PR
+            const { data: prLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+            const hasLabel = prLabels.some((l) => l.name.toLowerCase() === labelName.toLowerCase());
+
+            if (hasChangeset && !hasLabel) {
+              await github.rest.issues.addLabels({ owner, repo, issue_number: prNumber, labels: [labelName] });
+              core.info(`Added label '${labelName}'`);
+            } else if (!hasChangeset && hasLabel) {
+              await github.rest.issues.removeLabel({ owner, repo, issue_number: prNumber, name: labelName });
+              core.info(`Removed label '${labelName}'`);
+            } else {
+              core.info(`No label change needed (hasChangeset=${hasChangeset}, hasLabel=${hasLabel})`);
+            }

@@ -14,22 +14,11 @@ All notable changes to the el-form project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.0] - 2025-08-12
-
-### ⚠️ Breaking
-
-- Require `zod@^4.0.0`. If you are on Zod 3, upgrade with `pnpm add zod@^4`.
+## [4.2.0] - 2025-08-24
 
 ### ✨ Changes
 
-- Internal: Zod 4 introspection (no breaking surface changes to AutoForm/useForm APIs).
-- Discriminated unions: more robust introspection; behavior unchanged for users.
-- TypeScript: `useForm.register` is now type-safe for known paths
-  - Literal field names and dot-paths infer exact field value type and return the appropriate props (`value`, `checked`, or `files`).
-  - Dynamic string paths remain supported and return a broadly-typed object to preserve backwards compatibility (no app code changes required).
-  - Other APIs now accept typed paths where applicable: `setValue`, `watch`, `resetField`.
-
----
+- FormSwitch (anchored API): `values` tuple is now optional. Provide a readonly tuple (`as const`) to enable compile-time duplicate detection and exhaustiveness checks. No breaking changes.
 
 ## [4.1.0] - 2025-08-16
 
@@ -59,6 +48,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `Field Components API` for new `FormSwitch` props
 - Updated `useForm` API with selector subscription guidance and `shallowEqual` note
 - Updated `useForm` API to reflect strict `register<Name extends Path<T>>` typing (no string fallback). Invalid paths now error; array paths are supported when valid.
+
+---
+
+## [4.0.0] - 2025-08-12
+
+### ⚠️ Breaking
+
+- Require `zod@^4.0.0`. If you are on Zod 3, upgrade with `pnpm add zod@^4`.
+
+### ✨ Changes
+
+- Internal: Zod 4 introspection (no breaking surface changes to AutoForm/useForm APIs).
+- Discriminated unions: more robust introspection; behavior unchanged for users.
+- TypeScript: `useForm.register` is now type-safe for known paths
+  - Literal field names and dot-paths infer exact field value type and return the appropriate props (`value`, `checked`, or `files`).
+  - Dynamic string paths remain supported and return a broadly-typed object to preserve backwards compatibility (no app code changes required).
+  - Other APIs now accept typed paths where applicable: `setValue`, `watch`, `resetField`.
 
 ## [3.6.0] - 2025-08-06
 

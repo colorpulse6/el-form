@@ -180,6 +180,8 @@ interface FormSwitchProps<T extends Record<string, any>> {
   // Preferred
   field?: Path<T>;
   select?: (state: FormState<T>) => string | number | boolean;
+  // Optional compile-time helpers (recommended)
+  values?: readonly (string | number | boolean)[];
 
   // Back-compat (deprecated)
   on?: string | number | boolean | null | undefined;
@@ -187,6 +189,10 @@ interface FormSwitchProps<T extends Record<string, any>> {
 
   children: React.ReactNode;
 }
+
+// Note:
+// - The `values` prop is optional. Provide a readonly tuple (`as const`) to enable compile-time duplicate detection and exhaustiveness checks.
+// - Prefer the anchored API (`field` + optional `select`). The legacy `on` + `form` API is deprecated but still supported.
 
 interface FormCaseProps<T extends Record<string, any>> {
   value: string | number | boolean;
