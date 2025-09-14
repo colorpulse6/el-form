@@ -1,6 +1,4 @@
-// Example showing FormSwitch with custom selector function
-import { useForm, FormProvider } from "el-form-react-hooks";
-import { FormSwitch, FormCase } from "el-form-react-components";
+import { useForm, FormProvider, useFormState, useFormWatch } from "el-form-react-hooks";
 
 export default function FormSwitchSelectExample() {
   type FormData = {
@@ -13,47 +11,47 @@ export default function FormSwitchSelectExample() {
     defaultValues: { profile: { type: "guest" }, guestCode: "", memberId: "" },
   });
 
-  const selector = (s: { values: Partial<FormData> }): FormData["profile"]["type"] =>
-    s.values.profile?.type ?? "guest";
-
   return (
     <FormProvider form={form}>
-      <div>
-        <label>
-          Profile Type
-          <select {...form.register("profile.type")} aria-label="type">
-            <option value="guest">Guest</option>
-            <option value="member">Member</option>
-          </select>
-        </label>
-
-        <FormSwitch<FormData, "profile.type"> field="profile.type" select={selector} values={["guest", "member"] as const}>
-          <FormCase value="guest">
-            {(f) => (
-              <label>
-                Guest Code
-                <input
-                  aria-label="guestCode"
-                  type="text"
-                  {...f.register("guestCode")}
-                />
-              </label>
-            )}
-          </FormCase>
-          <FormCase value="member">
-            {(f) => (
-              <label>
-                Member ID
-                <input
-                  aria-label="memberId"
-                  type="text"
-                  {...f.register("memberId")}
-                />
-              </label>
-            )}
-          </FormCase>
-        </FormSwitch>
-      </div>
+      <InnerForm />
     </FormProvider>
+  );
+}
+
+function InnerForm() {
+  const { register } = useFormState();
+  const profileType = useFormWatch("profile.type");
+
+  return (
+    <div>
+      <label>
+        Profile Type
+        <select {...register("profile.type")} aria-label="type">
+          <option value="guest">Guest</option>
+          <option value="member">Member</option>
+        </select>
+      </label>
+
+      {profileType === "guest" && (
+        <label>
+          Guest Code
+          <input
+            aria-label="guestCode"
+            type="text"
+            {...register("guestCode")}
+          />
+        </label>
+      )}
+      {profileType === "member" && (
+        <label>
+          Member ID
+          <input
+            aria-label="memberId"
+            type="text"
+            {...register("memberId")}
+          />
+        </label>
+      )}
+    </div>
   );
 }

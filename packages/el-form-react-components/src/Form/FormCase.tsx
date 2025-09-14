@@ -1,3 +1,4 @@
+// @deprecated FormCase will be removed in a future version. Use conditional rendering with `useFormWatch` instead.
 import React from "react";
 import type { UseFormReturn, Path } from "el-form-react-hooks";
 import type { CaseOf, Allowed } from "./types";

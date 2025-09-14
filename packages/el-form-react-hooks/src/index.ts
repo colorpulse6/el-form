@@ -6,6 +6,8 @@ export { useForm } from "./useForm";
 export { FormProvider, useFormContext, useFormState } from "./FormContext";
 export { useFormSelector } from "./useFormSelector";
 export { useField } from "./useField";
+export { useFormWatch } from "./useFormWatch";
+export { useDiscriminatedUnion } from "./useDiscriminatedUnion";
 export { shallowEqual } from "./utils";
 export type {
   UseFormOptions,

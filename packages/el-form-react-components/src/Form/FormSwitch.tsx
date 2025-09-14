@@ -1,3 +1,4 @@
+// @deprecated FormSwitch will be removed in a future version. Use conditional rendering with `useFormWatch` instead.
 import React from "react";
 import {
   UseFormReturn,
@@ -77,6 +78,10 @@ export function FormSwitch<
   T extends Record<string, any>,
   P extends Path<T> = Path<T>
 >(props: any) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    "FormSwitch is deprecated and will be removed in a future version. Use conditional rendering with `useFormWatch` instead."
+  );
   // Prefer new API: anchored by field
   if ("field" in props) {
     const { field, select, values, children } = props;

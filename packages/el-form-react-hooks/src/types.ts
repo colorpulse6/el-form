@@ -1,6 +1,7 @@
 import { ValidatorConfig } from "el-form-core";
 import { FileValidationOptions } from "./utils/fileUtils";
 import type { Path, PathValue, RegisterReturn } from "./types/path";
+export type { Path, PathValue, RegisterReturn };
 
 // Form Context types
 export interface FormContextValue<T extends Record<string, any>> {

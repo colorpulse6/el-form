@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useForm } from "el-form-react-hooks";
+import { FormProvider, useForm, useDiscriminatedUnion } from "el-form-react-hooks";
 import type { UseFormReturn, Path } from "el-form-react-hooks";
 import type { ValidatorConfig } from "el-form-core";
 import {
@@ -20,9 +20,6 @@ import {
   getStringChecks,
   getDef,
 } from "el-form-core";
-import { FormSwitch, FormCase } from "./Form";
-
-// Zod helpers now come from el-form-core (Zod 4 only)
 
 // Default error component
 const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({
@@ -473,105 +470,57 @@ function generateFieldsFromSchema<T extends z.ZodTypeAny>(
 }
 
 // Component for rendering discriminated union fields
-interface DiscriminatedUnionFieldProps {
-  fieldConfig: AutoFormFieldConfig;
-  formApi: any;
-  componentMap?: ComponentMap;
-}
-
-const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
+const DiscriminatedUnionField = <T extends Record<string, any>>({
   fieldConfig,
-  formApi,
+  form,
+  schema,
   componentMap,
+  renderField,
+}: {
+  fieldConfig: AutoFormFieldConfig;
+  form: UseFormReturn<T>;
+  schema: z.ZodDiscriminatedUnion<any, any>;
+  componentMap?: ComponentMap;
+  renderField: (fieldConfig: AutoFormFieldConfig) => JSX.Element;
 }) => {
-  const { register, watch } = formApi;
+  const { register } = form;
+  const discriminatorValue = useDiscriminatedUnion(schema, form);
 
   if (!fieldConfig.discriminatorField || !fieldConfig.unionOptions) {
     return null;
   }
 
-  // Register the discriminator field
-  const discriminatorProps = register(fieldConfig.discriminatorField);
-  const discriminatorValue = watch(fieldConfig.discriminatorField);
+  const discriminatorProps = register(
+    fieldConfig.discriminatorField as Path<T>
+  );
 
-  // Render the discriminator select field
   const DiscriminatorComponent =
     (fieldConfig.type && componentMap?.[fieldConfig.type]) || DefaultField;
 
+  const selectedOptionFields =
+    (discriminatorValue &&
+      fieldConfig.unionOptions?.[discriminatorValue as any]) ||
+    [];
+
   return (
-    <div className="discriminated-union-field">
-      {/* Render the discriminator selector */}
-      <div className="mb-4">
-        <DiscriminatorComponent
-          name={fieldConfig.discriminatorField}
-          label={fieldConfig.label || fieldConfig.name}
-          type="select"
-          value={discriminatorValue}
-          onChange={discriminatorProps.onChange}
-          onBlur={discriminatorProps.onBlur}
-          options={fieldConfig.options}
-        />
-      </div>
-
-      {/* Render conditional fields using FormSwitch */}
-      <FormSwitch on={discriminatorValue} form={formApi}>
-        {fieldConfig.options?.map((option) => (
-          <FormCase key={option.value} value={option.value}>
-            {(form) => {
-              const optionFields =
-                fieldConfig.unionOptions![option.value] || [];
-              return (
-                <div className="space-y-4">
-                  {optionFields
-                    .filter(
-                      (field) => field.name !== fieldConfig.discriminatorField
-                    )
-                    .map((field) => {
-                      const fieldProps = form.register(field.name);
-                      const error = form.formState.errors[field.name];
-                      const touched = form.formState.touched[field.name];
-
-                      const fieldValue =
-                        "checked" in fieldProps
-                          ? fieldProps.checked
-                          : "value" in fieldProps
-                          ? fieldProps.value
-                          : undefined;
-
-                      const FieldComponent =
-                        field.component ||
-                        (field.type && componentMap?.[field.type]) ||
-                        DefaultField;
-
-                      return (
-                        <FieldComponent
-                          key={field.name}
-                          name={field.name}
-                          label={field.label || field.name}
-                          type={field.type}
-                          placeholder={field.placeholder}
-                          value={fieldValue}
-                          onChange={fieldProps.onChange}
-                          onBlur={fieldProps.onBlur}
-                          error={error}
-                          touched={touched}
-                          options={field.options}
-                          className={field.className}
-                          inputClassName={field.inputClassName}
-                          labelClassName={field.labelClassName}
-                          errorClassName={field.errorClassName}
-                        />
-                      );
-                    })}
-                </div>
-              );
-            }}
-          </FormCase>
-        ))}
-      </FormSwitch>
-    </div>
+    <>
+      <DiscriminatorComponent
+        {...discriminatorProps}
+        value={discriminatorValue as any}
+        label={fieldConfig.label || fieldConfig.name}
+        type="select"
+        options={fieldConfig.options}
+      />
+      {selectedOptionFields
+        .filter(
+          (field: AutoFormFieldConfig) =>
+            field.name !== fieldConfig.discriminatorField
+        )
+        .map((field: AutoFormFieldConfig) => renderField(field))}
+    </>
   );
 };
+
 
 // Merge auto-generated fields with manual field overrides
 function mergeFields(
@@ -733,8 +682,10 @@ export function AutoForm<T extends Record<string, any>>({
         <div key={fieldConfig.name} className={fieldContainerClasses}>
           <DiscriminatedUnionField
             fieldConfig={fieldConfig}
-            formApi={formApi}
+            form={formApi}
+            schema={schema as z.ZodDiscriminatedUnion<any, any>}
             componentMap={componentMap}
+            renderField={renderField}
           />
         </div>
       );
@@ -866,8 +817,10 @@ export function AutoForm<T extends Record<string, any>>({
                 return (
                   <DiscriminatedUnionField
                     fieldConfig={fieldConfig}
-                    formApi={formApi}
+                    form={formApi}
+                    schema={schema as z.ZodDiscriminatedUnion<any, any>}
                     componentMap={componentMap}
+                    renderField={renderField}
                   />
                 );
               })()
@@ -879,8 +832,8 @@ export function AutoForm<T extends Record<string, any>>({
             flex gap-4 mt-8
             ${layout === "grid" ? "col-span-full" : "w-full"}
           `
-              .trim()
-              .replace(/\s+/g, " ")}
+            .trim()
+            .replace(/\s+/g, " ")}
           >
             <button
               type="submit"
@@ -915,31 +868,33 @@ export function AutoForm<T extends Record<string, any>>({
   // If children render prop is provided, render it along with the form
   if (children) {
     return (
-      <div className="el-form-container">
-        <form
-          onSubmit={handleSubmit(
-            (data) => onSubmit(data),
-            onError ||
-              ((errors) => console.error("Form validation errors:", errors))
-          )}
-          className="w-full"
-        >
-          {/* Error Summary Component */}
-          <ErrorComponent
-            errors={formState.errors as Record<string, string>}
-            touched={formState.touched as Record<string, boolean>}
-          />
+      <FormProvider form={formApi}>
+        <div className="el-form-container">
+          <form
+            onSubmit={handleSubmit(
+              (data) => onSubmit(data),
+              onError ||
+                ((errors) => console.error("Form validation errors:", errors))
+            )}
+            className="w-full"
+          >
+            {/* Error Summary Component */}
+            <ErrorComponent
+              errors={formState.errors as Record<string, string>}
+              touched={formState.touched as Record<string, boolean>}
+            />
 
-          {children(formApi)}
+            {children(formApi)}
 
-          <div className={containerClasses}>
-            {fieldsToRender.map(renderField)}
-          </div>
-        </form>
-      </div>
+            <div className={containerClasses}>
+              {fieldsToRender.map(renderField)}
+            </div>
+          </form>
+        </div>
+      </FormProvider>
     );
   }
 
   // Default rendering without render prop
-  return defaultForm;
+  return <FormProvider form={formApi}>{defaultForm}</FormProvider>;
 }

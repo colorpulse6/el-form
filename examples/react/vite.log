@@ -1,0 +1,16 @@
+
+> el-form-monorepo@ test-app /app
+> pnpm --filter el-form-testing-app dev
+
+
+> el-form-testing-app@0.0.0 dev /app/examples/react
+> vite
+
+Port 3001 is in use, trying another one...
+Port 3002 is in use, trying another one...
+Port 3003 is in use, trying another one...
+
+  VITE v5.4.19  ready in 1597 ms
+
+  ➜  Local:   http://localhost:3004/
+  ➜  Network: use --host to expose

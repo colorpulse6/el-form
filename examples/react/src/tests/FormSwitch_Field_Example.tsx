@@ -1,5 +1,4 @@
-import { useForm, FormProvider } from "el-form-react-hooks";
-import { FormSwitch, FormCase } from "el-form-react-components";
+import { useForm, FormProvider, useFormState, useFormWatch } from "el-form-react-hooks";
 
 export default function FormSwitchFieldExample() {
   type FormData =
@@ -10,46 +9,47 @@ export default function FormSwitchFieldExample() {
     defaultValues: { kind: "a", aValue: "" },
   });
 
-  const kindField = form.register("kind");
-
   return (
     <FormProvider form={form}>
-      <div>
-        <label>
-          Kind
-          <select {...kindField} aria-label="kind">
-            <option value="a">A</option>
-            <option value="b">B</option>
-          </select>
-        </label>
-
-        <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const}>
-          <FormCase value="a">
-            {(f) => (
-              <label>
-                A Value
-                <input
-                  aria-label="aValue"
-                  type="text"
-                  {...f.register("aValue")}
-                />
-              </label>
-            )}
-          </FormCase>
-          <FormCase value="b">
-            {(f) => (
-              <label>
-                B Value
-                <input
-                  aria-label="bValue"
-                  type="text"
-                  {...f.register("bValue")}
-                />
-              </label>
-            )}
-          </FormCase>
-        </FormSwitch>
-      </div>
+      <InnerForm />
     </FormProvider>
+  );
+}
+
+function InnerForm() {
+  const { register } = useFormState();
+  const kindValue = useFormWatch("kind");
+
+  return (
+    <div>
+      <label>
+        Kind
+        <select {...register("kind")} aria-label="kind">
+          <option value="a">A</option>
+          <option value="b">B</option>
+        </select>
+      </label>
+
+      {kindValue === "a" && (
+        <label>
+          A Value
+          <input
+            aria-label="aValue"
+            type="text"
+            {...register("aValue")}
+          />
+        </label>
+      )}
+      {kindValue === "b" && (
+        <label>
+          B Value
+          <input
+            aria-label="bValue"
+            type="text"
+            {...register("bValue")}
+          />
+        </label>
+      )}
+    </div>
   );
 }
