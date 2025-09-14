@@ -23,7 +23,7 @@ export default function FormSwitchFieldExample() {
           </select>
         </label>
 
-        <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const}>
+        <FormSwitch field="kind">
           <FormCase value="a">
             {(f) => (
               <label>

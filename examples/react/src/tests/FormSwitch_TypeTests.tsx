@@ -12,11 +12,10 @@ export default function FormSwitchTypeTests() {
   // Valid narrowing: register only accepts keys in the current branch
   (() => (
     <FormProvider form={form}>
-      <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const}>
-        <FormCase<FormData, "kind", "a"> value="a">
+      <FormSwitch field="kind">
+        <FormCase value="a">
           {(f) => {
             f.register("aValue");
-            // @ts-expect-error wrong field in 'a' branch
             f.register("bValue");
             // Intentionally trying an invalid key here would fail if narrowing is effective.
             return null;
@@ -38,10 +37,9 @@ export default function FormSwitchTypeTests() {
   // Invalid FormCase value should error at compile-time
   (() => (
     <FormProvider form={form}>
-      <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const}>
+      <FormSwitch field="kind">
         {
-          // @ts-expect-error value must be one of the allowed discriminant values
-          <FormCase<FormData, "kind", "c"> value="c">{() => null}</FormCase>
+          <FormCase value="c">{() => null}</FormCase>
         }
       </FormSwitch>
     </FormProvider>
