@@ -38,9 +38,7 @@ export default function FormSwitchTypeTests() {
   (() => (
     <FormProvider form={form}>
       <FormSwitch field="kind">
-        {
-          <FormCase value="c">{() => null}</FormCase>
-        }
+        {<FormCase value="c">{() => null}</FormCase>}
       </FormSwitch>
     </FormProvider>
   ))();
@@ -60,7 +58,10 @@ export default function FormSwitchTypeTests() {
   // Duplicate values tuple should be flagged at compile-time
   (() => (
     // @ts-expect-error duplicate discriminant values are not allowed
-    <FormSwitch<FormData, "kind", ["a", "a"]> field="kind" values={["a", "a"] as const}>
+    <FormSwitch<FormData, "kind", ["a", "a"]>
+      field="kind"
+      values={["a", "a"] as const}
+    >
       <FormCase value="a">{() => null}</FormCase>
     </FormSwitch>
   ))();
@@ -68,7 +69,11 @@ export default function FormSwitchTypeTests() {
   // Mismatched selector return type should error
   (() => (
     // @ts-expect-error select must return the same type as the field path value
-    <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const} select={() => 123}>
+    <FormSwitch<FormData, "kind">
+      field="kind"
+      values={["a", "b"] as const}
+      select={() => 123}
+    >
       <FormCase value="a">{() => null}</FormCase>
     </FormSwitch>
   ))();

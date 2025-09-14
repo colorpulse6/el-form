@@ -2,7 +2,10 @@ import {
   ValidationEngine,
   ValidatorConfig,
   ValidatorEvent,
+  getTypeName,
+  getDiscriminatedUnionInfo,
 } from "el-form-core";
+import type { z } from "zod";
 
 /**
  * Form validation utilities and managers
@@ -31,6 +34,7 @@ export interface ValidationManagerOptions<T extends Record<string, any>> {
   fieldValidators: Partial<Record<keyof T, ValidatorConfig>>;
   mode: "onChange" | "onBlur" | "onSubmit" | "all";
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
+  schema?: z.ZodTypeAny;
 }
 
 /**
@@ -39,7 +43,7 @@ export interface ValidationManagerOptions<T extends Record<string, any>> {
 export function createValidationManager<T extends Record<string, any>>(
   options: ValidationManagerOptions<T>
 ): ValidationManager<T> {
-  const { validationEngine, validators, fieldValidators, mode, validateOn } =
+  const { validationEngine, validators, fieldValidators, mode, validateOn, schema } =
     options;
 
   return {
@@ -118,6 +122,39 @@ export function createValidationManager<T extends Record<string, any>>(
         }
       }
 
+      // Schema validation for discriminated unions
+      if (result.isValid && schema) {
+        try {
+          // For discriminated union validation, we need to validate the entire form
+          // against the schema when the discriminator field changes
+          // const { getTypeName } = require("el-form-core");
+          if (getTypeName(schema) === "ZodDiscriminatedUnion") {
+            const discriminatorField = String(fieldName);
+            // If this is the discriminator field, validate the entire discriminated union
+            // const { getDiscriminatedUnionInfo } = require("el-form-core");
+            const du = getDiscriminatedUnionInfo(schema);
+            if (du && du.discriminator === discriminatorField) {
+              // Validate the discriminated union
+              const parseResult = schema.safeParse(formValues);
+              if (!parseResult.success) {
+                result = {
+                  isValid: false,
+                  errors: {
+                    [String(fieldName)]: parseResult.error.errors
+                      .filter(err => err.path.includes(discriminatorField))
+                      .map(err => err.message)
+                      .join(", "),
+                  },
+                };
+              }
+            }
+          }
+        } catch (error) {
+          // If schema validation fails, don't break the form
+          console.warn("Schema validation error:", error);
+        }
+      }
+
       return result;
     },
 
@@ -161,6 +198,25 @@ export function createValidationManager<T extends Record<string, any>>(
         if (!formResult.isValid) {
           isValid = false;
           Object.assign(allErrors, formResult.errors);
+        }
+      }
+
+      // Schema validation
+      if (schema && isValid) {
+        try {
+          const parseResult = schema.safeParse(values);
+          if (!parseResult.success) {
+            isValid = false;
+            // Convert Zod errors to our error format
+            parseResult.error.errors.forEach(err => {
+              const fieldName = err.path.join(".");
+              if (!allErrors[fieldName]) {
+                allErrors[fieldName] = err.message;
+              }
+            });
+          }
+        } catch (error) {
+          console.warn("Schema validation error:", error);
         }
       }
 

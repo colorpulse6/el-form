@@ -37,6 +37,7 @@ export function useForm<T extends Record<string, any>>(
     mode = "onSubmit",
     validateOn,
     onSubmit,
+    schema,
   } = options;
 
   // Core refs and state
@@ -75,6 +76,7 @@ export function useForm<T extends Record<string, any>>(
     fieldValidators,
     mode,
     validateOn,
+    schema, // Pass schema for discriminated union validation
   });
 
   const fieldOperations = createFieldOperationsManager<T>({

@@ -5,6 +5,7 @@ import {
   useFormContext,
 } from "el-form-react-hooks";
 import type { AutoFormFieldConfig } from "../types";
+import { useDiscriminatedUnionContext } from "el-form-react-hooks";
 
 // Supported primitive discriminator types
 type DiscriminatorPrimitive = string | number | boolean;
@@ -14,7 +15,11 @@ type SchemaDrivenProps = {
   field: string;
   unionOptions?: Record<string, AutoFormFieldConfig[]>;
   discriminatorValue?: DiscriminatorPrimitive;
-  renderCase?: (value: DiscriminatorPrimitive, fields: AutoFormFieldConfig[], form: UseFormReturn<any>) => React.ReactNode;
+  renderCase?: (
+    value: DiscriminatorPrimitive,
+    fields: AutoFormFieldConfig[],
+    form: UseFormReturn<any>
+  ) => React.ReactNode;
   children?: React.ReactNode; // For back-compat or custom cases
 };
 
@@ -44,9 +49,11 @@ export function FormSwitch<T extends Record<string, any>>(
 
 // Implementation
 export function FormSwitch(props: any) {
+  const discriminatedUnionContext = useDiscriminatedUnionContext();
   // Handle schema-driven API
   if ("field" in props && "unionOptions" in props) {
-    const { field, unionOptions, discriminatorValue, renderCase, children } = props;
+    const { field, unionOptions, discriminatorValue, renderCase, children } =
+      props;
     const ctx = useFormContext();
     const formApi = ctx?.form;
 
@@ -106,6 +113,65 @@ export function FormSwitch(props: any) {
     }
 
     // Fall back to children if no unionOptions
+    return <>{children}</>;
+  }
+
+  // Handle field prop with context-based unionOptions
+  if ("field" in props && !("unionOptions" in props) && discriminatedUnionContext?.unionMetadata) {
+    const { field, children } = props;
+    const ctx = useFormContext();
+    const formApi = ctx?.form;
+    const { unionMetadata } = discriminatedUnionContext;
+
+    // Read current discriminant value
+    const slice = useField(field);
+    const current = slice.value as any;
+
+    // If the discriminator hasn't been set yet, don't attempt to render a branch.
+    if (current == null) return null;
+
+    // Use unionOptions from context
+    const fields = unionMetadata.unionOptions[String(current)] || [];
+    if (fields.length > 0) {
+      // Auto-render fields from schema
+      return (
+        <div className="space-y-4">
+          {fields.map((fieldConfig: AutoFormFieldConfig) => {
+            const fieldProps = formApi.register(fieldConfig.name);
+            const error = formApi.formState.errors[fieldConfig.name];
+            const touched = formApi.formState.touched[fieldConfig.name];
+
+            const fieldValue =
+              "checked" in fieldProps
+                ? fieldProps.checked
+                : "value" in fieldProps
+                ? fieldProps.value
+                : undefined;
+
+            return (
+              <div key={fieldConfig.name} className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  {fieldConfig.label || fieldConfig.name}
+                </label>
+                <input
+                  type={fieldConfig.type || "text"}
+                  value={fieldValue || ""}
+                  onChange={fieldProps.onChange}
+                  onBlur={fieldProps.onBlur}
+                  placeholder={fieldConfig.placeholder}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {error && touched && (
+                  <div className="text-red-500 text-sm">⚠️ {String(error)}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // Fall back to children
     return <>{children}</>;
   }
 
@@ -175,8 +241,8 @@ export function FormSwitch(props: any) {
 
   const current: DiscriminatorPrimitive | undefined | null = on as any;
   if (current == null) return null;
-  const formApi = (form as UseFormReturn<any> | undefined) ??
-    useFormContext()?.form;
+  const formApi =
+    (form as UseFormReturn<any> | undefined) ?? useFormContext()?.form;
 
   const childrenArray = React.Children.toArray(children);
   function isFormCaseElementCompat(el: unknown): el is React.ReactElement<{
