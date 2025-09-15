@@ -146,7 +146,7 @@ export function createValidationManager<T extends Record<string, any>>(
                 result = {
                   isValid: false,
                   errors: {
-                    [String(fieldName)]: parseResult.error.errors
+                    [String(fieldName)]: parseResult.error.issues
                       .filter((err) => err.path.includes(discriminatorField))
                       .map((err) => err.message)
                       .join(", "),
@@ -155,7 +155,7 @@ export function createValidationManager<T extends Record<string, any>>(
               }
             }
           }
-        } catch (error) {
+        } catch (error: unknown) {
           // If schema validation fails, don't break the form
           console.warn("Schema validation error:", error);
         }
@@ -214,14 +214,14 @@ export function createValidationManager<T extends Record<string, any>>(
           if (!parseResult.success) {
             isValid = false;
             // Convert Zod errors to our error format
-            parseResult.error.errors.forEach((err) => {
+            parseResult.error.issues.forEach((err) => {
               const fieldName = err.path.join(".");
               if (!allErrors[fieldName]) {
                 allErrors[fieldName] = err.message;
               }
             });
           }
-        } catch (error) {
+        } catch (error: unknown) {
           console.warn("Schema validation error:", error);
         }
       }
