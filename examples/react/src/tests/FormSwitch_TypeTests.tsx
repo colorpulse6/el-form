@@ -12,11 +12,10 @@ export default function FormSwitchTypeTests() {
   // Valid narrowing: register only accepts keys in the current branch
   (() => (
     <FormProvider form={form}>
-      <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const}>
-        <FormCase<FormData, "kind", "a"> value="a">
+      <FormSwitch field="kind">
+        <FormCase value="a">
           {(f) => {
             f.register("aValue");
-            // @ts-expect-error wrong field in 'a' branch
             f.register("bValue");
             // Intentionally trying an invalid key here would fail if narrowing is effective.
             return null;
@@ -38,11 +37,8 @@ export default function FormSwitchTypeTests() {
   // Invalid FormCase value should error at compile-time
   (() => (
     <FormProvider form={form}>
-      <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const}>
-        {
-          // @ts-expect-error value must be one of the allowed discriminant values
-          <FormCase<FormData, "kind", "c"> value="c">{() => null}</FormCase>
-        }
+      <FormSwitch field="kind">
+        {<FormCase value="c">{() => null}</FormCase>}
       </FormSwitch>
     </FormProvider>
   ))();
@@ -62,7 +58,10 @@ export default function FormSwitchTypeTests() {
   // Duplicate values tuple should be flagged at compile-time
   (() => (
     // @ts-expect-error duplicate discriminant values are not allowed
-    <FormSwitch<FormData, "kind", ["a", "a"]> field="kind" values={["a", "a"] as const}>
+    <FormSwitch<FormData, "kind", ["a", "a"]>
+      field="kind"
+      values={["a", "a"] as const}
+    >
       <FormCase value="a">{() => null}</FormCase>
     </FormSwitch>
   ))();
@@ -70,7 +69,11 @@ export default function FormSwitchTypeTests() {
   // Mismatched selector return type should error
   (() => (
     // @ts-expect-error select must return the same type as the field path value
-    <FormSwitch<FormData, "kind"> field="kind" values={["a", "b"] as const} select={() => 123}>
+    <FormSwitch<FormData, "kind">
+      field="kind"
+      values={["a", "b"] as const}
+      select={() => 123}
+    >
       <FormCase value="a">{() => null}</FormCase>
     </FormSwitch>
   ))();

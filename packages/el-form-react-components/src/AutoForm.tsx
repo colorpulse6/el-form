@@ -494,7 +494,7 @@ const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
   const discriminatorProps = register(fieldConfig.discriminatorField);
   const discriminatorValue = watch(fieldConfig.discriminatorField);
 
-  // Render the discriminator select field
+  // Render the discriminator selector
   const DiscriminatorComponent =
     (fieldConfig.type && componentMap?.[fieldConfig.type]) || DefaultField;
 
@@ -513,7 +513,7 @@ const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
         />
       </div>
 
-      {/* Render conditional fields using FormSwitch */}
+      {/* Render conditional fields using FormSwitch with union metadata (Phase 1: prepare metadata, Phase 2: update FormSwitch) */}
       <FormSwitch on={discriminatorValue} form={formApi}>
         {fieldConfig.options?.map((option) => (
           <FormCase key={option.value} value={option.value}>

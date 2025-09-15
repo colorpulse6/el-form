@@ -42,6 +42,9 @@ export interface UseFormOptions<T extends Record<string, any>> {
 
   // Flexible validation timing
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
+
+  // Zod schema for discriminated union support and enhanced validation
+  schema?: any;
 }
 
 export interface FieldState {

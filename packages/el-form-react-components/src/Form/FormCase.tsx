@@ -1,7 +1,58 @@
 import React from "react";
 import type { UseFormReturn, Path } from "el-form-react-hooks";
 import type { CaseOf, Allowed } from "./types";
+import type { z } from "zod";
 
+// Overloaded SchemaFormCase to maintain backward compatibility
+// while supporting any discriminator field name
+
+// Version 1: Backward compatible - assumes "type" as discriminator field
+export function SchemaFormCase<
+  T extends z.ZodDiscriminatedUnion<any, any>,
+  V extends z.infer<T>["type"]
+>(_props: {
+  value: V;
+  children: (
+    form: UseFormReturn<Extract<z.infer<T>, { type: V }>>
+  ) => React.ReactNode;
+}): null;
+
+// Version 2: New flexible API - explicit discriminator field
+export function SchemaFormCase<
+  T extends z.ZodDiscriminatedUnion<any, any>,
+  D extends string,
+  V extends z.infer<T>[D]
+>(_props: {
+  discriminatorField: D;
+  value: V;
+  children: (
+    form: UseFormReturn<Extract<z.infer<T>, Record<D, V>>>
+  ) => React.ReactNode;
+}): null;
+
+// Implementation
+export function SchemaFormCase(_props: any) {
+  // Shell component: intentionally renders nothing.
+  // The render function (children) is invoked by FormSwitch when its value matches.
+  return null;
+}
+
+// Utility for creating type-safe FormCase components
+export function createFormCase<
+  T extends Record<string, any>,
+  P extends Path<T>
+>() {
+  return function FormCase<V extends Allowed<T, P>>(_props: {
+    value: V;
+    children: (form: UseFormReturn<CaseOf<T, P, V>>) => React.ReactNode;
+  }) {
+    // Shell component: intentionally renders nothing.
+    // The render function (children) is invoked by FormSwitch when its value matches.
+    return null;
+  };
+}
+
+// Legacy FormCase for backward compatibility
 export interface FormCaseProps<
   T extends Record<string, any>,
   P extends Path<T>,

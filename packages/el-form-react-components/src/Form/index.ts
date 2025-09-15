@@ -1,2 +1,2 @@
 export { FormSwitch } from "./FormSwitch";
-export { FormCase } from "./FormCase";
+export { FormCase, SchemaFormCase, createFormCase } from "./FormCase";

@@ -13,9 +13,6 @@ export default function FormSwitchSelectExample() {
     defaultValues: { profile: { type: "guest" }, guestCode: "", memberId: "" },
   });
 
-  const selector = (s: { values: Partial<FormData> }): FormData["profile"]["type"] =>
-    s.values.profile?.type ?? "guest";
-
   return (
     <FormProvider form={form}>
       <div>
@@ -27,7 +24,7 @@ export default function FormSwitchSelectExample() {
           </select>
         </label>
 
-        <FormSwitch<FormData, "profile.type"> field="profile.type" select={selector} values={["guest", "member"] as const}>
+        <FormSwitch on={form.watch("profile.type")} form={form}>
           <FormCase value="guest">
             {(f) => (
               <label>
