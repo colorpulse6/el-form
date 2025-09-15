@@ -198,49 +198,36 @@ interface FormCaseProps<T extends Record<string, any>> {
   value: string | number | boolean;
   children: (form: UseFormReturn<T>) => React.ReactNode;
 }
+
+// SchemaFormCase: Compile-time validated version of FormCase
+interface SchemaFormCaseProps<
+  T extends z.ZodDiscriminatedUnion<any, any>,
+  V extends T["_def"]["discriminator"]["_def"]["values"]
+> {
+  value: V;
+  children: (
+    form: UseFormReturn<z.infer<ExtractUnionMember<T, V>>>
+  ) => React.ReactNode;
+}
 ```
 
 **Usage:**
 
 ```typescript
-import { FormSwitch, FormCase } from "el-form-react-components";
+import { FormSwitch, FormCase, SchemaFormCase } from "el-form-react-components";
 
-// Conditional rendering based on form values
-function ConditionalForm() {
-  const form = useForm({
-    defaultValues: {
-      userType: "individual",
-      firstName: "",
-      companyName: "",
-    },
-  });
+// Runtime validation (flexible)
+<FormSwitch field="userType">
+  <FormCase value="individual">{/* ... */}</FormCase>
+  <FormCase value="business">{/* ... */}</FormCase>
+</FormSwitch>
 
-  return (
-    <FormProvider form={form}>
-      <SelectField
-        name="userType"
-        label="User Type"
-        options={[
-          { value: "individual", label: "Individual" },
-          { value: "business", label: "Business" },
-        ]}
-      />
-
-      <FormSwitch field="userType">
-        <FormCase value="individual">
-          {(individualForm) => (
-            <TextField name="firstName" label="First Name" required />
-          )}
-        </FormCase>
-        <FormCase value="business">
-          {(businessForm) => (
-            <TextField name="companyName" label="Company Name" required />
-          )}
-        </FormCase>
-      </FormSwitch>
-    </FormProvider>
-  );
-}
+// Compile-time validation (strict)
+<FormSwitch<typeof personSchema> schema={personSchema}>
+  <SchemaFormCase<typeof personSchema, "student"> value="student">
+    {/* TypeScript prevents invalid values */}
+  </SchemaFormCase>
+</FormSwitch>
 ```
 
 ## Base Field Props

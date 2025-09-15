@@ -1,11 +1,23 @@
-import React from "react";
-import {
-  UseFormReturn,
-  useField,
-  useFormContext,
-} from "el-form-react-hooks";
+import React, { createContext } from "react";
+import { UseFormReturn, useField, useFormContext } from "el-form-react-hooks";
 import type { AutoFormFieldConfig } from "../types";
 import { useDiscriminatedUnionContext } from "el-form-react-hooks";
+import { getDiscriminatedUnionInfo, getLiteralValue } from "el-form-core";
+import type { z } from "zod";
+
+// Discriminated Union Context for schema-driven FormSwitch
+interface DiscriminatedUnionContextValue {
+  schema?: z.ZodTypeAny;
+  unionMetadata?: {
+    discriminatorField: string;
+    options: Array<{ value: string; label: string }>;
+    unionOptions: Record<string, any[]>;
+  };
+}
+
+const DiscriminatedUnionContext = createContext<
+  DiscriminatedUnionContextValue | undefined
+>(undefined);
 
 // Supported primitive discriminator types
 type DiscriminatorPrimitive = string | number | boolean;
@@ -39,17 +51,103 @@ export type FormSwitchProps<T extends Record<string, any>> =
   | SchemaDrivenProps
   | BackCompatProps<T>;
 
-// Overload: Schema-driven API
-export function FormSwitch(props: SchemaDrivenProps): JSX.Element | null;
-
-// Overload: Back-compat API
-export function FormSwitch<T extends Record<string, any>>(
-  props: BackCompatProps<T>
-): JSX.Element | null;
-
 // Implementation
-export function FormSwitch(props: any) {
+const FormSwitchImpl = (props: any) => {
+  // Handle schema-aware overload first
+  if ("schema" in props) {
+    const { schema, field, children } = props;
+    const ctx = useFormContext();
+    const formApi = ctx?.form;
+
+    // Extract discriminator info
+    const unionInfo = getDiscriminatedUnionInfo(schema);
+    if (!unionInfo) {
+      console.warn("FormSwitch: Provided schema is not a discriminated union");
+      return <>{children}</>;
+    }
+
+    // Use provided field or default to discriminator field
+    const activeField = field || unionInfo.discriminator;
+
+    // Validate field matches discriminator
+    if (activeField !== unionInfo.discriminator) {
+      console.warn(
+        `FormSwitch: Field "${activeField}" doesn't match the discriminator "${unionInfo.discriminator}" in your discriminated union schema.`
+      );
+    }
+
+    // Create discriminated union context value for type inference
+    const discriminatedUnionValue: DiscriminatedUnionContextValue = {
+      schema,
+      unionMetadata: {
+        discriminatorField: unionInfo.discriminator,
+        options: unionInfo.options.map((option: any) => {
+          const discriminatorValue = getLiteralValue(
+            option.shape[unionInfo.discriminator]
+          );
+          return {
+            value: String(discriminatorValue),
+            label:
+              String(discriminatorValue).charAt(0).toUpperCase() +
+              String(discriminatorValue).slice(1),
+          };
+        }),
+        unionOptions: unionInfo.options.reduce(
+          (acc: Record<string, any[]>, option: any) => {
+            const discriminatorValue = getLiteralValue(
+              option.shape[unionInfo.discriminator]
+            );
+            acc[String(discriminatorValue)] = [];
+            return acc;
+          },
+          {}
+        ),
+      },
+    };
+
+    // Read current discriminant value
+    const slice = useField(activeField);
+    const current = slice.value as any;
+
+    // If the discriminator hasn't been set yet, don't attempt to render a branch.
+    if (current == null) return null;
+
+    // Render children with FormCase filtering and discriminated union context
+    return (
+      <DiscriminatedUnionContext.Provider value={discriminatedUnionValue}>
+        {(() => {
+          const childrenArray = React.Children.toArray(children);
+          for (const child of childrenArray) {
+            if (!React.isValidElement(child)) continue;
+            const childProps: any = child.props;
+            if (childProps?.value === current) {
+              return childProps.children(formApi as UseFormReturn<any>);
+            }
+          }
+          return null;
+        })()}
+      </DiscriminatedUnionContext.Provider>
+    );
+  }
+
+  // Handle regular FormSwitch logic
   const discriminatedUnionContext = useDiscriminatedUnionContext();
+
+  // Helper to validate field matches discriminator in discriminated union schemas
+  const validateDiscriminatedUnionField = (field: string) => {
+    if (!discriminatedUnionContext?.schema) return;
+
+    const unionInfo = getDiscriminatedUnionInfo(
+      discriminatedUnionContext.schema
+    );
+    if (unionInfo && unionInfo.discriminator !== field) {
+      console.warn(
+        `FormSwitch: Field "${field}" doesn't match the discriminator "${unionInfo.discriminator}" in your discriminated union schema. ` +
+          `Consider using field="${unionInfo.discriminator}" to match your schema.`
+      );
+    }
+  };
+
   // Handle schema-driven API
   if ("field" in props && "unionOptions" in props) {
     const { field, unionOptions, discriminatorValue, renderCase, children } =
@@ -117,10 +215,17 @@ export function FormSwitch(props: any) {
   }
 
   // Handle field prop with context-based unionOptions
-  if ("field" in props && !("unionOptions" in props) && discriminatedUnionContext?.unionMetadata) {
+  if (
+    "field" in props &&
+    !("unionOptions" in props) &&
+    discriminatedUnionContext?.unionMetadata
+  ) {
     const { field, children } = props;
     const ctx = useFormContext();
     const formApi = ctx?.form;
+
+    // Validate field matches discriminator
+    validateDiscriminatedUnionField(field);
     const { unionMetadata } = discriminatedUnionContext;
 
     // Read current discriminant value
@@ -180,6 +285,9 @@ export function FormSwitch(props: any) {
     const { field, children } = props;
     const ctx = useFormContext();
     const formApi = ctx?.form;
+
+    // Validate field matches discriminator
+    validateDiscriminatedUnionField(field);
 
     // Read current discriminant value
     const slice = useField(field);
@@ -266,4 +374,55 @@ export function FormSwitch(props: any) {
   }
 
   return null;
-}
+};
+
+// Memoized FormSwitch component with custom comparison
+const MemoizedFormSwitch = React.memo(
+  FormSwitchImpl,
+  (prevProps, nextProps) => {
+    // Custom comparison function to prevent unnecessary rerenders
+    // Only re-render if relevant props change
+
+    // For schema-driven API
+    if ("field" in prevProps && "field" in nextProps) {
+      // Compare field name
+      if (prevProps.field !== nextProps.field) return false;
+
+      // Compare unionOptions if both have it
+      if ("unionOptions" in prevProps && "unionOptions" in nextProps) {
+        if (prevProps.unionOptions !== nextProps.unionOptions) return false;
+      }
+
+      // Compare discriminatorValue if both have it
+      if (
+        "discriminatorValue" in prevProps &&
+        "discriminatorValue" in nextProps
+      ) {
+        if (prevProps.discriminatorValue !== nextProps.discriminatorValue)
+          return false;
+      }
+
+      // Compare renderCase function reference
+      if (prevProps.renderCase !== nextProps.renderCase) return false;
+
+      // Compare children
+      if (prevProps.children !== nextProps.children) return false;
+
+      return true; // No changes, don't re-render
+    }
+
+    // For back-compat API
+    if ("on" in prevProps && "on" in nextProps) {
+      if (prevProps.on !== nextProps.on) return false;
+      if (prevProps.form !== nextProps.form) return false;
+      if (prevProps.children !== nextProps.children) return false;
+      return true; // No changes, don't re-render
+    }
+
+    // Different prop patterns, re-render
+    return false;
+  }
+);
+
+// Export the memoized component
+export const FormSwitch = MemoizedFormSwitch;

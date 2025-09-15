@@ -8,15 +8,18 @@ import React, {
 } from "react";
 import { SubscriptionContext } from "./SubscriptionContext";
 import { UseFormReturn, FormContextValue } from "./types";
-import { getTypeName, getDiscriminatedUnionInfo, getLiteralValue } from "el-form-core";
-import type { z } from "zod";
+import {
+  getTypeName,
+  getDiscriminatedUnionInfo,
+  getLiteralValue,
+} from "el-form-core";
 
 // Context with proper generic typing
 const FormContext = createContext<FormContextValue<any> | undefined>(undefined);
 
 // Discriminated Union Context for schema-driven FormSwitch
 export interface DiscriminatedUnionContextValue {
-  schema?: z.ZodTypeAny;
+  schema?: any;
   unionMetadata?: {
     discriminatorField: string;
     options: Array<{ value: string; label: string }>;
@@ -24,7 +27,9 @@ export interface DiscriminatedUnionContextValue {
   };
 }
 
-const DiscriminatedUnionContext = createContext<DiscriminatedUnionContextValue | undefined>(undefined);
+const DiscriminatedUnionContext = createContext<
+  DiscriminatedUnionContextValue | undefined
+>(undefined);
 
 // Provider component
 export function FormProvider<T extends Record<string, any>>({
@@ -36,7 +41,7 @@ export function FormProvider<T extends Record<string, any>>({
   children: React.ReactNode;
   form: UseFormReturn<T>;
   formId?: string;
-  schema?: z.ZodTypeAny;
+  schema?: any;
 }) {
   const listenersRef = useRef(new Set<() => void>());
   const latestFormRef = useRef(form);
@@ -106,18 +111,22 @@ export function FormProvider<T extends Record<string, any>>({
             );
             return {
               value: discriminatorValue,
-              label: String(discriminatorValue).charAt(0).toUpperCase() +
-                     String(discriminatorValue).slice(1),
+              label:
+                String(discriminatorValue).charAt(0).toUpperCase() +
+                String(discriminatorValue).slice(1),
             };
           }),
-          unionOptions: options.reduce((acc: Record<string, any[]>, option: any) => {
-            const discriminatorValue = getLiteralValue(
-              option.shape[discriminatorField]
-            );
-            // Generate fields from the option schema (simplified version)
-            acc[String(discriminatorValue)] = []; // We'll populate this properly
-            return acc;
-          }, {}),
+          unionOptions: options.reduce(
+            (acc: Record<string, any[]>, option: any) => {
+              const discriminatorValue = getLiteralValue(
+                option.shape[discriminatorField]
+              );
+              // Generate fields from the option schema (simplified version)
+              acc[String(discriminatorValue)] = []; // We'll populate this properly
+              return acc;
+            },
+            {}
+          ),
         },
       };
     }
@@ -156,6 +165,8 @@ export function useFormState<
 }
 
 // Hook to access discriminated union context
-export function useDiscriminatedUnionContext(): DiscriminatedUnionContextValue | undefined {
+export function useDiscriminatedUnionContext():
+  | DiscriminatedUnionContextValue
+  | undefined {
   return useContext(DiscriminatedUnionContext);
 }

@@ -16,7 +16,7 @@ const dogSchema = z.object({
 const animalSchema = z.discriminatedUnion("type", [catSchema, dogSchema]);
 
 export function AutoDiscriminatedUnionForm() {
-  const handleSubmit = (data: z.infer<typeof animalSchema>) => {
+  const handleSubmit = (data: any) => {
     console.log("AutoForm submitted:", data);
     alert("Success! Check the console.");
   };

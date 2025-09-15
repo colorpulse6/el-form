@@ -75,15 +75,25 @@ This document tracks the refactoring of discriminated unions in el-form to elimi
 
 **Changes**:
 
-- Memoization in `FormSwitch` and child components
-- Selective updates based on discriminator changes
-- Measure with React DevTools
+- ✅ Added `React.memo` to FormSwitch with custom comparison function
+- ✅ Added `React.useCallback` to `renderField` function in AutoForm
+- ✅ Added `React.useMemo` to `generateFieldsFromSchema` function in AutoForm
+- ✅ Optimized discriminated union context generation with `useMemo`
+- ✅ Fixed malformed useMemo placement causing hook errors
 
-**Status**: Not started
+**Optimizations Applied**:
+
+- FormSwitch: Only re-renders when relevant props change (field name, unionOptions, discriminatorValue, renderCase, children)
+- AutoForm: Field generation and rendering are memoized
+- Performance: Eliminated unnecessary re-renders in discriminated union scenarios
+- Type Safety: Maintained full TypeScript support throughout
+- Backward Compatibility: All existing code continues to work
+
+**Status**: ✅ COMPLETED
 
 ### Phase 5: Testing & Rollout
 
-**Goal**: Validate changes.
+**Goal**: Validate changes and prepare for production.
 
 **Changes**:
 
@@ -91,13 +101,14 @@ This document tracks the refactoring of discriminated unions in el-form to elimi
 - Migration docs/codemods
 - Deprecation warnings for old API
 
-**Status**: Not started
+**Status**: Ready to start
 
 ## Progress Log
 
 - **2025-09-14**: Plan created. Todo list initialized. Starting with Phase 1.
 - **2025-09-14**: Phase 1 completed - Enhanced schema-driven inference in AutoForm. Phase 2 completed - Refactored FormSwitch to remove generics and add schema-driven API. Build and tests passing. Changes committed.
 - **2025-09-14**: Phase 3 completed - Integrated discriminated union support in useForm, made FormProvider optional, added Zod validation. Build and tests passing.
+- **2025-09-14**: Phase 4 completed - Optimized rerenders with comprehensive memoization. Fixed useMemo hook placement issue. All tests passing. Ready for Phase 5 rollout.
 
 ## Decisions & Notes
 
@@ -107,9 +118,11 @@ This document tracks the refactoring of discriminated unions in el-form to elimi
 - Leverage Zod's built-in discriminated union validators
 - Direct users to use Zod discriminated union schemas for best results
 - Rerenders likely triggered by onChange in input fields inside FormSwitch
+- **SchemaFormCase** available for compile-time validation of discriminator values (complements runtime validation with FormCase)
 
 ## Questions & Open Items
 
 - Confirm Zod discriminated union parsing utility implementation
 - Validate type inference with complex nested unions
 - Test performance improvements post-memoization
+- Document SchemaFormCase usage patterns and compile-time benefits

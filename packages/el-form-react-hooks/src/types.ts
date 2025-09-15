@@ -1,7 +1,6 @@
 import { ValidatorConfig } from "el-form-core";
 import { FileValidationOptions } from "./utils/fileUtils";
 import type { Path, PathValue, RegisterReturn } from "./types/path";
-import type { z } from "zod";
 
 // Form Context types
 export interface FormContextValue<T extends Record<string, any>> {
@@ -45,7 +44,7 @@ export interface UseFormOptions<T extends Record<string, any>> {
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
 
   // Zod schema for discriminated union support and enhanced validation
-  schema?: z.ZodTypeAny;
+  schema?: any;
 }
 
 export interface FieldState {
