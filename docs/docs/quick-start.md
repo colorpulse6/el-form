@@ -86,7 +86,7 @@ function ContactForm() {
 
 This generates a complete form with validation, error handling, type safety, and beautiful styling!
 
-## Alternative: useForm Hook
+## 🎣 Alternative: useForm Hook
 
 For custom forms with full control, use the `useForm` hook:
 
@@ -107,6 +107,7 @@ function CustomForm() {
   );
 }
 ```
+
 
 ## Validation Options
 

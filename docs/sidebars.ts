@@ -39,6 +39,7 @@ const sidebars = {
         "api/auto-form",
         "api/form-provider",
         "api/field-components",
+        "api/interactive-sandbox",
       ],
     },
     "faq",

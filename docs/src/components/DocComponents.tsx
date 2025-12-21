@@ -5,4 +5,5 @@ export { Callout } from "./Callout";
 export { InstallCommand } from "./InstallCommand";
 export { ApiReference } from "./ApiReference";
 export { InteractivePreview } from "./InteractivePreview";
+export { InteractiveSandbox } from "./InteractiveSandbox";
 export { ProgressSteps } from "./ProgressSteps";

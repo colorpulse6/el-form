@@ -103,6 +103,26 @@ const config: Config = {
       hideOnScroll: false,
       style: "dark",
       items: [
+        {
+          label: "API Reference",
+          position: "right",
+          items: [
+            { type: "doc", docId: "api/overview", label: "Overview" },
+            { type: "doc", docId: "api/use-form", label: "useForm" },
+            { type: "doc", docId: "api/auto-form", label: "AutoForm" },
+            { type: "doc", docId: "api/form-provider", label: "FormProvider" },
+            {
+              type: "doc",
+              docId: "api/field-components",
+              label: "Field Components",
+            },
+            {
+              type: "doc",
+              docId: "api/interactive-sandbox",
+              label: "Interactive Sandbox",
+            },
+          ],
+        },
         // Search disabled for now
         {
           type: "html",
