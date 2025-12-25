@@ -1,6 +1,7 @@
 ---
 title: Interactive Sandbox
 description: Play with el-form in a live, embedded sandbox to explore the API hands-on.
+hide_table_of_contents: true
 keywords:
   - interactive sandbox
   - live examples
@@ -28,7 +29,7 @@ The default embedded sandbox mirrors the introductory `useForm` example from the
       title="useForm Quick Start"
       files={quickStartBasicFiles}
       previewHeight={420}
-      activeFile="/src/App.tsx"
+      activeFile="/App.tsx"
     />
   )}
 </BrowserOnly>

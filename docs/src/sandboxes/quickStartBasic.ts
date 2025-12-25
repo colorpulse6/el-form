@@ -1,8 +1,8 @@
 import type { SandpackFiles } from "@codesandbox/sandpack-react";
 
 export const quickStartBasicFiles: SandpackFiles = {
-  "/src/App.tsx": {
-    code: `import { useForm } from "el-form-react-hooks";
+  "/App.tsx": {
+    code: `import { useForm } from "el-form-react";
 import "./styles.css";
 
 export default function App(): JSX.Element {
@@ -48,19 +48,7 @@ export default function App(): JSX.Element {
 }
 `,
   },
-  "/src/main.tsx": {
-    code: `import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-`,
-  },
-  "/src/styles.css": {
+  "/styles.css": {
     code: `:root {
   color-scheme: light dark;
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -173,20 +161,6 @@ body {
   font-size: 0.8rem;
   overflow-x: auto;
 }
-`,
-  },
-  "/index.html": {
-    code: `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>El Form Quick Start</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
 `,
   },
 };

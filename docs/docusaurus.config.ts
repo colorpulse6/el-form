@@ -87,6 +87,12 @@ const config: Config = {
       disableSwitch: false,
       respectPrefersColorScheme: true,
     },
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true,
+      },
+    },
     prism: {
       theme: require("prism-react-renderer").themes.github,
       darkTheme: require("prism-react-renderer").themes.vsDark,

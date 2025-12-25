@@ -4,7 +4,6 @@ import {
   SandpackLayout,
   SandpackCodeEditor,
   SandpackPreview,
-  SandpackConsole,
   SandpackFileExplorer,
   type SandpackFiles,
   type SandpackProviderProps,
@@ -13,19 +12,17 @@ import {
 } from "@codesandbox/sandpack-react";
 import { githubLight, sandpackDark } from "@codesandbox/sandpack-themes";
 import { useColorMode } from "@docusaurus/theme-common";
-import clsx from "clsx";
 
-const DEFAULT_TEMPLATE: SandpackPredefinedTemplate = "vite-react-ts";
+const DEFAULT_TEMPLATE: SandpackPredefinedTemplate = "react-ts";
 
 const DEFAULT_DEPENDENCIES: Record<string, string> = {
   react: "18.2.0",
   "react-dom": "18.2.0",
-  "el-form-react-hooks": "3.10.0",
+  "el-form-react": "4.1.2",
+  zod: "3.23.8",
   "@types/react": "18.2.45",
   "@types/react-dom": "18.2.18",
   typescript: "5.4.5",
-  vite: "5.0.8",
-  "@vitejs/plugin-react": "4.2.1",
 };
 
 export type InteractiveSandboxLink = {
@@ -80,12 +77,11 @@ export const InteractiveSandbox: React.FC<InteractiveSandboxProps> = ({
   const providerSetup: SandpackProviderProps["customSetup"] = {
     entry,
     dependencies: mergedDependencies,
-    environment: "node",
     ...customSetup,
   };
 
   const resolvedInitMode: SandpackInitMode =
-    initMode ?? options?.initMode ?? "lazy";
+    initMode ?? options?.initMode ?? "user-visible";
 
   const defaultVisibleFiles = React.useMemo(() => {
     return Object.entries(files)
@@ -101,7 +97,7 @@ export const InteractiveSandbox: React.FC<InteractiveSandboxProps> = ({
     autorun: true,
     ...(options ?? {}),
     initMode: resolvedInitMode,
-    activeFile: options?.activeFile ?? activeFile ?? "/src/App.tsx",
+    activeFile: options?.activeFile ?? activeFile ?? "/App.tsx",
     visibleFiles: options?.visibleFiles ?? defaultVisibleFiles,
   } satisfies SandpackProviderProps["options"];
 
@@ -146,32 +142,45 @@ export const InteractiveSandbox: React.FC<InteractiveSandboxProps> = ({
         theme={theme}
       >
         <SandpackLayout
-          className={clsx(
-            "!border-none !bg-transparent",
-            "interactive-sandbox__layout flex flex-col lg:flex-row"
-          )}
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "nowrap",
+            gap: 0,
+            border: "none",
+            background: "transparent",
+          }}
         >
-          <div className="lg:w-1/2 xl:w-[55%] flex flex-col bg-slate-50/60 dark:bg-slate-900/40 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-700">
-            <SandpackFileExplorer className="max-h-44 lg:max-h-full overflow-auto" />
+          <div
+            style={{
+              flex: "1 1 50%",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              borderRight: "1px solid var(--sp-colors-surface2, #e4e7eb)",
+            }}
+          >
+            <SandpackFileExplorer style={{ maxHeight: 120 }} />
             <SandpackCodeEditor
               showLineNumbers
               showInlineErrors
               wrapContent
-              style={{ minHeight: previewHeight }}
+              style={{ flex: 1, minHeight: previewHeight }}
             />
           </div>
-          <div className="lg:w-1/2 xl:w-[45%] flex flex-col bg-white dark:bg-slate-900">
+          <div
+            style={{
+              flex: "1 1 50%",
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <SandpackPreview
               showNavigator
               showOpenInCodeSandbox={false}
               showRefreshButton
-              style={{ height: previewHeight }}
-            />
-            <SandpackConsole
-              showHeader
-              resetOnPreviewRestart
-              className="interactive-sandbox__console border-t border-slate-200 dark:border-slate-700"
-              style={{ maxHeight: 200 }}
+              style={{ flex: 1, minHeight: previewHeight }}
             />
           </div>
         </SandpackLayout>

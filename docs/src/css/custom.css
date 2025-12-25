@@ -51,3 +51,63 @@
   display: flex !important;
   align-items: center !important;
 }
+
+/* =====================================================
+   Sidebar Collapse Button - Move to Side
+   ===================================================== */
+
+/* Position the collapse button on the right edge of sidebar */
+button.theme-doc-sidebar-collapseButton {
+  position: absolute !important;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 8px 8px 0 !important;
+  background: var(--ifm-color-emphasis-200) !important;
+  border: 1px solid var(--ifm-color-emphasis-300) !important;
+  border-left: none !important;
+  z-index: 10;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+button.theme-doc-sidebar-collapseButton:hover {
+  background: var(--ifm-color-emphasis-300) !important;
+}
+
+/* Rotate the chevron icon to point left/right instead of up/down */
+button.theme-doc-sidebar-collapseButton svg {
+  transform: rotate(90deg);
+  width: 16px;
+  height: 16px;
+}
+
+/* Make sidebar container relative for absolute positioning */
+.theme-doc-sidebar-container {
+  position: relative !important;
+}
+
+/* Hide the default bottom area that holds the button */
+.theme-doc-sidebar-menu {
+  padding-bottom: 0 !important;
+}
+
+/* When sidebar is collapsed, show expand button on the edge */
+[class*="docSidebarContainer_"][class*="collapsedDocSidebar_"] {
+  position: relative;
+}
+
+/* Dark mode styling */
+[data-theme="dark"] button.theme-doc-sidebar-collapseButton {
+  background: var(--ifm-color-emphasis-100) !important;
+  border-color: var(--ifm-color-emphasis-200) !important;
+}
+
+[data-theme="dark"] button.theme-doc-sidebar-collapseButton:hover {
+  background: var(--ifm-color-emphasis-200) !important;
+}
