@@ -286,9 +286,11 @@ export function useForm<T extends Record<string, any>>(
             validationManager.shouldValidate("onChange");
 
           if (shouldValidateResult) {
+            // Use formStateRef.current to avoid stale closure in async validation
+            const currentValues = formStateRef.current?.values || {};
             const updatedValues = name.includes(".")
-              ? setNestedValue(formState.values, name, value)
-              : { ...formState.values, [name]: value };
+              ? setNestedValue(currentValues, name, value)
+              : { ...currentValues, [name]: value };
 
             const result = await validationManager.validateField(
               fieldName,
@@ -403,6 +405,7 @@ export function useForm<T extends Record<string, any>>(
   const removeFile = useCallback(
     (name: string, index?: number) => {
       const currentValue = getNestedValue(formState.values, name);
+      const fieldName = name as keyof T;
 
       if (
         typeof index === "number" &&
@@ -412,9 +415,27 @@ export function useForm<T extends Record<string, any>>(
         const files = Array.from(currentValue);
         files.splice(index, 1);
         formStateManager.setValue(name, files);
+
+        // Clear preview for the removed file
+        setFilePreview((prev) => {
+          const currentPreviews = prev[fieldName];
+          if (Array.isArray(currentPreviews)) {
+            const updatedPreviews = [...currentPreviews];
+            updatedPreviews.splice(index, 1);
+            return { ...prev, [fieldName]: updatedPreviews };
+          }
+          return prev;
+        });
       } else {
         // Clear all files
         formStateManager.setValue(name, null);
+
+        // Clear all previews for this field
+        setFilePreview((prev) => {
+          const updated = { ...prev };
+          delete updated[fieldName];
+          return updated;
+        });
       }
     },
     [formStateManager, formState.values]

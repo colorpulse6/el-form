@@ -351,6 +351,21 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
   );
 };
 
+// Helper to unwrap ZodOptional, ZodNullable, and ZodDefault wrapper types
+function unwrapZodType(schema: z.ZodTypeAny): z.ZodTypeAny {
+  const typeName = getTypeName(schema as any);
+  if (
+    typeName === "ZodOptional" ||
+    typeName === "ZodNullable" ||
+    typeName === "ZodDefault"
+  ) {
+    const def = getDef(schema as any);
+    const inner = def?.innerType || def?.type;
+    return inner ? unwrapZodType(inner) : schema;
+  }
+  return schema;
+}
+
 function generateFieldsFromSchema<T extends z.ZodTypeAny>(
   schema: T
 ): AutoFormFieldConfig[] {
@@ -397,7 +412,9 @@ function generateFieldsFromSchema<T extends z.ZodTypeAny>(
   const fields: AutoFormFieldConfig[] = [];
   for (const key in shape) {
     if (!Object.prototype.hasOwnProperty.call(shape, key)) continue;
-    const zodType = shape[key] as z.ZodTypeAny;
+    const rawZodType = shape[key] as z.ZodTypeAny;
+    // Unwrap optional/nullable/default wrappers to get the inner type
+    const zodType = unwrapZodType(rawZodType);
     const typeName = getTypeName(zodType as any);
     const fieldConfig: AutoFormFieldConfig = {
       name: key,
@@ -466,6 +483,17 @@ function generateFieldsFromSchema<T extends z.ZodTypeAny>(
           { name: "value", type: elementType, label: "Value" },
         ];
       }
+    } else if (typeName === "ZodObject") {
+      // Handle nested object fields by flattening with dot notation
+      const nestedFields = generateFieldsFromSchema(zodType);
+      nestedFields.forEach((nestedField) => {
+        fields.push({
+          ...nestedField,
+          name: `${key}.${nestedField.name}`,
+          label: `${fieldConfig.label} ${nestedField.label}`,
+        });
+      });
+      continue; // Skip pushing the parent fieldConfig since we flattened
     }
     fields.push(fieldConfig);
   }
