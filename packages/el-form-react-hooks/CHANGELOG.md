@@ -1,5 +1,21 @@
 # el-form-react-hooks
 
+## 3.10.1
+
+### Patch Changes
+
+- Fix stale closure in async validation and AutoForm wrapper type handling
+
+  **el-form-react-hooks:**
+
+  - Fix stale closure bug in async validation by using `formStateRef.current` instead of captured `formState.values`
+  - Fix file preview cleanup in `removeFile` function
+
+  **el-form-react-components:**
+
+  - Add `unwrapZodType` helper to properly handle `z.optional()`, `z.nullable()`, `z.default()` wrapper types
+  - Add nested object support in AutoForm schema generation with dot notation field names
+
 ## 3.10.0
 
 ### Minor Changes
