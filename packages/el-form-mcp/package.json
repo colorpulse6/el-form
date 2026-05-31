@@ -15,6 +15,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "start": "node dist/index.js",
+    "test": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "keywords": [
@@ -46,6 +47,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsup": "^8.5.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^2.0.0"
   }
 }
