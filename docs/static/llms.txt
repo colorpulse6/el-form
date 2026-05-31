@@ -1,0 +1,55 @@
+# El Form
+
+> El Form is a TypeScript-first, schema-agnostic React form library. It offers two complementary APIs: **AutoForm**, which generates a complete, validated, styled form from a schema with zero boilerplate; and **useForm**, a React Hook Form–compatible hook for full programmatic control. Validation is pluggable — use Zod (v3 or v4), Yup, Valibot, a custom function, or none at all — without rewriting the form.
+
+Install everything with `npm install el-form-react`. The library is modular, so you can install only the layer you need.
+
+Key facts:
+- AutoForm: `import { AutoForm } from "el-form-react-components"` — pass a `schema`, get a working form. Import `"el-form-react-components/styles.css"` for zero-config styling.
+- useForm: `import { useForm } from "el-form-react-hooks"` — `register`, `handleSubmit`, `formState`, `watch`, `setError`, `clearErrors` (familiar React Hook Form API).
+- Validation-agnostic: Zod (v3 + v4), Yup, Valibot, custom validators, or no validation. Validation libraries are optional peer installs.
+- TypeScript-first with strong inference. Works with Next.js, Vite, Remix, CRA. React 18+.
+- MIT licensed. Repo: https://github.com/colorpulse6/el-form
+
+## Packages
+- `el-form-react`: everything (hooks + components + styles) — recommended default.
+- `el-form-react-hooks`: `useForm`, `FormProvider`, `useField` — for custom forms.
+- `el-form-react-components`: `AutoForm` + prebuilt field components.
+- `el-form-core`: framework-agnostic validation engine (build your own bindings).
+
+## Docs
+- [Introduction](https://elform.dev/docs/intro): What El Form is and when to use AutoForm vs useForm.
+- [Quick Start](https://elform.dev/docs/quick-start): Build your first form in a few minutes.
+- [Installation](https://elform.dev/docs/installation): Choosing a package, optional validators, styling.
+- [Examples](https://elform.dev/docs/examples): Common real-world form patterns.
+- [Field Types](https://elform.dev/docs/field-types): How schema types map to inputs.
+- [FAQ](https://elform.dev/docs/faq): Common questions and gotchas.
+
+## API
+- [API Overview](https://elform.dev/docs/api/overview): All exports at a glance.
+- [useForm](https://elform.dev/docs/api/use-form): Options, returned state, and methods.
+- [AutoForm](https://elform.dev/docs/api/auto-form): Props, field config, layout, custom components.
+- [Field Components](https://elform.dev/docs/api/field-components): Built-in field building blocks.
+- [FormProvider](https://elform.dev/docs/api/form-provider): Sharing a form instance via context.
+
+## Concepts
+- [Philosophy](https://elform.dev/docs/concepts/philosophy): Design goals and trade-offs.
+- [Validation](https://elform.dev/docs/concepts/validation): Schema-agnostic validation in depth.
+- [Form State](https://elform.dev/docs/concepts/form-state): values, errors, touched, dirty, submission.
+- [Component Reusability](https://elform.dev/docs/concepts/component-reusability): Context, prop-passing, hybrid.
+- [Performance](https://elform.dev/docs/concepts/performance): Minimizing re-renders.
+
+## Guides
+- [useForm Guide](https://elform.dev/docs/guides/use-form): Full control over custom forms.
+- [AutoForm Guide](https://elform.dev/docs/guides/auto-form): Customizing generated forms.
+- [Error Handling](https://elform.dev/docs/guides/error-handling): Field, form, and API errors.
+- [Array Fields](https://elform.dev/docs/guides/array-fields): Dynamic, repeatable field groups.
+- [Async Validation](https://elform.dev/docs/guides/async-validation): Debounced server-side checks.
+- [Conditional Rendering](https://elform.dev/docs/guides/conditional-rendering): Show/hide fields by state.
+- [Custom Components](https://elform.dev/docs/guides/custom-components): Bring your own inputs.
+- [UI Library Integration](https://elform.dev/docs/guides/integration-with-ui-libraries): MUI, shadcn/ui, etc.
+
+## Optional
+- [GitHub repository](https://github.com/colorpulse6/el-form): Source, issues, changelog.
+- [npm: el-form-react](https://www.npmjs.com/package/el-form-react): Package and versions.
+- [Full reference for LLMs](https://elform.dev/llms-full.txt): Self-contained usage doc.

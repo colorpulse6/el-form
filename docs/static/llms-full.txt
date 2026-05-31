@@ -1,0 +1,258 @@
+# El Form — Full Reference for LLMs
+
+El Form is a TypeScript-first, schema-agnostic React form library. Two APIs cover the
+full range from "generate a form for me" to "give me total control":
+
+- **AutoForm** — render a complete, validated, styled form straight from a schema.
+- **useForm** — a React Hook Form–compatible hook for fully custom forms.
+
+Validation is pluggable: Zod (v3 or v4), Yup, Valibot, a custom function, or none.
+This document is self-contained: an agent can read it and use El Form correctly
+without fetching anything else.
+
+--------------------------------------------------------------------------------
+## Installation
+
+```bash
+# Everything (hooks + components + styles) — recommended
+npm install el-form-react
+
+# Just the hooks (custom forms)
+npm install el-form-react-hooks
+
+# Just AutoForm + components
+npm install el-form-react-components
+
+# Framework-agnostic validation engine only
+npm install el-form-core
+```
+
+Validation libraries are optional — install only what you use:
+
+```bash
+npm install zod      # recommended (v3 and v4 both supported)
+npm install yup
+npm install valibot
+```
+
+Peer requirement: React 18+ (the hooks API works with React 16.8+).
+
+--------------------------------------------------------------------------------
+## Packages
+
+| Package                    | Exports                                  | Use when |
+| -------------------------- | ---------------------------------------- | -------- |
+| `el-form-react`            | re-exports hooks + components + styles    | most apps |
+| `el-form-react-hooks`      | `useForm`, `FormProvider`, `useFormContext`, `useField` | custom forms |
+| `el-form-react-components` | `AutoForm`, field components, `styles.css` | schema-driven forms |
+| `el-form-core`             | validation engine + utilities             | other frameworks / advanced |
+
+--------------------------------------------------------------------------------
+## AutoForm — zero boilerplate
+
+```tsx
+import { AutoForm } from "el-form-react-components";
+import "el-form-react-components/styles.css"; // optional zero-config styling
+import { z } from "zod";
+
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  message: z.string().min(10, "Message too short"),
+});
+
+export function ContactForm() {
+  return (
+    <AutoForm
+      schema={schema}
+      onSubmit={(data) => console.log("valid:", data)}
+      onError={(errors) => console.log("invalid:", errors)}
+    />
+  );
+}
+```
+
+### Customizing fields, layout, and async validation
+
+```tsx
+<AutoForm
+  schema={schema}
+  fields={[
+    { name: "name", label: "Full Name", placeholder: "Jane Doe", colSpan: 6 },
+    { name: "email", label: "Email", placeholder: "jane@example.com", colSpan: 6 },
+    { name: "message", type: "textarea", label: "Message", colSpan: 12 },
+  ]}
+  layout="grid"
+  columns={12}
+  fieldValidators={{
+    email: { onChangeAsync: checkEmailAvailable, asyncDebounceMs: 500 },
+  }}
+  onSubmit={handleSubmit}
+/>
+```
+
+Common field config keys: `name`, `type` ("text" | "email" | "password" |
+"number" | "textarea" | "select" | ...), `label`, `placeholder`, `colSpan`,
+`required`, `min`, `max`, `rows`, `options` (for selects).
+
+### Custom error component
+
+```tsx
+import type { AutoFormErrorProps } from "el-form-react-components";
+
+const ErrorList: React.FC<AutoFormErrorProps> = ({ errors, touched }) => {
+  const entries = Object.entries(errors).filter(([f]) => touched[f]);
+  if (entries.length === 0) return null;
+  return (
+    <ul>
+      {entries.map(([field, error]) => (
+        <li key={field}>{field}: {error}</li>
+      ))}
+    </ul>
+  );
+};
+
+<AutoForm schema={schema} customErrorComponent={ErrorList} onSubmit={handleSubmit} />;
+```
+
+--------------------------------------------------------------------------------
+## useForm — full control
+
+```tsx
+import { useForm } from "el-form-react-hooks";
+import { z } from "zod";
+
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+export function LoginForm() {
+  const { register, handleSubmit, formState } = useForm({
+    validators: { onChange: schema },
+    defaultValues: { email: "", password: "" },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      {formState.errors.email && <span>{formState.errors.email}</span>}
+
+      <input {...register("password")} type="password" placeholder="Password" />
+      {formState.errors.password && <span>{formState.errors.password}</span>}
+
+      <button type="submit" disabled={formState.isSubmitting}>
+        {formState.isSubmitting ? "Signing in..." : "Sign In"}
+      </button>
+    </form>
+  );
+}
+```
+
+`useForm` returns (most-used): `register`, `handleSubmit`, `formState`
+(`errors`, `touched`, `isDirty`, `isSubmitting`, `isValid`), `watch`,
+`setError`, `clearErrors`, `reset`, `setValue`, `getValues`.
+
+Validation triggers are configured per event:
+
+```tsx
+useForm({ validators: { onChange: schema } }); // validate on change
+useForm({ validators: { onBlur: schema } });   // validate on blur
+useForm({ validators: { onSubmit: schema } }); // validate on submit
+```
+
+--------------------------------------------------------------------------------
+## Validation approaches
+
+```tsx
+// Zod (recommended)
+const form = useForm({ validators: { onChange: zodSchema } });
+
+// Yup
+import * as yup from "yup";
+const yupSchema = yup.object({ name: yup.string().required() });
+const form = useForm({ validators: { onChange: yupSchema } });
+
+// Valibot
+import * as v from "valibot";
+const valibotSchema = v.object({ name: v.pipe(v.string(), v.minLength(1)) });
+const form = useForm({ validators: { onChange: valibotSchema } });
+
+// Custom function — return a message string (or undefined when valid)
+const form = useForm({
+  validators: {
+    onChange: ({ values }) =>
+      values.email?.includes("@") ? undefined : "Invalid email",
+  },
+});
+
+// No validation — just state management
+const form = useForm({ defaultValues: { email: "" } });
+```
+
+--------------------------------------------------------------------------------
+## Error handling
+
+```tsx
+const { setError, clearErrors, formState } = useForm();
+
+setError("email", "This email is already taken"); // field error
+setError("general", "Something went wrong");        // form-level error
+clearErrors("email"); // clear one
+clearErrors();        // clear all
+
+// API errors on submit
+const onSubmit = async (data) => {
+  try {
+    await submit(data);
+  } catch (err) {
+    if (err.fieldErrors) {
+      Object.entries(err.fieldErrors).forEach(([f, m]) => setError(f, m as string));
+    } else {
+      setError("general", "Submission failed. Please try again.");
+    }
+  }
+};
+```
+
+--------------------------------------------------------------------------------
+## Reusable field components
+
+```tsx
+import { FormProvider, useFormContext } from "el-form-react-hooks";
+
+function Field({ name, label }) {
+  const { register, formState } = useFormContext();
+  return (
+    <label>
+      {label}
+      <input {...register(name)} />
+      {formState.errors[name] && <span>{formState.errors[name]}</span>}
+    </label>
+  );
+}
+
+function App() {
+  const form = useForm({ defaultValues: { email: "" } });
+  return (
+    <FormProvider form={form}>
+      <form onSubmit={form.handleSubmit(console.log)}>
+        <Field name="email" label="Email" />
+      </form>
+    </FormProvider>
+  );
+}
+```
+
+Three reusability patterns are supported: **context** (`FormProvider` +
+`useFormContext`), **prop-passing** (`<Field form={form} />`), and **hybrid**
+(`form || useFormContext()`).
+
+--------------------------------------------------------------------------------
+## Links
+
+- Docs: https://elform.dev/docs/intro
+- Index for LLMs: https://elform.dev/llms.txt
+- GitHub: https://github.com/colorpulse6/el-form
+- npm: https://www.npmjs.com/package/el-form-react
+- MCP server: `npx el-form-mcp`
