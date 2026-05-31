@@ -44,8 +44,13 @@ cd .worktrees/el-form-revival
 node -v; pnpm -v; npx tsc -v
 git rev-parse --short HEAD
 git log -1 --format='%h %s' 783d7c2   # main tip this audit was run against
-git rev-list --count 783d7c2..HEAD    # revival commits ahead (expect 3, all spec)
+git rev-list --count 783d7c2..HEAD    # revival commits ahead (expect ~6, all docs/spec/changeset meta — no source)
 ```
+
+> Note: `agent-actions/` and `posts/` are **gitignored** (see `.gitignore`), so they are
+> NOT present in this branch checkout — they live only in the primary worktree. Do not
+> cite or depend on files under those paths; if Milestone-3 status is needed, verify it
+> **empirically** (Task 3), not by reading a checklist file.
 
 - [ ] **Step 2: Record published vs local versions (release-delta seed)**
 
@@ -111,10 +116,16 @@ git commit -m "docs(audit): build health for 5 packages"
 
 - [ ] **Step 1: Run the full workspace test suite (current Zod)**
 
+`el-form-core`'s `test` script is bare `vitest` (watch mode) — force run-once to avoid
+hanging the executor:
 ```bash
-pnpm test 2>&1 | tee /tmp/audit-test.log; echo "EXIT=${PIPESTATUS[0]}"
+CI=1 pnpm -r run test -- --run 2>&1 | tee /tmp/audit-test.log; echo "EXIT=${PIPESTATUS[0]}"
 ```
-Record: total passed/failed/skipped per package, exit code, any flaky/async warnings.
+Record: passed/failed/skipped per package, exit code, any flaky/async warnings.
+**Coverage caveat (record as finding `[P6]`):** `pnpm -r run test` only runs the **3**
+packages with a `test` script — `el-form-core`, `el-form-react-hooks`,
+`el-form-react-components`. `el-form-react` (umbrella) and `el-form-mcp` have **no test
+script** → zero test coverage. Note this explicitly; don't imply a 5-package run.
 
 - [ ] **Step 2: Determine the installed Zod major**
 
@@ -125,19 +136,26 @@ Record which major the above run used.
 
 - [ ] **Step 3: Run tests against the OTHER Zod major**
 
-The CI matrix uses `^3.22.0` and `^4.0.0`. Reproduce the major NOT covered in Step 1 (record commands + result). Use the workspace root devDep swap that CI uses; if CI's mechanism is unclear, record HOW CI does it (read `.github/workflows/ci.yml`) and run the equivalent:
+First read how CI actually swaps Zod, then reproduce it locally:
 ```bash
-# Example — adjust to match ci.yml's actual install step:
-pnpm add -w -D zod@^3.22.0   # or ^4.0.0
-pnpm test 2>&1 | tail -30; echo "EXIT=$?"
-git checkout -- package.json pnpm-lock.yaml   # restore baseline; do NOT commit the swap
+grep -nE "zod|matrix|strategy" .github/workflows/ci.yml
 ```
-Record pass/fail under BOTH majors. This confirms/denies Milestone 3 acceptance criteria
-(`agent-actions/reddit-tester-feedback-action-plan.md` lines 196–201).
+Then install the major NOT covered in Step 1 and re-run the 3 testable packages. Restore
+baseline afterward (do NOT commit the swap):
+```bash
+git checkout HEAD -- package.json pnpm-lock.yaml
+pnpm add -w -D zod@^3.22.0   # or ^4.0.0, whichever Step 1 did NOT use
+CI=1 pnpm -r run test -- --run 2>&1 | tail -30; echo "EXIT=$?"
+git checkout HEAD -- package.json pnpm-lock.yaml && pnpm install --silent  # restore baseline
+```
+Record pass/fail under BOTH majors.
 
 - [ ] **Step 4: Record dual-compat verdict + commit**
 
-State explicitly whether Milestone 3's checkboxes are TRUE in code (finding: `[P2]` to correct the checkboxes if so).
+This empirical pass/fail under both Zod majors IS the ground truth for Milestone 3
+(`reddit-tester-feedback` plan, which is gitignored/not in this branch — do not cite it
+by path). State plainly: does dual-compat hold? If yes, finding `[P2]`: the milestone is
+effectively done and its tracking (wherever it lives) should be marked complete.
 
 ```bash
 git add docs/superpowers/audit-2026-05-31.md
@@ -150,21 +168,35 @@ git commit -m "docs(audit): test health + Zod 3/4 dual-compat verdict"
 
 **Files:** Modify: `docs/superpowers/audit-2026-05-31.md` (add "## 4. Lint & types")
 
-- [ ] **Step 1: Lint the workspace**
+- [ ] **Step 1: Lint — and discover what lint actually covers**
 
 ```bash
 pnpm lint 2>&1 | tee /tmp/audit-lint.log; echo "EXIT=${PIPESTATUS[0]}"
+grep -l '"lint"' packages/*/package.json examples/*/package.json 2>/dev/null
 ```
-Record error/warning counts; list any error-level rules tripped.
-
-- [ ] **Step 2: Standalone typecheck per package**
-
+**Known issue to confirm + record as finding `[P2]`:** `pnpm lint` = `pnpm -r run lint`,
+but **no `packages/*` has a `lint` script** — only `examples/react` does. So the
+published source is currently NOT linted by `pnpm lint` (and CI inherits this gap). To
+get a real source-lint baseline, run ESLint directly against package source using the
+root config:
 ```bash
-for p in el-form-core el-form-react-hooks el-form-react-components el-form-react el-form-mcp; do
-  echo "== $p =="; (cd packages/$p && npx tsc --noEmit 2>&1 | tail -5); echo "EXIT=$?";
-done
+npx eslint "packages/*/src/**/*.{ts,tsx}" 2>&1 | tail -40; echo "EXIT=$?"
 ```
-Record per-package result. (Build may already typecheck; this catches type-only drift.)
+Record error/warning counts and the top rules tripped. The "lint doesn't cover packages"
+gap is itself a finding.
+
+- [ ] **Step 2: Typecheck via the build's declaration emit**
+
+The 4 library packages have **no standalone `tsconfig.json`** (only `el-form-mcp` does),
+so bare `tsc --noEmit` in each would emit spurious errors — don't do that. Type safety
+for the libs is already exercised by tsup's `dts: true` declaration build in Task 2
+(a `.d.ts` emit fails on type errors). For el-form-mcp, use its real script:
+```bash
+pnpm --filter el-form-mcp run type-check 2>&1 | tail -10; echo "EXIT=$?"
+```
+Record: confirm Task 2's builds emitted `.d.ts` cleanly (= libs typecheck), plus
+el-form-mcp's `type-check` result. Note the absence of dedicated typecheck scripts on the
+4 libs as a `[P2]` finding (CI relies on the build to catch type errors).
 
 - [ ] **Step 3: Commit**
 
@@ -184,7 +216,7 @@ git commit -m "docs(audit): lint + typecheck results"
 A fresh `pnpm install` was observed to modify `pnpm-lock.yaml`. CI typically installs `--frozen-lockfile`; if so, CI is currently broken on a clean checkout.
 
 ```bash
-git checkout -- pnpm-lock.yaml 2>/dev/null
+git checkout HEAD -- pnpm-lock.yaml
 pnpm install --frozen-lockfile 2>&1 | tail -25; echo "EXIT=$?"
 ```
 Record exit code + the error. Non-zero ⇒ **BLOCKER [P1]** (must fix before any release).
@@ -192,10 +224,10 @@ Record exit code + the error. Non-zero ⇒ **BLOCKER [P1]** (must fix before any
 - [ ] **Step 2: Identify the drift cause**
 
 ```bash
-git checkout -- pnpm-lock.yaml 2>/dev/null
+git checkout HEAD -- pnpm-lock.yaml
 pnpm install 2>&1 | tail -5
 git --no-pager diff --stat pnpm-lock.yaml
-git checkout -- pnpm-lock.yaml
+git checkout HEAD -- pnpm-lock.yaml
 ```
 Record what regenerates (likely the new `el-form-mcp` deps not yet in the committed lock).
 Note the FIX belongs to Phase 1 (commit a refreshed lockfile), not here.
@@ -286,11 +318,21 @@ git commit -m "docs(audit): bundle-size claims vs measured output"
 ```bash
 for w in .github/workflows/*.yml; do echo "== $w =="; grep -nE "uses:|node-version|pnpm|version:" "$w"; done
 ```
-Record each `uses: org/action@vN`. Flag any known-stale majors (e.g. `actions/checkout@v3`, `actions/setup-node@v3`, `actions/upload-pages-artifact` older than v3, `changesets/action` older than v1's current) as `[P2]` MED (not blocking, but worth a refresh).
+Record each `uses: org/action@vN`. Flag any genuinely stale majors as `[P2]` MED. (Heads-up
+from pre-scan: actions appear current — `checkout@v4`, `setup-node@v4`,
+`pnpm/action-setup@v4`, `changesets/action@v1` — so this step may yield no findings, which
+is fine; record that as "verified current".)
 
-- [ ] **Step 2: Confirm Node/pnpm pinning matches the repo**
+- [ ] **Step 2: Confirm Node/pnpm pinning matches across workflows + repo**
 
-Cross-check workflow Node (20) and pnpm (8.15.0) against `package.json` `packageManager` and CLAUDE.md. Record mismatches `[P1/P2]`.
+```bash
+grep -rnE "node-version" .github/workflows/*.yml
+grep -n "packageManager" package.json
+```
+**Known mismatch to confirm + record as finding `[P2]`:** `release.yml` and `eslint.yml`
+pin Node **18**, while `ci.yml` and CLAUDE.md say Node **20**. Inconsistent Node across
+workflows can mask "works in CI, fails in release" issues. Record the exact per-workflow
+Node versions and the `packageManager` pnpm pin.
 
 - [ ] **Step 3: Dry-run the release path**
 
@@ -347,10 +389,14 @@ git commit -m "docs(audit): release-delta scoping + proposed Phase 1 bumps"
 - [ ] **Step 1: Catalog known cruft**
 
 ```bash
-ls -la debug-validation.js dev.sh 2>/dev/null; echo "---posts---"; ls -la posts/ 2>/dev/null
-wc -l debug-validation.js dev.sh 2>/dev/null
+ls -la debug-validation.js dev.sh 2>/dev/null
+wc -c debug-validation.js dev.sh 2>/dev/null
+# Sweep for other empty/stray root files (don't assume — discover):
+find . -maxdepth 1 -type f -empty 2>/dev/null
 ```
-Record (expected: two 0-byte files + empty `posts/`). Finding `[P2]`.
+Record (expected: `debug-validation.js` and `dev.sh` are 0-byte). Note: `posts/` and
+`agent-actions/` are **gitignored** and not in this branch — do not look for them here.
+Cruft findings are `[P2]`.
 
 - [ ] **Step 2: Locate deprecated/TODO/coming-soon markers**
 
@@ -387,12 +433,19 @@ cat packages/el-form-mcp/package.json
 ```
 Record: name, version, `private` flag (if `private:true` it won't publish — note for P1), `bin` entry, `dependencies` (esp. `@modelcontextprotocol/sdk` pin), peer deps, `files`/`exports`, and whether a `build` script exists.
 
-- [ ] **Step 2: Smoke-test the binary**
+- [ ] **Step 2: Smoke-test the binary (it's a stdio server — it blocks; use a timeout)**
 
+The MCP server reads stdin and has no `--help`, so it won't exit on its own. Start it
+with empty stdin under a timeout and confirm it boots without crashing:
 ```bash
-node packages/el-form-mcp/dist/index.js --help 2>&1 | head -20 || echo "no --help / not built"
+timeout 3 node packages/el-form-mcp/dist/index.js </dev/null 2>&1 | head -20; echo "EXIT=$? (124=clean timeout/started OK)"
 ```
-Record whether the stdio server starts / lists tools without crashing. (Per memory, tools: el_form_overview, list_topics, get_topic, search, scaffold_form.)
+Then verify tool registration **statically** (more reliable than driving the protocol):
+```bash
+grep -rnoE "el_form_overview|list_topics|get_topic|search|scaffold_form" packages/el-form-mcp/src | sort -u
+```
+Record: did it boot (no immediate crash/throw)? Are all 5 documented tools registered in
+source? (Requires Task 2/Step 2 to have built `dist/` first.)
 
 - [ ] **Step 3: Tests?**
 
