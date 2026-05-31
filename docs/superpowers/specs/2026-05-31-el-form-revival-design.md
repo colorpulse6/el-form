@@ -24,8 +24,9 @@ At the start of this effort, `main` (@ `8d990b2`) had uncommitted, non-revival w
 the working tree: modified `README.md` and `docs/docusaurus.config.ts`, and untracked
 `packages/el-form-mcp/`, `launch/`, `docs/static/llms.txt`, `docs/static/llms-full.txt`.
 This revival branches from `main`'s committed tip, so none of that work is included or
-disturbed. If any of it (e.g. the MCP package or LLM docs) should fold into this effort,
-that is a separate decision to be made explicitly.
+disturbed. **Decision (2026-05-31): this work is kept entirely separate from the revival
+effort** — `packages/el-form-mcp/` and `docs/static/llms*.txt` remain the owner's own
+in-progress work on `main` and are out of scope here. May be revisited later.
 
 ### Current state (audit-at-a-glance)
 
@@ -67,6 +68,8 @@ that is a separate decision to be made explicitly.
 - No analytics, devtools, rich input components, i18n, or multi-step wizard.
 - The `@deprecated` `compatibility.ts` shim is **kept** (documented as deprecated, not
   removed), per the backward-compat constraint.
+- The uncommitted `packages/el-form-mcp/` and `docs/static/llms*.txt` on `main` are out
+  of scope (kept separate, per the 2026-05-31 decision above).
 
 ## Decisions (from brainstorming)
 
