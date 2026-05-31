@@ -12,48 +12,94 @@ keywords:
 
 # Form State
 
-_This page is coming soon as part of the documentation restructure._
+Every `useForm` instance exposes a `formState` object describing the current
+state of the form. It's the single source of truth for what the user has typed,
+what's invalid, and what's been interacted with.
 
-El Form provides comprehensive form state management with minimal re-renders and excellent performance.
-
-## FormState Interface
+## The `formState` shape
 
 ```typescript
-interface FormState {
-  // Values and validation
-  values: Record<string, any>;
-  errors: Record<string, string>;
-  touched: Record<string, boolean>;
-  isValid: boolean;
-  isValidating: boolean;
-
-  // Submission state
-  isSubmitting: boolean;
-  isSubmitted: boolean;
-  submitCount: number;
-
-  // Change tracking
-  isDirty: boolean;
-  dirtyFields: Record<string, boolean>;
-
-  // Advanced state
-  defaultValues: Record<string, any>;
-  isLoading: boolean;
+interface FormState<T> {
+  values: Partial<T>;                         // current field values
+  errors: Partial<Record<keyof T, string>>;   // error message per field
+  touched: Partial<Record<keyof T, boolean>>; // which fields have been blurred
+  isSubmitting: boolean;                       // submit handler in flight
+  isValid: boolean;                            // no current errors
+  isDirty: boolean;                            // any value changed from default
 }
 ```
 
-## Quick Example
+A few things worth knowing:
 
-```typescript
-const { formState } = useForm({
-  defaultValues: { email: "", password: "" },
+- **`errors[field]` is a string**, not an object — render it directly
+  (`{formState.errors.email}`), no `.message`.
+- **`touched`** flips to `true` when a field is blurred, so you can defer
+  showing errors until the user leaves a field.
+- **`isDirty`** compares against `defaultValues`; resetting clears it.
+
+```tsx
+const { register, handleSubmit, formState } = useForm({
   validators: { onChange: schema },
+  defaultValues: { email: "", password: "" },
 });
 
-// Access any state property
-console.log(formState.isValid);
-console.log(formState.isDirty);
-console.log(formState.errors);
+<button disabled={!formState.isValid || formState.isSubmitting}>
+  {formState.isSubmitting ? "Saving..." : "Save"}
+</button>;
 ```
 
-_Full documentation for form state management is coming soon._
+## Reading vs. subscribing
+
+Reading `formState` directly re-renders the component whenever **any** part of
+form state changes. For large forms, subscribe to just the slice you need with
+`useFormSelector` or `useField` — see the
+[Performance guide](./performance.md).
+
+## Field-level state queries
+
+Beyond `formState`, `useForm` returns helpers to ask about individual fields:
+
+```tsx
+const form = useForm({ defaultValues: { email: "" } });
+
+form.getFieldState("email"); // { isDirty, isTouched, error }
+form.isFieldDirty("email");
+form.isFieldTouched("email");
+form.getDirtyFields();       // { email: true, ... }
+form.getTouchedFields();
+form.hasErrors();
+form.getErrorCount();
+```
+
+## Changing state programmatically
+
+```tsx
+form.setValue("email", "new@example.com"); // set one field
+form.setValues({ email: "a@b.com" });       // merge several
+form.setError("email", "Already taken");    // set an error
+form.clearErrors("email");                   // clear one (or all)
+form.reset();                                // back to defaultValues
+form.reset({ values: { email: "seed@x.com" } }); // reset to specific values
+```
+
+`reset` accepts options to keep parts of state: `keepErrors`, `keepDirty`,
+`keepTouched`.
+
+## Snapshots & change tracking
+
+For undo/restore flows, capture and restore the whole state, or inspect what
+changed since the defaults:
+
+```tsx
+const snap = form.getSnapshot();   // { values, errors, touched, isDirty, timestamp }
+form.restoreSnapshot(snap);        // restore it later
+
+form.hasChanges();                 // boolean
+form.getChanges();                 // just the changed fields
+```
+
+## Next steps
+
+- [Performance](./performance.md) — subscribe to slices to avoid re-renders
+- [Validation](./validation.md) — how errors get populated
+- [useForm API](../api/use-form.md) — the full method list

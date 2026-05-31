@@ -11,30 +11,78 @@ keywords:
 
 # Performance
 
-_This page is coming soon as part of the documentation restructure._
+For most forms you can read `formState` directly and never think about
+performance. The thing to know for large forms: reading `formState` re-renders a
+component on **any** state change. El Form gives you selective subscriptions so a
+component only re-renders when the slice it cares about changes.
 
-El Form is optimized for performance with minimal re-renders and efficient state management.
+## `useField` — subscribe to one field
 
-## Key Performance Features
+The simplest optimization. `useField(path)` returns `{ value, error, touched }`
+for a single field and re-renders only when that field changes — not when other
+fields do:
 
-- **Minimal re-renders** - Only components that need updates will re-render
-- **Debounced validation** - Async validation is automatically debounced
-- **Selective subscriptions** - Watch specific fields or state properties
-- **Memoization** - Internal optimizations reduce computation overhead
+```tsx
+import { useField } from "el-form-react-hooks";
 
-## Quick Example
-
-```typescript
-const { watch } = useForm();
-
-// Only re-renders when email changes
-const email = watch("email");
-
-// Only re-renders when specific fields change
-const { email, password } = watch(["email", "password"]);
-
-// Only re-renders when validation state changes
-const isValid = watch((formState) => formState.isValid);
+function EmailField() {
+  const { value, error, touched } = useField("email");
+  // re-renders only when "email" value/error/touched changes
+  return (
+    <>
+      <input value={value} readOnly />
+      {touched && error && <span>{error}</span>}
+    </>
+  );
+}
 ```
 
-_Full performance optimization guide is coming soon._
+This pairs naturally with `FormProvider`, so each field component subscribes to
+its own slice instead of the whole form.
+
+## `useFormSelector` — subscribe to a derived slice
+
+When you need something more specific than one field — a computed value, or a
+couple of fields together — use `useFormSelector(selector, equality?)`. The
+component re-renders only when the selected value changes:
+
+```tsx
+import { useFormSelector, shallowEqual } from "el-form-react-hooks";
+
+// single derived value
+const email = useFormSelector((s) => s.values.email);
+
+// multiple values — pass shallowEqual so a new object each render
+// doesn't force a re-render
+const { first, last } = useFormSelector(
+  (s) => ({ first: s.values.firstName, last: s.values.lastName }),
+  shallowEqual
+);
+```
+
+`shallowEqual` is exported for exactly this case: selectors that return a fresh
+object/array each call but whose contents usually haven't changed.
+
+## Why this matters
+
+A form that reads `formState` in 50 field components will re-render all 50 on
+every keystroke. The same form built with `useField` re-renders only the field
+being typed into. The difference is invisible on a login form and very visible
+on a large settings page.
+
+## Other tips
+
+- **Validate on the right event.** `mode: "onSubmit"` (the default) does the
+  least work; `"onChange"` validates every keystroke. Use `onChange` only where
+  live feedback matters.
+- **Debounce async validation.** Server checks should use `asyncDebounceMs` so
+  you don't fire a request per keystroke — see
+  [Async Validation](../guides/async-validation.md).
+- **Memoize custom field components** (`React.memo`) when they take stable props,
+  so a parent re-render doesn't cascade.
+
+## Next steps
+
+- [Form State](./form-state.md) — what's in `formState`
+- [Component Reusability](./component-reusability.md) — building field components
+- [Async Validation](../guides/async-validation.md) — debouncing server checks
