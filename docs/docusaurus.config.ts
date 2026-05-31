@@ -41,6 +41,19 @@ const config: Config = {
         theme: {
           customCss: ["./src/tailwind.css", "./src/css/custom.css"],
         },
+        // Google Analytics 4. Disabled unless GA_TRACKING_ID is set in the
+        // build environment, so dev builds and forks never ship a tracker.
+        // To enable: create a GA4 property, then set
+        // GA_TRACKING_ID=G-XXXXXXXXXX in the docs deploy workflow
+        // (.github/workflows/deploy-docs.yml) before `pnpm docs:build`.
+        ...(process.env.GA_TRACKING_ID
+          ? {
+              gtag: {
+                trackingID: process.env.GA_TRACKING_ID,
+                anonymizeIP: true,
+              },
+            }
+          : {}),
       } satisfies Preset.Options,
     ],
   ],

@@ -45,6 +45,11 @@ jobs:
       - name: Build docs
         working-directory: ./docs
         run: pnpm run build
+        env:
+          # Optional. Set a repo secret named GA_TRACKING_ID (a GA4
+          # Measurement ID like G-XXXXXXXXXX) to enable analytics.
+          # When the secret is unset this is empty and analytics stay off.
+          GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

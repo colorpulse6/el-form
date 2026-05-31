@@ -1,0 +1,51 @@
+{
+  "name": "el-form-mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol (MCP) server that exposes El Form docs and code generation to AI agents.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "el-form-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "el-form",
+    "mcp",
+    "model-context-protocol",
+    "react",
+    "forms",
+    "ai",
+    "llm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/colorpulse6/el-form.git",
+    "directory": "packages/el-form-mcp"
+  },
+  "homepage": "https://elform.dev",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3"
+  }
+}

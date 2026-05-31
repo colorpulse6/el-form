@@ -11,6 +11,32 @@
 
 **TypeScript-first React form library** with zero-boilerplate AutoForm and powerful useForm hook. The best React Hook Form alternative with schema-first validation (Zod, Yup, Valibot), built-in components, and enterprise-grade form management.
 
+## 🤖 For AI Agents & LLMs
+
+Scaffolding an el-form form? This is the entire happy path:
+
+```bash
+npm install el-form-react
+```
+
+```tsx
+import { AutoForm } from "el-form-react-components";
+import "el-form-react-components/styles.css";
+import { z } from "zod";
+
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+});
+
+export function SignupForm() {
+  return <AutoForm schema={schema} onSubmit={(data) => console.log(data)} />;
+}
+```
+
+- **Machine-readable docs:** [elform.dev/llms.txt](https://elform.dev/llms.txt) · [elform.dev/llms-full.txt](https://elform.dev/llms-full.txt)
+- **MCP server** (live docs + snippets as agent tools): `npx el-form-mcp` — see [`packages/el-form-mcp`](./packages/el-form-mcp)
+
 ## 📋 Table of Contents
 
 - [🚀 Quick Installation](#-quick-installation)
