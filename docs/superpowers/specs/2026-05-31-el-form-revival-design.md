@@ -18,15 +18,25 @@ Each phase below is its own sub-project and gets its own `brainstorm → spec �
 implement` cycle when we reach it. We only advance to the next phase when the previous
 one is complete and the user is satisfied.
 
-### Note: pre-existing uncommitted work on `main`
+### Note: agent-discoverability work merged into `main`
 
-At the start of this effort, `main` (@ `8d990b2`) had uncommitted, non-revival work in
-the working tree: modified `README.md` and `docs/docusaurus.config.ts`, and untracked
-`packages/el-form-mcp/`, `launch/`, `docs/static/llms.txt`, `docs/static/llms-full.txt`.
-This revival branches from `main`'s committed tip, so none of that work is included or
-disturbed. **Decision (2026-05-31): this work is kept entirely separate from the revival
-effort** — `packages/el-form-mcp/` and `docs/static/llms*.txt` remain the owner's own
-in-progress work on `main` and are out of scope here. May be revisited later.
+This revival was first branched from `main` @ `8d990b2`. While the spec was being
+written, the owner's **agent-discoverability work merged to `main` via PR #56**
+(`main` now @ `0da96e1`): a new tracked package `packages/el-form-mcp/` (a `@modelcontextprotocol/sdk`
+MCP server), `docs/static/llms.txt` + `llms-full.txt`, a README "For AI Agents & LLMs"
+section, GA4 wiring in `docs/docusaurus.config.ts` + `deploy-docs.yml`, and `launch/`
+drafts. The revival branch was **rebased onto `0da96e1`** so it builds on this work.
+
+Context: the npm download spike that prompted this effort was **automated traffic, not
+organic adoption** (see the download-spike investigation). The real aim is making the
+library **relaunch-ready** to support that agent-discoverability bet.
+
+**Scope decision (2026-05-31):** `el-form-mcp` is now a tracked 5th package, so Phase 0
+**audits it** alongside the other four (it participates in `pnpm -r build/test` and in
+changesets). However, **whether to publish `el-form-mcp` as part of the revival's
+releases is deferred** to the Phase 1 spec — it is brand-new and unpublished, and the
+owner may want to relaunch it on its own track. The `launch/` drafts and GA4 setup
+remain the owner's separate concern, out of scope here.
 
 ### Current state (audit-at-a-glance)
 
@@ -68,8 +78,9 @@ in-progress work on `main` and are out of scope here. May be revisited later.
 - No analytics, devtools, rich input components, i18n, or multi-step wizard.
 - The `@deprecated` `compatibility.ts` shim is **kept** (documented as deprecated, not
   removed), per the backward-compat constraint.
-- The uncommitted `packages/el-form-mcp/` and `docs/static/llms*.txt` on `main` are out
-  of scope (kept separate, per the 2026-05-31 decision above).
+- `el-form-mcp` is audited in Phase 0 but its **publishing/relaunch** is deferred to the
+  Phase 1 spec (it may relaunch on its own track). `launch/` drafts and GA4 setup stay
+  the owner's separate concern.
 
 ## Decisions (from brainstorming)
 
