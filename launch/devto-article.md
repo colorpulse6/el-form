@@ -238,14 +238,13 @@ const form = useForm({
   defaultValues: { username: "" },
   fieldValidators: {
     username: {
-      onChangeAsync: async (value) => {
-        if (!value) return { isValid: true };
+      // Receives { value, values, fieldName }. Return an error string when
+      // invalid, or undefined when it's fine.
+      onChangeAsync: async ({ value }) => {
+        if (!value) return undefined;
         const res = await fetch(`/api/username-available?u=${value}`);
         const { available } = await res.json();
-        return {
-          isValid: available,
-          errors: available ? undefined : { username: "That username is taken" },
-        };
+        return available ? undefined : "That username is taken";
       },
       asyncDebounceMs: 500, // breathe between requests
     },
