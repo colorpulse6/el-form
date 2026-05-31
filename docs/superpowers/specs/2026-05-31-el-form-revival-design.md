@@ -101,8 +101,9 @@ later regressions are unambiguous.
 - Run `build` / `test` / `lint` / typecheck across all 4 packages; record pass/fail.
 - `npm audit` + dependency freshness (React 19 support? latest Zod, tsup, vite,
   TypeScript, Vitest?).
-- Verify README bundle-size claims (4 / 11 / 18 / 29 KB) and "smaller than RHF" against
-  actual built output.
+- Verify the bundle-size claims (4 / 11 / 18 / 29 KB; these figures live in `CLAUDE.md`,
+  while `README.md` uses a bundlephobia badge) and "smaller than RHF" against actual
+  built output.
 - Confirm Milestone 3 (Zod 3/4) acceptance criteria genuinely pass; tick or correct
   the checkboxes.
 - Verify the CI/release GitHub Actions workflows still reference valid actions/versions
@@ -196,6 +197,8 @@ Phase 0 (Audit) ──► Phase 1 (Patch) ──► Phase 2 (Hygiene)
 - Phases 3 and 4 are largely independent and could be parallelized, but default to
   sequential for review simplicity.
 - Phase 5 documents whatever 3 and 4 produced, so it follows them.
+- Phase 2 (Hygiene) is **off the critical path**: it can run any time after Phase 1 and
+  has no downstream dependents blocking Phase 6.
 
 ## Risks & Mitigations
 
