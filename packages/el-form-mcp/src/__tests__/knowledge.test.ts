@@ -5,7 +5,7 @@ import {
   listTopics,
   getTopic,
   searchKnowledge,
-} from "../knowledge";
+} from "../knowledge.js";
 
 describe("knowledge base", () => {
   it("exposes a non-empty overview mentioning both APIs", () => {

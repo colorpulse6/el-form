@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { scaffoldForm } from "../scaffold";
+import { scaffoldForm } from "../scaffold.js";
 
 describe("scaffoldForm (autoform)", () => {
   const code = scaffoldForm(
