@@ -41,6 +41,11 @@ const sidebars = {
         "api/field-components",
       ],
     },
+    {
+      type: "category",
+      label: "Tools",
+      items: ["tools/mcp-server"],
+    },
     "faq",
     "changelog",
   ],
