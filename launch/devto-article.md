@@ -238,13 +238,15 @@ const form = useForm({
   defaultValues: { username: "" },
   fieldValidators: {
     username: {
-      // Receives { value, values, fieldName }. Return an error string when
-      // invalid, or undefined when it's fine.
+      // Receives { value, values, fieldName }. Return { isValid, errors }
+      // so the message attaches to this specific field.
       onChangeAsync: async ({ value }) => {
-        if (!value) return undefined;
+        if (!value) return { isValid: true, errors: {} };
         const res = await fetch(`/api/username-available?u=${value}`);
         const { available } = await res.json();
-        return available ? undefined : "That username is taken";
+        return available
+          ? { isValid: true, errors: {} }
+          : { isValid: false, errors: { username: "That username is taken" } };
       },
       asyncDebounceMs: 500, // breathe between requests
     },
