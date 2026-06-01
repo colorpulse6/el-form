@@ -602,6 +602,118 @@ git commit -m "test(hooks): cover setError/clearErrors/trigger"
 
 ---
 
+## Task 6.5: LIBRARY FIX — `trigger()` writes errors to state (resolves FINDING 2)
+
+Maintainer chose to fix now. `trigger` must merge computed validation errors into
+`formState` (and update `isValid`) so the UI shows them, like React Hook Form's
+`trigger`. Currently it only returns the boolean.
+
+**Root cause (verified):** `packages/el-form-react-hooks/src/utils/errorManagement.ts`
+→ `trigger` (lines 55–87). All three branches call the validation manager and
+`return` validity, but never `setFormState`.
+
+**Design (mirror `handleSubmit`'s proven pattern):** `errorManagement` receives
+`formState` + `setFormState` (NOT a ref) — same as `submitOperations`. Managers are
+recreated each render so `formState.values` is current at call time. For each
+branch, after computing results, call `setFormState` to merge the field error(s)
+in (or clear them when a field is now valid), and set `isValid` accordingly. Keep
+returning the same boolean.
+
+**Files:**
+- Modify: `packages/el-form-react-hooks/src/utils/errorManagement.ts` (`trigger` only)
+- Test: existing `packages/el-form-react-hooks/src/__tests__/errors.runtime.test.tsx` (3rd case turns green)
+
+- [ ] **Step 1: Confirm red**
+
+Run: `pnpm --filter el-form-react-hooks exec vitest --environment jsdom --run src/__tests__/errors.runtime.test.tsx`
+Expected: `"trigger validates a field on demand"` FAILS (1 failed | 2 passed).
+
+- [ ] **Step 2: Implement**
+
+Rewrite `trigger` so each branch updates state. Reference implementation:
+
+```ts
+trigger: (async (nameOrNames?: keyof T | (keyof T)[]) => {
+  // Validate all fields
+  if (!nameOrNames) {
+    const { isValid, errors } = await validationManager.validateForm(
+      formState.values
+    );
+    setFormState((prev) => ({ ...prev, errors, isValid }));
+    return isValid;
+  }
+
+  // Validate multiple fields: merge each field's errors, clearing ones now valid
+  if (Array.isArray(nameOrNames)) {
+    const results = await Promise.all(
+      nameOrNames.map((name) =>
+        validationManager
+          .validateField(name, formState.values[name], formState.values, "onSubmit")
+          .then((r) => ({ name, r }))
+      )
+    );
+    setFormState((prev) => {
+      const errors = { ...prev.errors };
+      for (const { name, r } of results) {
+        if (!r.isValid) Object.assign(errors, r.errors);
+        else delete errors[name];
+      }
+      return { ...prev, errors, isValid: Object.keys(errors).length === 0 };
+    });
+    return results.every(({ r }) => r.isValid);
+  }
+
+  // Validate single field
+  const result = await validationManager.validateField(
+    nameOrNames,
+    formState.values[nameOrNames],
+    formState.values,
+    "onSubmit"
+  );
+  setFormState((prev) => {
+    const errors = { ...prev.errors };
+    if (!result.isValid) Object.assign(errors, result.errors);
+    else delete errors[nameOrNames];
+    return { ...prev, errors, isValid: Object.keys(errors).length === 0 };
+  });
+  return result.isValid;
+}) as UseFormReturn<T>["trigger"],
+```
+
+Note: `isValid: Object.keys(errors).length === 0` is a per-call approximation
+sufficient for single/array triggers; the all-fields branch uses the authoritative
+`isValid` from `validateForm`. Do not change `setError`/`clearErrors`.
+
+- [ ] **Step 3: Green + full regression**
+
+Run: `pnpm --filter el-form-react-hooks exec vitest --environment jsdom --run src/__tests__/errors.runtime.test.tsx` → 3/3 PASS.
+Run the full hooks + core + components suites; all must stay green:
+`pnpm --filter el-form-react-hooks exec vitest --environment jsdom --run` /
+`pnpm --filter el-form-core exec vitest --run` /
+`pnpm --filter el-form-react-components exec vitest --environment jsdom --run`.
+
+- [ ] **Step 4: Commit + changeset**
+
+```bash
+git add packages/el-form-react-hooks/src/utils/errorManagement.ts
+git commit -m "fix(hooks): trigger() writes validation errors to formState
+
+trigger() validated but never surfaced errors to the UI. It now merges
+computed errors into formState (and updates isValid) across all branches,
+matching React Hook Form semantics. Fixes FINDING 2."
+cat > .changeset/fix-trigger-writes-errors.md <<'EOF'
+---
+"el-form-react-hooks": patch
+---
+
+fix: `trigger()` now writes validation errors into `formState.errors` (and updates `isValid`) so the UI reflects them, matching React Hook Form. Previously it returned the correct boolean but left `formState` untouched.
+EOF
+git add .changeset/fix-trigger-writes-errors.md
+git commit -m "chore: changeset for trigger error-surfacing fix"
+```
+
+---
+
 ## Task 7: Array operations
 
 **Files:**
