@@ -1,5 +1,14 @@
 # el-form-react-hooks
 
+## 3.10.2
+
+### Patch Changes
+
+- 084497c: fix: `handleSubmit` now blocks submission when a configured `validators.onChange` (or `onBlur`) validator fails. Previously only `validators.onSubmit` gated submit, so forms validating on change could submit invalid data.
+- 084497c: fix: `trigger()` now writes validation errors into `formState.errors` (and updates `isValid`) so the UI reflects them, matching React Hook Form. Previously it returned the correct boolean but left `formState` untouched.
+- Updated dependencies [4228b0c]
+  - el-form-core@2.2.1
+
 ## 3.10.1
 
 ### Patch Changes
