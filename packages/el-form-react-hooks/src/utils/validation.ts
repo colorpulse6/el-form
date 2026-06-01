@@ -169,41 +169,62 @@ export function createValidationManager<T extends Record<string, any>>(
       values: Partial<T>,
       eventType: "onChange" | "onBlur" | "onSubmit" = "onSubmit"
     ): Promise<{ isValid: boolean; errors: Record<keyof T, string> }> => {
-      const event: ValidatorEvent = {
-        type: eventType,
-        isAsync: false,
-      };
+      // The sync validator keys the core engine understands.
+      const SYNC_KEYS = ["onChange", "onBlur", "onSubmit"] as const;
+      // Which of those keys are actually configured on a given validator config.
+      const configuredKeys = (cfg: ValidatorConfig | undefined) =>
+        SYNC_KEYS.filter((k) => cfg && typeof (cfg as any)[k] !== "undefined");
 
       let allErrors: Record<string, string> = {};
       let isValid = true;
 
       // Validate all fields with field-level validators
       for (const [fieldName, fieldConfig] of Object.entries(fieldValidators)) {
-        const fieldResult = await validationEngine.current.validateField(
-          fieldName,
-          values[fieldName as keyof T],
-          values,
-          fieldConfig as ValidatorConfig,
-          event
-        );
+        // On submit, validate against every configured sync validator (not just
+        // onSubmit) so that e.g. an onChange-only validator still gates submit.
+        // For other events, only run the single requested event.
+        const keysToRun =
+          eventType === "onSubmit"
+            ? configuredKeys(fieldConfig as ValidatorConfig)
+            : [eventType];
 
-        if (!fieldResult.isValid) {
-          isValid = false;
-          Object.assign(allErrors, fieldResult.errors);
+        for (const key of keysToRun) {
+          const event: ValidatorEvent = { type: key, isAsync: false };
+          const fieldResult = await validationEngine.current.validateField(
+            fieldName,
+            values[fieldName as keyof T],
+            values,
+            fieldConfig as ValidatorConfig,
+            event
+          );
+
+          if (!fieldResult.isValid) {
+            isValid = false;
+            Object.assign(allErrors, fieldResult.errors);
+          }
         }
       }
 
       // Run form-level validation
       if (validators) {
-        const formResult = await validationEngine.current.validateForm(
-          values,
-          validators,
-          event
-        );
+        // Same logic as above: on submit, run all configured sync validators.
+        const keysToRun =
+          eventType === "onSubmit"
+            ? configuredKeys(validators)
+            : [eventType];
 
-        if (!formResult.isValid) {
-          isValid = false;
-          Object.assign(allErrors, formResult.errors);
+        for (const key of keysToRun) {
+          const event: ValidatorEvent = { type: key, isAsync: false };
+          const formResult = await validationEngine.current.validateForm(
+            values,
+            validators,
+            event
+          );
+
+          if (!formResult.isValid) {
+            isValid = false;
+            Object.assign(allErrors, formResult.errors);
+          }
         }
       }
 
