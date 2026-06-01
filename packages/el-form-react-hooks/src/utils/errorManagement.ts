@@ -53,27 +53,42 @@ export function createErrorManagementManager<T extends Record<string, any>>(
 
     // Manual validation trigger
     trigger: (async (nameOrNames?: keyof T | (keyof T)[]) => {
+      // Validate all fields
       if (!nameOrNames) {
-        // Validate all fields
-        const { isValid } = await validationManager.validateForm(
+        const { isValid, errors } = await validationManager.validateForm(
           formState.values
         );
+        setFormState((prev) => ({ ...prev, errors, isValid }));
         return isValid;
       }
 
+      // Validate multiple fields: merge each field's errors, clearing ones now valid
       if (Array.isArray(nameOrNames)) {
-        // Validate multiple fields
         const results = await Promise.all(
           nameOrNames.map((name) =>
-            validationManager.validateField(
-              name,
-              formState.values[name],
-              formState.values,
-              "onSubmit"
-            )
+            validationManager
+              .validateField(
+                name,
+                formState.values[name],
+                formState.values,
+                "onSubmit"
+              )
+              .then((r) => ({ name, r }))
           )
         );
-        return results.every((result) => result.isValid);
+        setFormState((prev) => {
+          const errors: Record<string, string | undefined> = { ...prev.errors };
+          for (const { name, r } of results) {
+            if (!r.isValid) Object.assign(errors, r.errors);
+            else delete errors[String(name)];
+          }
+          return {
+            ...prev,
+            errors: errors as FormState<T>["errors"],
+            isValid: Object.keys(errors).length === 0,
+          };
+        });
+        return results.every(({ r }) => r.isValid);
       }
 
       // Validate single field
@@ -83,6 +98,16 @@ export function createErrorManagementManager<T extends Record<string, any>>(
         formState.values,
         "onSubmit"
       );
+      setFormState((prev) => {
+        const errors: Record<string, string | undefined> = { ...prev.errors };
+        if (!result.isValid) Object.assign(errors, result.errors);
+        else delete errors[String(nameOrNames)];
+        return {
+          ...prev,
+          errors: errors as FormState<T>["errors"],
+          isValid: Object.keys(errors).length === 0,
+        };
+      });
       return result.isValid;
     }) as UseFormReturn<T>["trigger"],
   };

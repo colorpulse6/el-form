@@ -47,3 +47,6 @@ examples/tests/
 # Development tracking
 FEATURE_CHECKLIST.md
 agent-actions/
+
+# Pre-launch sweep skill artifacts
+.sweep-results/

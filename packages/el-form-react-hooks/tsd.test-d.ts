@@ -1,4 +1,4 @@
-import { expectType } from "tsd";
+import { expectType, expectError } from "tsd";
 import { useForm } from "./src";
 
 // Compile-time assertions for Path and register typings
@@ -40,4 +40,28 @@ import { useForm } from "./src";
 
   // invalid path should error (which it does)
   // form.register("user.nonexistent");
+}
+
+{
+  const form = useForm<{ email: string; age: number; user: { name: string } }>({
+    defaultValues: { email: "", age: 0, user: { name: "" } },
+  });
+
+  // valid paths typed correctly
+  expectType<string>(form.register("email").value);
+  expectType<string>(form.register("user.name").value);
+
+  // setValue rejects unknown path
+  expectError(form.setValue("nope", "x"));
+
+  // setValue rejects wrong value type for a known path
+  expectError(form.setValue("age", "not-a-number"));
+
+  // watch rejects unknown path
+  expectError(form.watch("nope"));
+
+  // handleSubmit data is exactly T
+  form.handleSubmit((data) => {
+    expectType<{ email: string; age: number; user: { name: string } }>(data);
+  });
 }
