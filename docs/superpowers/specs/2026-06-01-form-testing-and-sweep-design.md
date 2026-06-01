@@ -47,6 +47,7 @@ FEATURE SPINE:
   array ops · snapshots · validation modes · type errors
 
   ├─ 1. COMMITTED SUITE  (vitest + Testing Library + tsd)  → CI, fast, deterministic
+  │      (+ one new ci.yml step for el-form-react-components)
   ├─ 2. SWEEP SKILL      (Playwright vs example app)        → manual, pre-launch
   └─ 3. CONTRIBUTOR PATH (CI step + test-my-change skill)
 ```
@@ -54,6 +55,15 @@ FEATURE SPINE:
 **Invariant:** every feature in the spine has both a committed suite test and a
 sweep checklist item. "Is the sweep complete?" reduces to "does it cover the
 spine?"
+
+The suite↔sweep mapping is **many-to-many, not 1:1 per demo.** Most demos anchor
+to one of the new hooks/AutoForm suite files. Three groups anchor to **existing**
+tests rather than new suite files: the file-upload demos (`file-upload`,
+`advanced-file`, `zod-file`) exercise the file methods, and the `form-switch-*`
+demos map to the existing `FormSwitch.runtime.test.tsx` / `AutoForm.*` component
+tests. For those, the sweep's expected behavior anchors to the existing test (or,
+where none exists, to inline expectations stated in the sweep checklist) — the
+invariant does **not** require minting a new suite file per demo.
 
 The example app (`examples/react`, Vite dev server on **port 3001**) routes
 between 15 demos via `useState<TestId>` in `App.tsx` (a sidebar `Layout`
@@ -91,8 +101,20 @@ Expand with assertions that:
 
 ### AutoForm (`packages/el-form-react-components/src/__tests__/`)
 
-Fill the submit gap: `onSubmit` receives correct data, `onError` fires,
-`customErrorComponent` and `componentMap` render. (~5 tests.)
+New file `AutoForm.submit.test.tsx` (the existing `AutoForm.validation.test.tsx`
+covers validation/error display; this fills the **submit** gap, which none of the
+existing files cover): `onSubmit` receives correct typed data, `onError` fires on
+invalid submit, and `customErrorComponent` / `componentMap` overrides render.
+(~5 tests.)
+
+**CI gap to close:** `el-form-react-components` tests are **not** currently run by
+`ci.yml` (CI runs only `el-form-core`, `el-form-react-hooks`, `el-form-mcp`). So
+this component requires a one-line CI addition — a `Test el-form-react-components`
+step mirroring the existing per-package steps (the package already has a `test`
+script: `vitest --environment jsdom --run`). Without it, the new AutoForm tests
+plus the **existing** ~21 component tests would never run in CI. This is the only
+CI change required; the hooks runtime files and `tsd` land in the
+already-covered `el-form-react-hooks` path.
 
 **Total:** ~55 new runtime tests + ~10 tsd assertions.
 
@@ -165,11 +187,18 @@ the spine.
 
 ## Component 3 — Contributor Path
 
-- The committed suite already runs in CI per-package on every push; the new test
-  files land in directories CI already covers. **No new CI workflow needed.**
+- The hooks runtime files and `tsd` land in the `el-form-react-hooks` path CI
+  already runs every push — no workflow change for those. The **one** CI change
+  required is adding a `Test el-form-react-components` step to `ci.yml` (see the
+  AutoForm section above), so the component tests are gated too. No new *workflow
+  file* is needed — just one step in the existing `ci.yml`.
 - Add `.claude/skills/test-my-change/SKILL.md`: detects which package(s) the
-  contributor changed (via `git diff`) and runs the matching
-  `pnpm --filter <pkg> test` (plus `tsd` for hooks), reporting pass/fail.
+  contributor changed (via `git diff --name-only` against the merge base) and
+  runs the matching `pnpm --filter <pkg> test` (plus `tsd` for hooks), reporting
+  pass/fail. Package-detection map covers all five workspace packages
+  (`el-form-core`, `el-form-react-hooks`, `el-form-react-components`,
+  `el-form-react`, `el-form-mcp`); `el-form-react` has no `test` script, so a
+  change touching only it runs the dependent packages' tests instead.
 
 ## Testing Strategy (testing the tests)
 
@@ -191,7 +220,8 @@ the spine.
 
 ## Rollout
 
-1. Build committed suite (Component 1), run green in CI.
+1. Build committed suite (Component 1) and add the `el-form-react-components` CI
+   step; run green in CI.
 2. Build sweep skill (Component 2), verify end-to-end incl. a deliberate
    failure.
 3. Add contributor skill (Component 3).
