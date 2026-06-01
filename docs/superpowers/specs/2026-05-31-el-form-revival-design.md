@@ -38,36 +38,56 @@ releases is deferred** to the Phase 1 spec — it is brand-new and unpublished, 
 owner may want to relaunch it on its own track. The `launch/` drafts and GA4 setup
 remain the owner's separate concern, out of scope here.
 
-### Current state (audit-at-a-glance)
+### Current state — CORRECTED BY PHASE 0 AUDIT (audit-2026-05-31.md, run @ main `d42ec3d`)
 
-- **Published == local.** All 4 package versions match npm: `el-form-core@2.2.0`,
-  `el-form-react-hooks@3.10.1`, `el-form-react-components@4.4.1`, `el-form-react@4.1.3`.
-- **Unreleased work exists on `main` with no changeset** — notably
-  `83d2554 fix: stale closure in async validation and AutoForm wrapper type handling`.
-  Existing users are not getting this fix.
-- **The committed roadmap is essentially done.** The "Reddit tester feedback" plan
-  (`agent-actions/reddit-tester-feedback-action-plan.md`): Milestones 1 (typed
-  `register`/`Path<T>`) and 2 (selector subscriptions + `FormSwitch` perf) shipped.
-  Milestone 3 (Zod 3/4 dual compat) appears effectively done in code (peerDeps are
-  `^3.22.0 || ^4.0.0`, dual-compat tests exist, CI runs both) though its checkboxes
-  were never ticked — **to be confirmed in Phase 0**.
-- **`agent-actions/FEATURE_CHECKLIST.md` is ~90% aspirational** (analytics, Vue/Svelte,
-  rich-text editors, devtools). It is not a real commitment list and overclaims in
-  places (e.g. "React Query integration complete" — nothing is exported; that work is
-  stranded on the `react-query-support` branch).
-- **Genuine gaps:** `useFieldArray` and `useWatch` hooks do not exist; 6 docs pages are
-  "coming soon" stubs; no migration guide; debounced validation and a11y largely
-  unaddressed.
-- **Cruft:** empty files (`debug-validation.js`, `dev.sh`), empty `posts/`, ~45 stale
-  git branches, a dead README build-status badge (`github/workflow/status` URL).
+> The bullets below were the pre-audit *assumptions*. **Several were wrong.** The audit
+> report (`docs/superpowers/audit-2026-05-31.md`) is the source of truth. Key reversals:
 
-## Goals
+- **❌ PREMISE INVALIDATED: there is NO unreleased library bug fix.** `83d2554` (stale
+  closure in async validation + AutoForm wrapper types) **already shipped** in
+  `el-form-react-hooks@3.10.1` + `el-form-react-components@4.4.1` (verified:
+  `git merge-base --is-ancestor 83d2554 d42ec3d` = true; both versions live on npm).
+  **Library release delta = zero.** The "patch release now" rationale no longer applies
+  to the libraries — the only releasable artifact is `el-form-mcp`.
+- **✅ Build green:** all 5 packages build clean (Node 22). **✅ Zod 3/4 dual-compat
+  HOLDS** (63/63 assertions pass under Zod 3.25.76 AND 4.0.17) — Milestone 3 is
+  effectively done; its tracking should be marked complete.
+- **🔴 BLOCKER (test wiring):** `el-form-react-hooks` `test` forwards `--run` to `tsd`
+  → `pnpm test` / `release:prepare` exit 1 even though all assertions pass. (CI's
+  arg-free invocation is unaffected, so CI is green — but local `pnpm test` lies.)
+- **🔴 HIGH (lint coverage):** `pnpm lint` lints only `examples/react`; **no package**
+  has a lint script. Direct ESLint on `packages/*/src` finds **13 real errors** in
+  shipped library code that the wired lint never sees.
+- **🔴 HIGH (mcp version):** `el-form-mcp` is `0.0.0` → `changeset publish --dry-run`
+  fails E404. Must be bumped before any publish. Otherwise mcp is healthy (builds, boots,
+  5 tools, 23 tests, CI-wired — the concurrent agent did this).
+- **✅ Lockfile NOT broken** (the plan's assumed #1 blocker): `--frozen-lockfile`
+  passes. The lockfile is merely a stale superset (orphaned `examples/showcase`); cosmetic.
+- **Security = docs-only:** 59 prod-audit vulns are 100% in the docs toolchain; the 4
+  libs ship **zero runtime deps**, so consumers are unaffected. Route to P5, not P1.
+- **Genuine feature gaps remain:** `useFieldArray` + `useWatch` still absent (confirmed);
+  debounced validation + a11y unaddressed. **Docs stubs: only ~3 remain** (the concurrent
+  agent wrote async-validation, array-fields, custom-components, ui-integration on `main`).
+- **Bundle-size claims stale:** README says 4/11/18/29 KB; measured gzip is ~4.7/7.8/7.6 KB
+  (umbrella is a 130 B re-export). Correct in docs (P5), don't re-assert.
+- **Cruft confirmed:** two 0-byte files (`debug-validation.js`, `dev.sh`); 44 local
+  branches (35 already merged). (`posts/`/`agent-actions/` are gitignored — not on this
+  branch.)
+- **Node mismatch:** `release.yml`/`eslint.yml` on Node 18 vs `ci.yml`/`deploy-docs.yml`
+  on Node 20.
 
-1. Get the unreleased bug fix into users' hands quickly.
+## Goals — REVISED post-audit
+
+1. ~~Get the unreleased bug fix into users' hands quickly.~~ **Dropped — already shipped.**
+   Replaced by: **fix the broken release gates** (hooks `test -- --run` BLOCKER + lint
+   covers-no-source HIGH) so `pnpm test`/`pnpm lint` give trustworthy signals, and clean
+   up the 13 ESLint errors in shipped code.
 2. Add the two genuinely-missing hooks (`useFieldArray`, `useWatch`).
 3. Add built-in debounced validation and an accessibility pass.
-4. Finish the documentation (6 stub pages + a migration guide).
-5. Leave the repo honest and tidy (real roadmap, no cruft, no stale branches).
+4. Finish the **remaining** documentation (~3 stub pages + a migration guide) and correct
+   stale bundle-size claims.
+5. Leave the repo honest and tidy (real roadmap, no cruft, no stale branches); fix the
+   `el-form-mcp` `0.0.0` version and decide its publish/relaunch.
 
 ## Non-Goals (this round)
 
@@ -106,51 +126,49 @@ New hooks are designed to el-form's strengths:
 Each phase is a separate sub-project (own spec → plan → implement). Release-impact
 column notes the expected changeset bump.
 
-### Phase 0 — Audit (read-only)
+### Phase 0 — Audit (read-only) — ✅ DONE
 
-**Deliverable:** a findings report (no code changes beyond trivia). Establishes a
-**green build/test/lint/typecheck baseline** before any later phase makes changes — so
-later regressions are unambiguous.
+**Deliverable:** `docs/superpowers/audit-2026-05-31.md` (committed, 524 lines, run @ main
+`d42ec3d`). Zero source changes (verified `git diff --stat -- packages` empty). See the
+corrected "Current state" above for the findings that overturned the original premises.
 
-- Run `build` / `test` / `lint` / typecheck across all 4 packages; record pass/fail.
-- `npm audit` + dependency freshness (React 19 support? latest Zod, tsup, vite,
-  TypeScript, Vitest?).
-- Verify the bundle-size claims (4 / 11 / 18 / 29 KB; these figures live in `CLAUDE.md`,
-  while `README.md` uses a bundlephobia badge) and "smaller than RHF" against actual
-  built output.
-- Confirm Milestone 3 (Zod 3/4) acceptance criteria genuinely pass; tick or correct
-  the checkboxes.
-- Verify the CI/release GitHub Actions workflows still reference valid actions/versions
-  after ~9 months idle (the patch release in Phase 1 depends on them working).
-- Scope the unreleased `83d2554` fix precisely (which packages, what changeset bump).
-- Catalog dead code, the `@deprecated` shim, and any other "coming soon"/TODO markers.
+### Phase 1 — Fix release gates + el-form-mcp (REVISED — no longer a "patch the bug fix")
 
-**Release impact:** none. Output prioritizes and refines Phases 1–6.
+The original "patch release for `83d2554`" is **void** — that fix already shipped and
+there is no unreleased library code. Phase 1 is re-scoped to make releases *trustworthy
+and possible*:
 
-### Phase 1 — Patch release (the quick win)
+- **Fix the BLOCKER:** `el-form-react-hooks` `test` must not break under `-- --run`
+  (separate the `tsd` step from arg-forwarded vitest). Makes `pnpm test` /
+  `release:prepare` exit 0 honestly.
+- **Fix the HIGH lint gap:** add a `lint` script to each package (or a root `-r` lint that
+  targets `packages/*/src`) and wire it into `eslint.yml`; clear the **13 ESLint errors**
+  in shipped source.
+- **el-form-mcp:** bump `0.0.0` → a real initial version; validate `changeset publish
+  --dry-run` passes. **Open decision (owner):** publish mcp now vs. relaunch on its own
+  track — note the concurrent agent already added its changeset on `main`.
+- **Decide:** do the §4 lint/type cleanups warrant a patch release of the 4 libs? (They'd
+  cascade core→hooks→components→react via `updateInternalDependencies: patch`.) Likely
+  **yes** — it gets the lint fixes to users and exercises the now-trustworthy release path.
 
-**Deliverable:** published patch release.
+**Coordination caveat:** the el-form-mcp + CI changes overlap the concurrent agent's lane.
+Phase 1's own spec must re-snapshot `main` before acting.
 
-- Author changeset(s) for `83d2554` and any safe, trivial fixes Phase 0 surfaces.
-- `changeset version`, verify, `changeset publish`.
-
-**Cross-package versioning note:** the 4 packages are interdependent
-(`updateInternalDependencies: patch`). A patch to `el-form-react-hooks` cascades patch
-bumps to `el-form-react-components` and `el-form-react`. Phase 1's spec must enumerate
-the exact set of bumps so the release is coherent.
-
-**Release impact:** **patch** on affected packages (likely hooks + components, plus
-umbrella `el-form-react`).
+**Release impact:** optional **patch** across the 4 libs (lint/type fixes) + an
+**initial release** of el-form-mcp (owner's call).
 
 ### Phase 2 — Repo hygiene
 
 **Deliverable:** clean repo + honest roadmap.
 
-- Prune ~45 stale branches (confirm merged/abandoned before deleting).
-- Delete cruft: `debug-validation.js`, `dev.sh`, empty `posts/`.
-- Fix the dead README build-status badge.
-- Replace `agent-actions/FEATURE_CHECKLIST.md` with an honest top-level `ROADMAP.md`
-  (mark shipped milestones done; record the parked React Query branch and its status).
+- Prune stale branches (44 local; 35 already merged into main — safe-delete candidates).
+- Delete cruft: the two 0-byte files `debug-validation.js`, `dev.sh`. (`posts/` is
+  gitignored, not on this branch.)
+- Fix the dead README build-status badge; correct the stale bundle-size figures.
+- Fix the Node-version mismatch across workflows (18 vs 20).
+- Add an honest top-level `ROADMAP.md` (mark Milestone 3 / shipped work done; record the
+  parked React Query branch). Note: `FEATURE_CHECKLIST.md` is gitignored — the new
+  ROADMAP lives in tracked files.
 
 **Release impact:** none (no published-package changes) — or a docs/meta patch at most.
 
