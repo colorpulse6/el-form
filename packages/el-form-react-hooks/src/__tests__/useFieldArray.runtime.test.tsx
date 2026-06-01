@@ -55,3 +55,31 @@ describe("useFieldArray (context mode)", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
+
+import { useRef as useReactRef } from "react";
+
+type Form2 = { items: { name: string }[]; other: string };
+
+const Counter = React.memo(function Counter() {
+  const rc = useReactRef(0); rc.current += 1;
+  const { fields } = useFieldArray<Form2, "items">({ name: "items" });
+  return (<><div aria-label="rc">{rc.current}</div><div aria-label="len">{fields.length}</div></>);
+});
+function IsolationApp() {
+  const form = useForm<Form2>({ defaultValues: { items: [{ name: "a" }], other: "x" } });
+  return (
+    <FormProvider form={form}>
+      <Counter />
+      <button aria-label="other" onClick={() => form.setValue("other" as any, "y")}>other</button>
+    </FormProvider>
+  );
+}
+describe("useFieldArray isolation", () => {
+  it("does not re-render when an unrelated field changes", () => {
+    render(<IsolationApp />);
+    const before = Number(screen.getByLabelText("rc").textContent);
+    fireEvent.click(screen.getByLabelText("other"));
+    const after = Number(screen.getByLabelText("rc").textContent);
+    expect(after).toBe(before);
+  });
+});
