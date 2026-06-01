@@ -88,7 +88,7 @@ given a dot-path to an array. Each returns a new values object (never mutates in
 appendItem(values, path, item)        // push
 prependItem(values, path, item)       // unshift
 insertItem(values, path, index, item) // splice insert
-removeItemAt(values, path, index?)    // splice remove (index omitted = remove all? NO — see below)
+removeItemAt(values, path, index)     // splice remove — index REQUIRED (no "remove all" footgun)
 moveItem(values, path, from, to)      // reorder
 swapItems(values, path, a, b)         // swap two
 updateItem(values, path, index, item) // replace one
@@ -96,11 +96,11 @@ replaceItems(values, path, items)     // replace whole array
 ```
 
 These reuse the existing dot-path navigation from `arrayHelpers.ts` (the `employees[0].friends`
-→ `employees.0.friends` normalization) so nested arrays work identically to today.
-`removeItemAt` with no index is **not** "remove all" (avoids a footgun) — `remove()` with
-no arg in the hook maps to "remove last" per RHF? **NO** — see Open Questions; default
-chosen: `remove(index)` requires an index; `remove()` with no arg removes nothing and
-warns. (Resolved in Plan.)
+→ `employees.0.friends` normalization) so nested arrays work identically to today. The
+plan must pick the cloning semantics deliberately (`addArrayItemReact` initializes missing
+parent objects; core `removeArrayItem` does not) so that consolidating them keeps
+`array-ops.runtime.test.tsx` green. The hook's `remove(index)` requires an index; there is
+no "remove all" — engine `removeItemAt` takes a required `index` (no optional marker).
 
 ### arrayOperations.ts (refactor)
 
@@ -110,12 +110,37 @@ from the engine, preserving the existing dirty-marking + `isDirty` behavior. **T
 existing `array-ops.runtime.test.tsx` must pass unchanged** — it is the regression guard
 for this refactor.
 
+### Subscription architecture (RESOLVED — was a contradiction in the first draft)
+
+**Critical constraint discovered in review:** the subscription store (`subscribe`/`getState`)
+is wired up **only in `FormProvider`** (`FormContext.tsx`), NOT in `useForm`. Therefore
+`useFormSelector`/`useField` **throw** ("must be used within a FormProvider") when there
+is no provider. `useField` itself is **context-only** (takes just `name`, no `form` prop) —
+there is no existing "hybrid" precedent on `useField` to copy.
+
+The library's documented dual pattern (`concepts/philosophy.md`) is: **context** (wrap in
+`FormProvider`) **or** **prop-passing** (pass `form` and resolve via `useFormContext()` in
+the component). `useFieldArray` supports **both**, choosing its re-render strategy by mode:
+
+- **Context mode (FormProvider present, no `form` prop):** subscribe via `useFormSelector`
+  to the array slice → **true re-render isolation** (re-renders only on `items` change).
+  This is the recommended, perf-optimal path.
+- **Prop mode (`form` passed, may have no provider):** `useFormSelector` is unavailable
+  (would throw), so read the array directly off `form.formState.values`. The consuming
+  component re-renders via the form owner's normal state updates — **correct, but without
+  slice-level isolation.** This preserves provider-less usage and backward-compatible DX
+  (matches how RHF's `useFieldArray` takes `control`).
+
+Mode is detected by whether a `form` prop was passed. (If neither a `form` prop nor a
+provider is present, that's a usage error — dev-warn, mirroring `useFormContext`'s
+behavior.)
+
 ### useFieldArray.ts (the hook)
 
 ```ts
 export interface UseFieldArrayProps<T, Name extends FieldArrayPath<T>> {
   name: Name;
-  form?: UseFormReturn<T>; // optional — falls back to context (hybrid pattern, like useField)
+  form?: UseFormReturn<T>; // optional — provider-less (prop) mode; omit to use FormProvider context
 }
 
 export interface UseFieldArrayReturn<TItem> {
@@ -136,10 +161,18 @@ export function useFieldArray<T, Name extends FieldArrayPath<T>>(
 ```
 
 Internals:
-- Resolve the active form (prop or `useFormContext`), mirroring `useField`'s hybrid pattern.
-- Read the array slice via `useFormSelector(s => getNestedValue(s.values, name))` with an
-  array-aware equality (length + per-element `Object.is`), so it re-renders only on
-  array changes.
+- Resolve the active form: `form` prop if passed (prop mode), else `useFormContext()`
+  (context mode). NOTE: this is the library's documented dual pattern via `useFormContext`
+  — NOT a copy of `useField` (which is context-only).
+- **Context mode:** read the array slice via `useFormSelector(s => getNestedValue(s.values,
+  name))` with an array-aware equality (length + per-element `Object.is`), so it re-renders
+  only on array changes.
+- **Prop mode:** read the array from `form.formState.values` directly (no `useFormSelector`
+  — it requires a provider). Slice isolation is not available in this mode; documented.
+- Hooks-rules note: the mode is stable for the lifetime of the component (a caller either
+  passes `form` or doesn't), so selecting the read strategy once at the top is safe — but
+  the plan must structure this so React hook order is never conditional (e.g. always call
+  a single internal hook that branches internally, not two different hooks by mode).
 - Maintain a `useRef<{ ids: string[]; counter: number }>`. A `nextId()` returns
   `` `${counter++}` `` (deterministic). Each op updates `ids` in lockstep with the data
   (move reorders both; insert splices a new id; remove drops the id at index; replace
@@ -196,15 +229,20 @@ value change.
 1. **Primitive-array shape:** for `string[]`/`number[]`, what is a `fields` row? Options:
    `{ id, value }` (RHF-like for primitives) vs. requiring object items. **Leaning:** support
    both — object items spread `{ ...item, id }`; primitive items become `{ id, value }`.
-   Pin the exact typed shape in the Plan.
+   NOTE: the `fields: ReadonlyArray<TItem & { id: string }>` shape shown above assumes
+   object items; covering primitives needs a **conditional/union type** (e.g.
+   `TItem extends object ? TItem & { id: string } : { id: string; value: TItem }`). Pin the
+   exact typed shape — and a tsd test for both — in the Plan.
 2. **`remove()` with no/array arg:** RHF allows `remove()` = remove all and `remove([0,2])`
    = remove multiple. **Leaning:** keep it minimal — `remove(index: number)` only this
    round; document the omission. Confirm in Plan.
 3. **Id reconciliation rule** on external array mutation (reset/whole-array setValue):
    exact positional-keep vs. full-remint. **Leaning:** positional keep up to min(oldLen,
    newLen), remint the tail. Pin with a test.
-4. **`form` prop vs context-only:** include the optional `form` prop (hybrid, like
-   `useField`) — confirm yes.
+4. **`form` prop vs context-only:** RESOLVED — include the optional `form` prop for
+   prop/provider-less mode (resolved via `useFormContext` fallback, NOT via `useField`,
+   which is context-only). Re-render isolation only in context mode; see "Subscription
+   architecture" above.
 
 ## Success criteria
 
