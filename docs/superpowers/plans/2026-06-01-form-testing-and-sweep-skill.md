@@ -1256,7 +1256,52 @@ discrepancies found — suite is characterization-green."
 _(Record any real library discrepancies discovered while writing tests or running
 the sweep. Do NOT silently edit library source to make a test pass — surface here.)_
 
-### FINDING 1 (Task 1) — `validators.onChange` does NOT block submit ⚠️ HIGH
+### FINDING 2 (Task 6) — `trigger()` validates but never writes errors to state ⚠️ MEDIUM
+
+**Severity:** Medium — `trigger` returns the correct boolean, but the imperative
+"validate and show errors" use case is broken.
+
+**Symptom:** Calling `form.trigger("email")` with an invalid value returns `false`
+(correct) but does NOT populate `formState.errors.email`, so the UI shows no error.
+Test `errors.runtime.test.tsx` → `"trigger validates a field on demand"` fails
+(`expected '' to be 'Invalid email'`), committed red at `23ce453`.
+
+**Root cause (verified at source):**
+`packages/el-form-react-hooks/src/utils/errorManagement.ts` → `trigger` (lines
+55–87). All three branches (no-arg, array, single) call
+`validationManager.validateField/validateForm`, compute the result, and `return`
+the validity boolean — but **never call `setFormState`** to merge the errors into
+state. Contrast `setError`/`clearErrors` directly above (lines 31–52), which both
+do call `setFormState`.
+
+**Conventional contract:** React Hook Form's `trigger()` (which el-form's API
+mirrors) populates `formState.errors` as a side effect. So the test's expectation
+matches the expected contract — this is a real bug.
+
+**Fix caveat (why it needs care, not a quick patch):** `trigger` closes over
+`formState.values` directly. Other managers (e.g. the register onChange path) read
+from a `formStateRef.current` to avoid stale-closure reads. A correct fix must
+(a) merge the computed errors into state via `setFormState`, and (b) verify it
+reads current values, not a stale closure — likely mirroring how `handleSubmit`
+threads validation results back into state. Single + array + all-fields branches
+all need it.
+
+**Decision needed from maintainer:** fix now (new plan task, TDD, turns the parked
+test green) or defer (rewrite the test to assert only the return value and log the
+UI-error gap as a known issue). Recommended: fix now, same as Finding 1 — it's a
+small, contained manager.
+
+**Test status:** `errors.runtime.test.tsx` has 1 failing case parked at `23ce453`;
+must be resolved (fix or test-rewrite) before the branch is mergeable.
+
+---
+
+### FINDING 1 (Task 1) — `validators.onChange` does NOT block submit ⚠️ HIGH — ✅ FIXED
+
+**Status:** RESOLVED via library fix (Task 1.5, commit `c627209`, changeset
+`74efd69`). `validateForm` now runs all configured sync validators at submit time.
+The submit-test 3rd case passes; full suite regression-green. Details retained
+below for the record.
 
 **Severity:** High — affects correctness of forms following the documented quick-start.
 
