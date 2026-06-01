@@ -83,3 +83,44 @@ describe("useFieldArray isolation", () => {
     expect(after).toBe(before);
   });
 });
+
+type NestForm = { team: { skills: string[] }[] };
+
+function PropModeDemo() {
+  const form = useForm<{ items: string[] }>({ defaultValues: { items: ["a"] } });
+  const { fields, append, remove } = useFieldArray<{ items: string[] }, "items">({ name: "items", form });
+  return (
+    <div>
+      <span data-testid="p-count">{fields.length}</span>
+      <span data-testid="p-vals">{fields.map((f: any) => f.value).join(",")}</span>
+      <button onClick={() => append("b" as any)}>p-append</button>
+      <button onClick={() => remove(0)}>p-remove</button>
+    </div>
+  );
+}
+describe("useFieldArray prop mode + primitives + nested", () => {
+  it("works without a FormProvider when form is passed, primitive items get {id,value}", () => {
+    render(<PropModeDemo />);
+    expect(screen.getByTestId("p-count").textContent).toBe("1");
+    expect(screen.getByTestId("p-vals").textContent).toBe("a");
+    fireEvent.click(screen.getByText("p-append"));
+    expect(screen.getByTestId("p-count").textContent).toBe("2");
+    expect(screen.getByTestId("p-vals").textContent).toBe("a,b");
+  });
+  it("supports nested array paths", () => {
+    function Nested() {
+      const form = useForm<NestForm>({ defaultValues: { team: [{ skills: ["js"] }] } });
+      const fa = useFieldArray<NestForm, "team.0.skills">({ name: "team.0.skills" as any, form });
+      return (
+        <div>
+          <span data-testid="n">{fa.fields.map((f: any) => f.value).join(",")}</span>
+          <button onClick={() => fa.append("ts" as any)}>n-add</button>
+        </div>
+      );
+    }
+    render(<Nested />);
+    expect(screen.getByTestId("n").textContent).toBe("js");
+    fireEvent.click(screen.getByText("n-add"));
+    expect(screen.getByTestId("n").textContent).toBe("js,ts");
+  });
+});
