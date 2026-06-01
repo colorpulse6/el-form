@@ -54,7 +54,9 @@ async function assertValidationErrors(page) {
   }
 
   await submit.click().catch(() => {});
-  const err = main(page).locator("text=/required|invalid|must|valid/i").first();
+  // Match clearly error-indicating words. Don't include a bare "valid" — it is a
+  // substring of "invalid" and would also match success text like "looks valid".
+  const err = main(page).locator("text=/required|invalid|must be|too short|too long|enter a/i").first();
   const appeared = await err
     .waitFor({ state: "visible", timeout: 3000 })
     .then(() => true)
@@ -91,10 +93,16 @@ async function assertArrayAddRemove(page) {
       ? { pass: true, note: `item count ${before} -> ${after} after add` }
       : { pass: false, note: `add did not increment count (${before} -> ${after})` };
   }
-  // Fallback: no counter found — just confirm Add is present and enabled.
-  return (await add.isEnabled())
-    ? { pass: true, note: "add button present and enabled (no counter to verify)" }
-    : { pass: false, note: "add button disabled" };
+  // Fallback: no "(N)" counter to read. Verify Add actually changes the DOM by
+  // comparing the demo's full text before/after the click — a no-op Add (broken
+  // handler) leaves the text identical and must FAIL, not pass on "button enabled".
+  const beforeText = (await main(page).textContent()) ?? "";
+  await add.click().catch(() => {});
+  await page.waitForTimeout(400);
+  const afterText = (await main(page).textContent()) ?? "";
+  return afterText !== beforeText
+    ? { pass: true, note: "add changed the view (no numeric counter to verify)" }
+    : { pass: false, note: "add produced no visible change" };
 }
 
 // --- driver ---
