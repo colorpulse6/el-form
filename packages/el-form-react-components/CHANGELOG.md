@@ -1,5 +1,16 @@
 # el-form-react-components
 
+## 4.4.2
+
+### Patch Changes
+
+- 4228b0c: fix(ci): repair the release pipeline. `build:css` now runs the installed `@tailwindcss/cli` via `pnpm exec tailwindcss` instead of `pnpm dlx`, which fetched an ephemeral copy that failed to load the native `@tailwindcss/oxide` binary on CI. `el-form-core`'s `test` script now uses `vitest run` instead of bare `vitest` (watch mode), which hung the recursive release test step in non-interactive CI.
+- Updated dependencies [084497c]
+- Updated dependencies [4228b0c]
+- Updated dependencies [084497c]
+  - el-form-react-hooks@3.10.2
+  - el-form-core@2.2.1
+
 ## 4.4.1
 
 ### Patch Changes
