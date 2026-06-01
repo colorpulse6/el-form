@@ -119,21 +119,42 @@ is no provider. `useField` itself is **context-only** (takes just `name`, no `fo
 there is no existing "hybrid" precedent on `useField` to copy.
 
 The library's documented dual pattern (`concepts/philosophy.md`) is: **context** (wrap in
-`FormProvider`) **or** **prop-passing** (pass `form` and resolve via `useFormContext()` in
-the component). `useFieldArray` supports **both**, choosing its re-render strategy by mode:
+`FormProvider`) **or** **prop-passing** (pass `form`). `useFieldArray` supports **both**,
+but the implementation must NOT call different hooks per mode (that violates React's
+rules of hooks). The key source fact: `useContext(SubscriptionContext)` returns **`null`**
+when there is no provider — it does **not** throw (only the `useSubscriptionContext`
+*wrapper* throws). So the hook calls the same hooks unconditionally every render and
+branches *inside* the store callbacks:
 
-- **Context mode (FormProvider present, no `form` prop):** subscribe via `useFormSelector`
-  to the array slice → **true re-render isolation** (re-renders only on `items` change).
-  This is the recommended, perf-optimal path.
-- **Prop mode (`form` passed, may have no provider):** `useFormSelector` is unavailable
-  (would throw), so read the array directly off `form.formState.values`. The consuming
+```
+const sub = useContext(SubscriptionContext);          // null if no provider — never throws
+const formCtx = useContext(FormContext);              // null if no provider
+const activeForm = props.form ?? formCtx?.form;       // prop wins; else context; else dev-warn
+// ONE unconditional subscription:
+const arr = useSyncExternalStore(
+  (onChange) => sub
+    ? sub.subscribe(/* gated by array-slice equality */ onChange)  // provider → slice-isolated
+    : () => {},                                                     // no provider → no-op unsub
+  () => sub                                            // getSnapshot
+    ? getNestedValue(sub.getState().values, name)      //   provider path
+    : getNestedValue(activeForm.formState.values, name)//   prop path
+);
+```
+
+- **Context mode (provider present):** the subscribe path is slice-gated → **true
+  re-render isolation** (re-renders only on `items` change). Recommended, perf-optimal.
+- **Prop mode (no provider, `form` passed):** snapshot reads `form.formState.values`; the
   component re-renders via the form owner's normal state updates — **correct, but without
-  slice-level isolation.** This preserves provider-less usage and backward-compatible DX
-  (matches how RHF's `useFieldArray` takes `control`).
+  slice-level isolation.** Preserves provider-less usage (like RHF's `useFieldArray(control)`).
+- If neither a `form` prop nor a provider is present → dev-warn (read via
+  `useContext(FormContext)` directly, which is nullable — do NOT use `useFormContext()`,
+  which throws).
 
-Mode is detected by whether a `form` prop was passed. (If neither a `form` prop nor a
-provider is present, that's a usage error — dev-warn, mirroring `useFormContext`'s
-behavior.)
+> The existing `useFormSelector` cannot be reused verbatim here because it calls the
+> throwing `useSubscriptionContext`. The plan either (a) inlines the nullable-context
+> subscription shown above, or (b) first relaxes `useFormSelector` to accept a nullable
+> store + fallback snapshot. Decide in the plan; (a) is lower-risk (no change to existing
+> exported hook). Either way, hooks are called unconditionally.
 
 ### useFieldArray.ts (the hook)
 
@@ -161,18 +182,15 @@ export function useFieldArray<T, Name extends FieldArrayPath<T>>(
 ```
 
 Internals:
-- Resolve the active form: `form` prop if passed (prop mode), else `useFormContext()`
-  (context mode). NOTE: this is the library's documented dual pattern via `useFormContext`
-  — NOT a copy of `useField` (which is context-only).
-- **Context mode:** read the array slice via `useFormSelector(s => getNestedValue(s.values,
-  name))` with an array-aware equality (length + per-element `Object.is`), so it re-renders
-  only on array changes.
-- **Prop mode:** read the array from `form.formState.values` directly (no `useFormSelector`
-  — it requires a provider). Slice isolation is not available in this mode; documented.
-- Hooks-rules note: the mode is stable for the lifetime of the component (a caller either
-  passes `form` or doesn't), so selecting the read strategy once at the top is safe — but
-  the plan must structure this so React hook order is never conditional (e.g. always call
-  a single internal hook that branches internally, not two different hooks by mode).
+- Resolve the active form: `form` prop if passed, else the form from
+  `useContext(FormContext)` (nullable — do NOT use the throwing `useFormContext()`). NOT a
+  copy of `useField` (which is context-only).
+- Read the array via **one unconditional** `useSyncExternalStore` that branches inside its
+  `subscribe`/`getSnapshot` on whether `useContext(SubscriptionContext)` is null (see the
+  "Subscription architecture" section above for the exact shape). Provider present →
+  slice-gated subscription with array-aware equality (length + per-element `Object.is`);
+  no provider → snapshot from `form.formState.values`, no-op unsubscribe.
+- Rules of hooks: every render calls the same hooks in the same order regardless of mode.
 - Maintain a `useRef<{ ids: string[]; counter: number }>`. A `nextId()` returns
   `` `${counter++}` `` (deterministic). Each op updates `ids` in lockstep with the data
   (move reorders both; insert splices a new id; remove drops the id at index; replace
