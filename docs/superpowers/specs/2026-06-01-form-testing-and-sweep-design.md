@@ -110,8 +110,13 @@ invalid submit, and `customErrorComponent` / `componentMap` overrides render.
 **CI gap to close:** `el-form-react-components` tests are **not** currently run by
 `ci.yml` (CI runs only `el-form-core`, `el-form-react-hooks`, `el-form-mcp`). So
 this component requires a one-line CI addition — a `Test el-form-react-components`
-step mirroring the existing per-package steps (the package already has a `test`
-script: `vitest --environment jsdom --run`). Without it, the new AutoForm tests
+step. Note the package's `test` script is `pnpm -w -r build && vitest
+--environment jsdom --run` (it rebuilds the whole workspace first). Since `ci.yml`
+already has a `Build workspace` step before the test steps, the new CI step should
+invoke **vitest directly against the already-built tree**
+(`pnpm --filter el-form-react-components exec vitest --environment jsdom --run`)
+rather than `pnpm --filter el-form-react-components test`, to avoid a redundant
+full rebuild on each Zod matrix leg. Without this step, the new AutoForm tests
 plus the **existing** ~21 component tests would never run in CI. This is the only
 CI change required; the hooks runtime files and `tsd` land in the
 already-covered `el-form-react-hooks` path.
