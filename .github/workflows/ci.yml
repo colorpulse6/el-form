@@ -44,6 +44,9 @@ jobs:
       - name: Test react-hooks (runtime + tsd)
         run: pnpm --filter el-form-react-hooks test
 
+      - name: Test el-form-react-components (vitest)
+        run: pnpm --filter el-form-react-components exec vitest --environment jsdom --run
+
       - name: Type-check el-form-mcp
         run: pnpm --filter el-form-mcp type-check
 
