@@ -132,6 +132,107 @@ git commit -m "test(hooks): cover handleSubmit valid/invalid/async behavior"
 
 ---
 
+## Task 1.5: LIBRARY FIX — make submit respect configured validators (resolves FINDING 1)
+
+Maintainer chose the **library fix**: at submit time, `handleSubmit` must validate
+against whatever validators are configured (`onChange`/`onBlur`/`onSubmit`), not
+just a literal `onSubmit` key. This makes `validators: { onChange: schema }` block
+invalid submits, matching the docs and user expectation.
+
+**Root cause (verified):** `packages/el-form-react-hooks/src/utils/validation.ts`
+→ `validateForm()` (the form-level path, ~lines 167–230) builds
+`event = { type: "onSubmit" }` and passes it to the core engine's
+`validateForm`/`validateField`. The engine
+(`el-form-core/src/validators/engine.ts:54`) reads `config["onSubmit"]`; a config
+with only `onChange` has no `onSubmit` key, so it returns valid. The core engine is
+shared and must NOT change. The fix is in the hooks-layer `validateForm` only.
+
+**Design:** When `validateForm` is called with `eventType === "onSubmit"` (the
+default, used by `handleSubmit`/`submit`/`submitAsync`), run the configured
+validators across their actual keys instead of only `onSubmit`. Concretely: for
+the top-level `validators` object and each `fieldValidators` entry, validate once
+per *configured sync key* present among `onChange`/`onBlur`/`onSubmit`; the form is
+invalid if ANY of them reports invalid. For non-submit eventTypes, keep current
+behavior (validate only that event). This mirrors the existing "smart validation"
+in `shouldValidate` (line 69) and leaves the discriminated-union `schema` fallback
+(already unconditional) untouched.
+
+**Files:**
+- Modify: `packages/el-form-react-hooks/src/utils/validation.ts` (the `validateForm` method only)
+- Test: the existing `packages/el-form-react-hooks/src/__tests__/submit.runtime.test.tsx` (its 3rd case, currently failing, becomes the regression test)
+
+- [ ] **Step 1: Confirm the failing test (red)**
+
+Run: `pnpm --filter el-form-react-hooks exec vitest --environment jsdom --run src/__tests__/submit.runtime.test.tsx`
+Expected: `"does not call onValid when invalid"` FAILS (1 failed | 2 passed). This is the red state the fix turns green.
+
+- [ ] **Step 2: Implement the fix in `validateForm`**
+
+In `validation.ts`, locate the `validateForm` method. For the form-level
+`validators` block and the per-field `fieldValidators` loop, when
+`eventType === "onSubmit"`, iterate the configured sync keys and OR-combine
+results. Helper sketch (adapt to the existing code structure — do not rewrite
+unrelated logic):
+
+```ts
+const SYNC_KEYS = ["onChange", "onBlur", "onSubmit"] as const;
+
+// keys actually present on a given validator config
+const configuredKeys = (cfg: any) =>
+  SYNC_KEYS.filter((k) => cfg && typeof cfg[k] !== "undefined");
+
+// at submit, validate against every configured key; else just the event
+const keysToRun =
+  eventType === "onSubmit" ? configuredKeys(validators) : [eventType];
+```
+
+For each key in `keysToRun`, build `event = { type: key, isAsync: false }`, call
+`validationEngine.current.validateForm(values, validators, event)` (and the field
+equivalent for each `fieldValidators` entry), and merge errors / AND the validity.
+If `keysToRun` is empty (no validators configured), preserve current behavior
+(valid). Keep the existing top-level `schema`-prop fallback intact.
+
+- [ ] **Step 3: Run the submit tests (green)**
+
+Run: `pnpm --filter el-form-react-hooks exec vitest --environment jsdom --run src/__tests__/submit.runtime.test.tsx`
+Expected: 3/3 PASS.
+
+- [ ] **Step 4: Run the FULL hooks suite + core suite (no regressions)**
+
+Run: `pnpm --filter el-form-core exec vitest --run`
+Run: `pnpm --filter el-form-react-hooks exec vitest --environment jsdom --run`
+Run: `pnpm --filter el-form-react-components exec vitest --environment jsdom --run`
+Expected: all green. The existing `asyncValidation.test.tsx` and AutoForm tests
+must still pass — this is the critical regression gate, since validateForm is
+shared by all submit paths.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add packages/el-form-react-hooks/src/utils/validation.ts
+git commit -m "fix(hooks): submit validates against configured validators, not just onSubmit
+
+Previously useForm({ validators: { onChange: schema } }) did not block
+submit — invalid data reached onValid. validateForm now runs whichever
+validators are configured at submit time. Fixes FINDING 1."
+```
+
+- [ ] **Step 6: Add a changeset**
+
+```bash
+cat > .changeset/fix-onchange-submit-gate.md <<'EOF'
+---
+"el-form-react-hooks": patch
+---
+
+fix: `handleSubmit` now blocks submission when a configured `validators.onChange` (or `onBlur`) validator fails. Previously only `validators.onSubmit` gated submit, so forms validating on change could submit invalid data.
+EOF
+git add .changeset/fix-onchange-submit-gate.md
+git commit -m "chore: changeset for onChange submit-gate fix"
+```
+
+---
+
 ## Task 2: setValue / setValues tests
 
 **Files:**
@@ -1155,5 +1256,41 @@ discrepancies found — suite is characterization-green."
 _(Record any real library discrepancies discovered while writing tests or running
 the sweep. Do NOT silently edit library source to make a test pass — surface here.)_
 
-- _(none yet)_
+### FINDING 1 (Task 1) — `validators.onChange` does NOT block submit ⚠️ HIGH
+
+**Severity:** High — affects correctness of forms following the documented quick-start.
+
+**Symptom:** With `useForm({ validators: { onChange: schema } })`, submitting an
+invalid form calls `onValid` (the success handler) with the invalid data instead
+of calling `onError`/blocking. Independently reproduced (controller ran a separate
+repro, not just the task test):
+- `validators: { onChange: schema }` + invalid submit → `onValid` called with `{email:"bad"}` ❌
+- `validators: { onSubmit: schema }` + invalid submit → `onValid` NOT called ✅
+
+**Root cause:** `packages/el-form-react-hooks/src/utils/validation.ts` →
+`validateForm()` builds `event = { type: "onSubmit" }` and calls the core engine's
+`validateForm(values, validators, event)`. The engine
+(`el-form-core/src/validators/engine.ts`) looks up `config["onSubmit"]`; a config
+with only an `onChange` key has no `onSubmit`, so the engine returns
+`{ isValid: true }`. The top-level `schema`-prop fallback (validation.ts:211) only
+runs when a separate `schema` prop is passed, not for `validators.onChange`.
+
+**Why it matters:** The docs, quick-start, README, and the dev.to draft all use
+`validators: { onChange: schema }` and assume submit is protected. Under this bug,
+those forms can submit invalid data.
+
+**Decision needed from maintainer (do NOT fix unilaterally):**
+- (a) **Library fix** — at submit time, also run whichever validators are
+  configured (onChange/onBlur) as a final gate, OR
+- (b) **Docs fix** — declare that submit only respects `validators.onSubmit` (or
+  `mode: "all"`), and update every doc/example to configure onSubmit.
+
+Option (a) matches user expectations and what the docs already imply; (b) is a
+smaller change but means the current docs are teaching an unsafe pattern.
+
+**Test status:** `submit.runtime.test.tsx` currently has 1 failing case
+(`"does not call onValid when invalid"`) committed at `f5a8c20`. **This failing
+test must be resolved before the branch is mergeable** — either by the library fix
+(a, test then passes) or by rewriting the test to use `validators: { onSubmit }`
+and documenting the constraint (b). Pending maintainer decision.
 
