@@ -624,12 +624,15 @@ git commit -m "test(hooks): cover getSnapshot/restoreSnapshot/hasChanges"
 
 - [ ] **Step 1: Append type-error assertions**
 
-Add inside a new block at the end of the existing file (keep the existing block intact):
+The existing file already has `import { expectType } from "tsd";` and
+`import { useForm } from "./src";` at the top. **Do NOT re-import those** (it
+causes `TS2300: Duplicate identifier`). Instead: (a) change the existing top
+import to `import { expectType, expectError } from "tsd";`, and (b) append ONLY
+the new block below (no new import lines) at the end of the file, keeping the
+existing block intact:
 
 ```tsx
-import { expectType, expectError } from "tsd";
-import { useForm } from "./src";
-
+// (no imports here — reuse the top-of-file expectType/expectError/useForm)
 {
   const form = useForm<{ email: string; age: number; user: { name: string } }>({
     defaultValues: { email: "", age: 0, user: { name: "" } },
@@ -690,7 +693,7 @@ const schema = z.object({
 describe("AutoForm submit", () => {
   it("calls onSubmit with typed data when valid", async () => {
     const onSubmit = vi.fn();
-    render(<AutoForm schema={schema} onSubmit={onSubmit} />);
+    render(<AutoForm schema={schema} initialValues={{ email: "", name: "" }} onSubmit={onSubmit} />);
     const inputs = document.querySelectorAll("input");
     fireEvent.change(inputs[0], { target: { value: "a@b.com" } });
     fireEvent.change(inputs[1], { target: { value: "Ada" } });
@@ -702,7 +705,7 @@ describe("AutoForm submit", () => {
   it("calls onError on invalid submit", async () => {
     const onSubmit = vi.fn();
     const onError = vi.fn();
-    render(<AutoForm schema={schema} onSubmit={onSubmit} onError={onError} />);
+    render(<AutoForm schema={schema} initialValues={{ email: "", name: "" }} onSubmit={onSubmit} onError={onError} />);
     fireEvent.click(screen.getByRole("button", { name: /submit/i }));
     await waitFor(() => expect(onError).toHaveBeenCalled());
     expect(onSubmit).not.toHaveBeenCalled();
@@ -773,7 +776,7 @@ Append to `.gitignore`:
 - [ ] **Step 2: Run the entire workspace test suite**
 
 Run: `pnpm -r test`
-Expected: all packages green (core, hooks incl. tsd, components, mcp). Capture the real summary output.
+Expected: all packages green (core, hooks incl. tsd, components, mcp). Capture the real summary output. Note: the `el-form-react-hooks` and `el-form-react-components` `test` scripts each begin with `pnpm -w -r build`, so this full-suite run rebuilds the workspace twice — expect extra time; that's intended for the full-suite tasks (unlike the lean CI step in Task 11 which uses `exec vitest` directly).
 
 - [ ] **Step 3: Commit**
 
