@@ -14,13 +14,22 @@ All notable changes to the el-form project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## el-form-mcp 0.1.0 - 2026-05-31
+## 2026-06-01
 
-### ✨ New Package
+### 🐞 Bug Fixes — `el-form-react-hooks@3.10.2`
+
+- **`handleSubmit` now blocks submission when a configured `validators.onChange` (or `onBlur`) validator fails.** Previously only `validators.onSubmit` gated submit, so a form validating on change could still submit invalid data. Forms following the quick-start (`validators: { onChange: schema }`) are now correctly blocked on invalid input.
+- **`trigger()` now writes validation errors into `formState.errors`** (and updates `isValid`) so the UI reflects them, matching React Hook Form. Previously it returned the correct boolean but left `formState` untouched.
+
+### 🆕 New Package — `el-form-mcp@0.1.0`
 
 - **`el-form-mcp`**: a [Model Context Protocol](https://modelcontextprotocol.io) server that gives AI coding agents accurate El Form knowledge and code generation. Run it with `npx el-form-mcp`. See the [MCP Server guide](./tools/mcp-server.md).
   - Tools: `el_form_overview`, `el_form_list_topics`, `el_form_get_topic`, `el_form_search`, and `el_form_scaffold_form` (generates AutoForm/useForm code plus a matching Zod schema from a field list).
   - Machine-readable docs also published at [`/llms.txt`](https://elform.dev/llms.txt) and [`/llms-full.txt`](https://elform.dev/llms-full.txt).
+
+### 🔧 Maintenance
+
+- `el-form-core@2.2.1`, `el-form-react-components@4.4.2`, `el-form-react@4.1.4`: repaired the release pipeline (CSS build no longer uses `pnpm dlx`; `el-form-core` test script no longer hangs CI) and added a committed test suite for `useForm` behavior + a pre-launch example-app sweep.
 
 ## [4.2.0] - 2025-08-24
 
