@@ -48,9 +48,9 @@
   ],
   "scripts": {
     "build": "tsup && pnpm run build:css",
-    "build:css": "pnpm dlx @tailwindcss/cli -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --minify",
+    "build:css": "pnpm exec tailwindcss -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --minify",
     "dev": "tsup --watch",
-    "dev:css": "pnpm dlx @tailwindcss/cli -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --watch",
+    "dev:css": "pnpm exec tailwindcss -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --watch",
     "test": "pnpm -w -r build && vitest --environment jsdom --run"
   },
   "dependencies": {
