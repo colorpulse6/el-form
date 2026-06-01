@@ -156,6 +156,37 @@ export interface UseFormReturn<T extends Record<string, any>> {
   filePreview: Partial<Record<keyof T, string | null>>;
 }
 
+// --- useFieldArray types ---
+export type ArrayElement<V> = V extends ReadonlyArray<infer E> ? E : never;
+
+export type FieldArrayPath<T> = {
+  [K in Path<T>]: PathValue<T, K> extends ReadonlyArray<any> ? K : never;
+}[Path<T>];
+
+export type FieldArrayRow<TItem> = TItem extends object
+  ? TItem & { id: string }
+  : { id: string; value: TItem };
+
+export interface UseFieldArrayProps<
+  T extends Record<string, any>,
+  Name extends FieldArrayPath<T>
+> {
+  name: Name;
+  form?: UseFormReturn<T>;
+}
+
+export interface UseFieldArrayReturn<TItem> {
+  fields: ReadonlyArray<FieldArrayRow<TItem>>;
+  append: (item: TItem) => void;
+  prepend: (item: TItem) => void;
+  insert: (index: number, item: TItem) => void;
+  remove: (index: number) => void;
+  move: (from: number, to: number) => void;
+  swap: (indexA: number, indexB: number) => void;
+  update: (index: number, item: TItem) => void;
+  replace: (items: TItem[]) => void;
+}
+
 // AutoForm types
 export type GridColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
@@ -231,3 +262,5 @@ export interface AutoFormProps<T extends Record<string, any>> {
   customErrorComponent?: React.ComponentType<AutoFormErrorProps>;
   componentMap?: ComponentMap;
 }
+
+export type { Path, PathValue } from "./types/path";
