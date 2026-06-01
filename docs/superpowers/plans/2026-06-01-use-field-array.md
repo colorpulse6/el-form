@@ -388,6 +388,14 @@ export interface UseFieldArrayReturn<TItem> {
 
 > If `UseFormReturn` is not already declared above this point in `types.ts`, place these AFTER its declaration (the file already exports `UseFormReturn`). Verify with: `grep -n "UseFormReturn" packages/el-form-react-hooks/src/types.ts`.
 
+- [ ] **Step 1b: Re-export `PathValue`/`Path` from `types.ts`** (the hook in Task 5 imports `PathValue` from `./types`; today `types.ts` only *imports* it from `./types/path` and does not re-export). Add at the end of `types.ts`:
+
+```ts
+export type { Path, PathValue } from "./types/path";
+```
+
+(`index.ts` already re-exports these too, but the hook imports from `./types` — this makes that valid.)
+
 - [ ] **Step 2: Verify it type-checks (build emits dts)**
 
 Run: `pnpm --filter el-form-react-hooks exec tsup`
@@ -408,6 +416,15 @@ git commit -m "feat(hooks): types for useFieldArray (FieldArrayPath, FieldArrayR
 - Create: `packages/el-form-react-hooks/src/useFieldArray.ts`
 - Create: `packages/el-form-react-hooks/src/__tests__/useFieldArray.runtime.test.tsx`
 - Modify: `packages/el-form-react-hooks/src/index.ts`
+- Modify: `packages/el-form-react-hooks/src/FormContext.tsx` (add `export { FormContext };`)
+
+- [ ] **Step 0: Export the raw `FormContext`** (the hook does `useContext(FormContext)`; today the raw context is module-private — only `FormProvider`/`useFormContext`/etc. are exported). At the bottom of `FormContext.tsx`, add:
+
+```ts
+export { FormContext };
+```
+
+This mirrors `SubscriptionContext.tsx`, which already does `export { SubscriptionContext };`.
 
 - [ ] **Step 1: Write the failing runtime test (context mode + the headline stable-id test)**
 
@@ -497,8 +514,13 @@ import {
   appendItem, prependItem, insertItem, removeItemAt, moveItem, swapItems, updateItem, replaceItems,
 } from "./utils/arrayEngine";
 import type {
-  FieldArrayPath, FieldArrayRow, UseFieldArrayProps, UseFieldArrayReturn, ArrayElement, PathValue,
+  FieldArrayPath, FieldArrayRow, UseFieldArrayProps, UseFieldArrayReturn, ArrayElement,
 } from "./types";
+import type { PathValue } from "./types/path"; // NOTE: import PathValue from its source, not ./types
+
+// Stable empty-array reference for the missing-array fallback (avoids a fresh [] per
+// getSnapshot call, which would trip useSyncExternalStore's "getSnapshot should be cached").
+const EMPTY_ARRAY: any[] = [];
 
 export function useFieldArray<
   T extends Record<string, any>,
@@ -529,7 +551,7 @@ export function useFieldArray<
   const getArray = useCallback((): any[] => {
     const values = sub ? sub.getState().values : form?.formState?.values;
     const arr = getNestedValue(values ?? {}, path);
-    return Array.isArray(arr) ? arr : [];
+    return Array.isArray(arr) ? arr : EMPTY_ARRAY; // stable ref when missing
   }, [sub, form, path]);
 
   const subscribe = useCallback(
@@ -581,7 +603,10 @@ export function useFieldArray<
   //   idOp(idState.current.ids);
   //   form.setValue(path as any, newArray as any);
 
+  // Each op early-returns if there is no form (no prop + no provider) — matches the
+  // spec's "dev-warn and no-op" policy and avoids `form.formState` throwing.
   const append = useCallback((item: any) => {
+    if (!form) return;
     const nv = appendItem(form.formState.values, path, item);
     idState.current.ids.push(nextId());
     form.setValue(path as any, getNestedValue(nv, path));
@@ -638,7 +663,7 @@ export function useFieldArray<
 }
 ```
 
-> Implementer cleanup: delete the half-sketched `write` helper above and keep the explicit per-op `useCallback`s (they're clearer and avoid the indexing confusion noted inline). The per-op pattern is: compute new values via engine → mutate the ids ref in the same shape → `form.setValue(path, newArray)`.
+> Implementer cleanup: (1) delete the half-sketched `write` helper above and keep the explicit per-op `useCallback`s (they're clearer and avoid the indexing confusion noted inline). The per-op pattern is: `if (!form) return;` → compute new values via engine → mutate the ids ref in the same shape → `form.setValue(path, newArray)`. (2) Add the same `if (!form) return;` guard shown on `append` to ALL eight ops (prepend/insert/remove/move/swap/update/replace) — only `append` shows it above to keep the listing short.
 
 - [ ] **Step 4: Export from index**
 
