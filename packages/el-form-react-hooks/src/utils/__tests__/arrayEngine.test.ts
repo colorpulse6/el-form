@@ -46,6 +46,17 @@ describe("arrayEngine other ops", () => {
     expect(next).toBe(v); // unchanged object, no `tags: []` added
     expect("tags" in next).toBe(false);
   });
+  it("moveItem/swapItems/updateItem on a non-existent array are true no-ops (no [] materialized)", () => {
+    const v = { other: 1 } as any;
+    for (const next of [
+      moveItem(v, "tags", 0, 1),
+      swapItems(v, "tags", 0, 1),
+      updateItem(v, "tags", 0, "x"),
+    ]) {
+      expect(next).toBe(v);
+      expect("tags" in next).toBe(false);
+    }
+  });
 });
 
 describe("arrayEngine.appendItem", () => {

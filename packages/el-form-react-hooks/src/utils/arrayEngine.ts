@@ -34,18 +34,24 @@ export function removeItemAt(values: any, path: string, index: number): any {
   return setNestedValue(values, path, next);
 }
 export function moveItem(values: any, path: string, from: number, to: number): any {
+  // No array at the path ⇒ true no-op (don't materialize an empty array).
+  if (!Array.isArray(getNestedValue(values, path))) return values;
   const arr = readArray(values, path);
   if (from < 0 || from >= arr.length || to < 0 || to >= arr.length) return setNestedValue(values, path, [...arr]);
   const next = [...arr]; const [moved] = next.splice(from, 1); next.splice(to, 0, moved);
   return setNestedValue(values, path, next);
 }
 export function swapItems(values: any, path: string, a: number, b: number): any {
+  // No array at the path ⇒ true no-op (don't materialize an empty array).
+  if (!Array.isArray(getNestedValue(values, path))) return values;
   const arr = readArray(values, path);
   if (a < 0 || a >= arr.length || b < 0 || b >= arr.length) return setNestedValue(values, path, [...arr]);
   const next = [...arr]; [next[a], next[b]] = [next[b], next[a]];
   return setNestedValue(values, path, next);
 }
 export function updateItem(values: any, path: string, index: number, item: any): any {
+  // No array at the path ⇒ true no-op (don't materialize an empty array).
+  if (!Array.isArray(getNestedValue(values, path))) return values;
   const arr = readArray(values, path);
   if (index < 0 || index >= arr.length) return setNestedValue(values, path, [...arr]);
   const next = [...arr]; next[index] = item;
