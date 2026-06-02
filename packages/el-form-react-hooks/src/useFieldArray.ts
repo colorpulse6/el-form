@@ -34,9 +34,11 @@ export function useFieldArray<
   const formCtx = useContext(FormContext);
   const form = (formProp ?? (formCtx as any)?.form) as any;
 
-  if (!form && typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+  if (!form) {
     // eslint-disable-next-line no-console
-    console.warn("useFieldArray: no form found. Pass a `form` prop or render inside <FormProvider>.");
+    console.warn(
+      "useFieldArray: no form found. Pass a `form` prop or render inside <FormProvider>."
+    );
   }
 
   const path = name as unknown as string;
