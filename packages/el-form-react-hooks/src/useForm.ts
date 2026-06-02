@@ -479,6 +479,7 @@ export function useForm<T extends Record<string, any>>(
     formState,
     reset,
     setValue: formStateManager.setValue,
+    updateValue: formStateManager.updateValue,
     setValues: formStateManager.setValues,
     watch: formStateManager.watch,
     resetValues: formStateManager.resetValues,

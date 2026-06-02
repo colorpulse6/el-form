@@ -124,3 +124,47 @@ describe("useFieldArray prop mode + primitives + nested", () => {
     expect(screen.getByTestId("n").textContent).toBe("js,ts");
   });
 });
+
+describe("useFieldArray batched synchronous ops", () => {
+  it("two synchronous appends in one handler both land", () => {
+    type F = { items: { name: string }[] };
+    function App() {
+      const form = useForm<F>({ defaultValues: { items: [] } });
+      return (<FormProvider form={form}><L /></FormProvider>);
+    }
+    function L() {
+      const { fields, append } = useFieldArray<F, "items">({ name: "items" });
+      return (
+        <div>
+          <span data-testid="bc">{fields.length}</span>
+          <span data-testid="bnames">{fields.map((f) => f.name).join(",")}</span>
+          <button onClick={() => { append({ name: "a" }); append({ name: "b" }); }}>add2</button>
+        </div>
+      );
+    }
+    render(<App />);
+    fireEvent.click(screen.getByText("add2"));
+    expect(screen.getByTestId("bc").textContent).toBe("2");
+    expect(screen.getByTestId("bnames").textContent).toBe("a,b");
+  });
+  it("append then remove in one handler nets the appended item only", () => {
+    type F = { items: { name: string }[] };
+    function App() {
+      const form = useForm<F>({ defaultValues: { items: [{ name: "x" }] } });
+      return (<FormProvider form={form}><L /></FormProvider>);
+    }
+    function L() {
+      const { fields, append, remove } = useFieldArray<F, "items">({ name: "items" });
+      return (
+        <div>
+          <span data-testid="bc2">{fields.map((f) => f.name).join(",")}</span>
+          <button onClick={() => { append({ name: "y" }); remove(0); }}>seq</button>
+        </div>
+      );
+    }
+    render(<App />);
+    fireEvent.click(screen.getByText("seq"));
+    // started [x]; append y -> [x,y]; remove(0) -> [y]
+    expect(screen.getByTestId("bc2").textContent).toBe("y");
+  });
+});

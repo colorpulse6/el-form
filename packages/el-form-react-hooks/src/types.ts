@@ -81,6 +81,11 @@ export interface UseFormReturn<T extends Record<string, any>> {
     path: Name,
     value: PathValue<T, Name>
   ) => void;
+  /** Apply a functional update to a path against the latest state (avoids stale-snapshot lost updates). */
+  updateValue: <Name extends Path<T>>(
+    path: Name,
+    updater: (current: PathValue<T, Name>) => PathValue<T, Name>
+  ) => void;
   setValues: (values: Partial<T>) => void;
 
   // Watch system

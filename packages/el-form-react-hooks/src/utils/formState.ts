@@ -11,6 +11,7 @@ import { getNestedValue } from "el-form-core";
 
 export interface FormStateManager<T extends Record<string, any>> {
   setValue: (path: string, value: any) => void;
+  updateValue: (path: string, updater: (current: any) => any) => void;
   setValues: (values: Partial<T>) => void;
   resetValues: (values?: Partial<T>) => void;
   watch: UseFormReturn<T>["watch"];
@@ -39,6 +40,23 @@ export function createFormStateManager<T extends Record<string, any>>(
         values: setNestedValue(prev.values, path, value),
         isDirty: dirtyManager.dirtyFieldsRef.current.size > 0,
       }));
+    },
+
+    // updateValue - Apply a functional update to a path against the LATEST state.
+    // Computing the next value inside the functional state updater (rather than
+    // from a captured snapshot) avoids lost updates when multiple ops run
+    // synchronously in one handler (e.g. append(); append();).
+    updateValue: (path: string, updater: (current: any) => any) => {
+      setFormState((prev) => {
+        const nextVal = updater(getNestedValue(prev.values, path));
+        const newValues = setNestedValue(prev.values, path, nextVal);
+        dirtyManager.updateFieldDirtyState(path, nextVal, defaultValues);
+        return {
+          ...prev,
+          values: newValues,
+          isDirty: dirtyManager.dirtyFieldsRef.current.size > 0,
+        };
+      });
     },
 
     // setValues - Set multiple field values at once
