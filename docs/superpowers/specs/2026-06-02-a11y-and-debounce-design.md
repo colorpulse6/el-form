@@ -20,7 +20,18 @@ Phase 4 of the El Form revival. Exploration of `main` reshaped the original fram
 - **Accessibility is genuinely thin.** Field components only set `htmlFor` on labels.
   Inputs have **no** `aria-invalid`, errors have **no** `aria-describedby` linkage,
   **no** `role="alert"`, **no** `aria-required`, and there is **no focus-on-error** on
-  failed submit (the `setFocus` infra exists in the hook but nothing wires it).
+  failed submit.
+- **`setFocus` is a no-op today (verified).** `createFocusManager` reads
+  `fieldRefs.current.get(name)`, but **nothing ever populates `fieldRefs`** —
+  `register`'s return (`RegisterReturn`) has **no `ref`**, and `registerImpl` never sets
+  the map. So `setFocus` silently does nothing for any registered field. Focus-on-error
+  therefore requires building ref plumbing first (see Workstream 2).
+- **The two paths use different field-id conventions (verified):** AutoForm's
+  `DefaultField` uses `id={`field-${name}`}`; standalone FieldComponents use
+  `id={String(name)}`. The a11y helper must take a resolved `fieldId` per path.
+- **Debounce is async-only (verified):** the engine routes `event.isAsync:false`
+  straight to `SchemaAdapter.validate` (no debounce); only `validateAsync` reaches the
+  timer machinery. Sync debounce is a **new branch**, not config-plumbing (see W3b).
 - There are **two rendering paths**: AutoForm renders its own inputs
   (`packages/el-form-react-components/src/AutoForm.tsx`) AND there are standalone
   `TextField` / `TextareaField` / `SelectField`
@@ -60,8 +71,10 @@ All work is **additive and backward-compatible**.
 
 ## Workstream 1 — Accessibility wiring
 
-Applied identically to AutoForm's generated inputs and the three standalone field
-components. For a field with `fieldId` (already `String(name)`):
+Applied to AutoForm's generated inputs and the three standalone field components. The
+`fieldId` differs per path — **AutoForm: `` `field-${name}` ``; FieldComponents:
+`String(name)`** — so the shared helper takes the resolved `fieldId` as input rather than
+assuming a convention. For a field with its `fieldId`:
 
 - Input/textarea/select gets:
   - `aria-invalid={Boolean(touched && error) || undefined}` (omit when false to keep DOM clean).
@@ -80,21 +93,41 @@ A small shared helper (e.g. `fieldAriaProps(fieldId, { error, touched, required 
 returning the aria attribute object keeps the two rendering paths DRY and individually
 testable. Lives in the components package (it's component-layer concern, not core).
 
-## Workstream 2 — Focus-on-error
+## Workstream 2 — Focus-on-error (depends on NEW ref plumbing)
+
+**Prerequisite (not optional): make `setFocus` actually work.** Today `fieldRefs` is
+never populated, so this must be built first:
+
+1. Add an optional **`ref`** callback to `RegisterReturn` (`types/path.ts`) — a
+   `(el: HTMLElement | null) => void` that is spreadable onto an input alongside the
+   existing `value`/`onChange`/`onBlur`.
+2. In `registerImpl` (`useForm.ts`), return a `ref` that populates/cleans
+   `fieldRefs.current` (set on mount with the element, delete on unmount/null). Keep it
+   backward-compatible: existing spreads `{...register("x")}` simply gain a `ref` they can
+   ignore or apply.
+3. Forward the ref through the consuming components so the DOM node is captured:
+   AutoForm's `DefaultField` and the standalone `TextField`/`TextareaField`/`SelectField`
+   must apply `registration.ref` to their `<input>/<textarea>/<select>`.
+4. Add a test that `setFocus("field")` now actually moves focus (none exists today) —
+   this is the precursor that proves the plumbing before focus-on-error is layered on.
+
+**Then focus-on-error itself:**
 
 - Add `shouldFocusError?: boolean` to `UseFormOptions` (default `true`).
 - In `submitOperations.ts`, when validation fails (`!isValid`) and `shouldFocusError` is
-  on, focus the **first errored field in registration/DOM order** using the existing
-  focus-management utility (`setFocus`).
-- "First errored field" = the first registered field name present in the `errors` object,
-  resolved to its DOM node. If the node is missing or not focusable, skip silently and try
-  the next; never throw.
+  on, focus the **first errored field** via `setFocus` (now functional).
+- "First errored field" ordering: see Open Question #1 (leaning: schema/registration order
+  for AutoForm, DOM order fallback for custom forms). If a field's ref is missing or not
+  focusable, skip to the next; never throw.
 - Applies uniformly because both AutoForm and custom forms submit through `handleSubmit`.
+  Scope is **`handleSubmit` only** this round (not the imperative `submit()`/`submitAsync()`
+  paths) — a deliberate YAGNI line.
 
 ### Boundaries / interface
-Focus selection logic is a pure-ish helper (given `errors` + a way to resolve a field's
-element) so it can be unit-tested without a full DOM submit. The wiring point is
-`handleSubmit`'s failure branch.
+Ref plumbing is additive on `RegisterReturn` + `registerImpl`. Focus-selection (given
+`errors` + an order) is a small helper, unit-testable; the wiring point is `handleSubmit`'s
+failure branch. Forwarding the ref in components is mechanical but must be done in all four
+places (AutoForm DefaultField + 3 FieldComponents).
 
 ## Workstream 3 — Validation debounce
 
@@ -106,14 +139,27 @@ element) so it can be unit-tested without a full DOM submit. The wiring point is
 - If a test reveals a real bug, fix it (record as a finding); otherwise this is
   characterization coverage for previously-untested shipped behavior.
 
-### 3b. Add sync-validation debounce (new)
+### 3b. Add sync-validation debounce (NEW branch, not config-plumbing)
+The engine currently routes sync validation (`event.isAsync:false`) straight to
+`SchemaAdapter.validate` with **no debounce** — only `validateAsync` reaches the timer
+machinery. So this is a new code path, though it can **reuse the timer-map helpers**
+(`debounceTimers`, `clearDebounce`).
+
 - New `ValidatorConfig` key **`validationDebounceMs?: number`** (default `0` = off, no
-  behavior change). When > 0, sync validation for that event is debounced using the same
-  timer machinery as async.
-- Plumbed from `useForm` config through to the engine. Default off means existing forms
-  are unaffected.
+  behavior change).
+- Add a debounced sync branch in the engine's `validateField`: when `validationDebounceMs
+  > 0`, wrap the `SchemaAdapter.validate` call in a debounce timer (mirroring
+  `validateWithDebounce`) that returns a `Promise<ValidationResult>` resolving after the
+  quiet period. The hooks `onChange` path already `await`s `validateField`, so a
+  now-sometimes-deferred resolution integrates without signature changes.
+- **Error-clearing stays immediate** (Open Question #3 leaning): only the *setting* of
+  errors is debounced; clearing an existing error on valid input is immediate, to avoid a
+  stale error lingering during the quiet period.
+- Plumbed from `useForm` config through to the engine. Default off → existing forms
+  unaffected.
 - Tests: with fake timers, rapid `onChange` with `validationDebounceMs: 200` runs sync
-  validation once after the quiet period; `0`/unset validates every change as today.
+  validation once after the quiet period; `0`/unset validates every change as today;
+  a newly-valid value clears its error immediately (not debounced).
 
 ## Data flow
 
@@ -160,7 +206,9 @@ submit → handleSubmit → validateForm → if !isValid:
 
 - Both rendering paths expose `aria-invalid` / `aria-describedby` / `role="alert"` /
   `aria-required`, verified by tests.
-- Focus moves to the first invalid field on failed submit (default-on), opt-out works.
+- `register` now returns a working `ref`; `setFocus` actually moves focus (proven by a
+  test that fails against today's no-op). Focus moves to the first invalid field on failed
+  submit (default-on), opt-out works.
 - Existing async debounce has passing characterization tests; new `validationDebounceMs`
   debounces sync validation (default off → no behavior change), tested with fake timers.
 - All existing tests stay green; docs updated (a11y notes + debounce config); changeset added.
@@ -171,8 +219,12 @@ submit → handleSubmit → validateForm → if !isValid:
 1. **"First errored field" ordering source** — registration order vs. DOM order vs.
    schema field order. Leaning: schema/registration order for AutoForm (deterministic);
    fall back to DOM query order for custom forms. Pin in plan with a test.
-2. **AutoForm `required` introspection** — confirm the existing schema introspection
-   exposes required-ness per field (Zod optional/nullable detection) or derive it. Pin in plan.
+2. **AutoForm `required` introspection** — the schema walker already unwraps
+   `ZodOptional`/`ZodNullable`/`ZodDefault` (`AutoForm.tsx`) but discards optionality;
+   required-ness IS derivable (required = raw type not Optional/Default/Nullable).
+   `AutoFormFieldConfig` doesn't yet carry a `required` flag; FieldComponents already have
+   an unused `required?: boolean` prop. Plan: derive + thread `required` into the a11y
+   helper for both paths. Pin exact mechanism in plan.
 3. **Sync debounce + immediate error clearing** — decide whether clearing an existing
    error on valid input is also debounced or immediate (leaning: clear immediately, only
    debounce the *setting* of errors, to avoid stale errors lingering). Pin in plan.
