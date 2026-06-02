@@ -81,6 +81,11 @@ export interface UseFormReturn<T extends Record<string, any>> {
     path: Name,
     value: PathValue<T, Name>
   ) => void;
+  /** Apply a functional update to a path against the latest state (avoids stale-snapshot lost updates). */
+  updateValue: <Name extends Path<T>>(
+    path: Name,
+    updater: (current: PathValue<T, Name>) => PathValue<T, Name>
+  ) => void;
   setValues: (values: Partial<T>) => void;
 
   // Watch system
@@ -154,6 +159,51 @@ export interface UseFormReturn<T extends Record<string, any>> {
 
   // File previews (separate from formState)
   filePreview: Partial<Record<keyof T, string | null>>;
+}
+
+// --- useFieldArray types ---
+export type ArrayElement<V> = V extends ReadonlyArray<infer E> ? E : never;
+
+export type FieldArrayPath<T> = {
+  [K in Path<T>]: PathValue<T, K> extends ReadonlyArray<any> ? K : never;
+}[Path<T>];
+
+/**
+ * A row in `fields`. Object items get a generated `id` merged in; primitive items
+ * become `{ id, value }`.
+ *
+ * NOTE: for object items, the generated `id` (or the `keyName` you choose) overwrites
+ * any existing field of the same name on your item when accessed via `fields` (the
+ * original value remains in form state and on submit). If your items already have a
+ * domain `id`, pass `keyName` (e.g. `"_key"`) to `useFieldArray` so the generated key
+ * lands under a non-colliding name and your domain `id` is preserved on each row.
+ */
+export type FieldArrayRow<TItem> = TItem extends object
+  ? TItem & { id: string }
+  : { id: string; value: TItem };
+
+export interface UseFieldArrayProps<
+  T extends Record<string, any>,
+  Name extends FieldArrayPath<T>
+> {
+  name: Name;
+  form?: UseFormReturn<T>;
+  /** Property name to attach the generated stable id under. Default "id". Set to a
+   *  non-colliding name (e.g. "_key") if your items already have a domain `id`. */
+  keyName?: string;
+}
+
+export interface UseFieldArrayReturn<TItem> {
+  fields: ReadonlyArray<FieldArrayRow<TItem>>;
+  append: (item: TItem) => void;
+  prepend: (item: TItem) => void;
+  insert: (index: number, item: TItem) => void;
+  remove: (index: number) => void;
+  move: (from: number, to: number) => void;
+  swap: (indexA: number, indexB: number) => void;
+  update: (index: number, item: TItem) => void;
+  /** Replace the entire array. Re-mints all row ids (every row remounts). */
+  replace: (items: TItem[]) => void;
 }
 
 // AutoForm types
@@ -231,3 +281,5 @@ export interface AutoFormProps<T extends Record<string, any>> {
   customErrorComponent?: React.ComponentType<AutoFormErrorProps>;
   componentMap?: ComponentMap;
 }
+
+export type { Path, PathValue } from "./types/path";

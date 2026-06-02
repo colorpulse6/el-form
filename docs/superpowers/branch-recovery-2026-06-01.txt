@@ -1,0 +1,50 @@
+# Branch recovery snapshot — 2026-06-01T12:18:56+02:00
+# Restore any branch with: git branch <name> <sha>
+# main tip at snapshot: 4b687bd1aa0ae57f4e1ce1de9f3886b0dedbe026
+
+## Merged branches deleted in Phase 2 hygiene (all reachable from main):
+6a582e7bae55f59b7f3d011611b4e46746e09a12 apply-methods
+36483a37a2d275a0c1e9ff566352167b1496f3f0 auto-form-style-docs
+212200833ca6abca5bdcb020c19fb48252aefdb9 autoform-style-fix
+9f554150f2abd024e406984425844d681447bd8d autoform-type-error
+6fc72b05c723d0d2f808d350392bce97cf675924 codex/add-eslint-to-project-and-create-github-action
+06bf77dd2e152718834f829d490e2540daf6d160 codex/create-mono-repo-structure-for-form-library
+f7f9f8903ce5903f516c8705241377e945ef0a67 codex/scaffold-docusaurus-documentation-for-el-form
+d56a33e4a03ef11674951228fd21beded6b4803d codex/update-package-to-support-autoform-and-useform
+b202b3ac7de3bb43d67a3776605006c0adc0efa4 discr-union-and-rerenders
+28f6deb094e707f65c0e8fb0844a4f3e854ca6c8 discr-union-typesafety
+0f44e0696d6f6033f22b441098b2ae3fc3115388 docs-example-fixes
+d645353c32487310f08e50b1704210f93b03dc92 docs-fixes
+bcd326d7ac30c30fe99875d8bf52555dc7f5586d docs-refator
+9e5df736950a4b1ee36b111288db892322fab1f9 feat/agent-discoverability
+7c62d5d35bf88f7128bc125a848e37f43bee1c58 file-upload
+6209e419d4bea92da689c64ef12e1fa0c5c34783 form-switch-discr-union-fix
+a04236f4d5a7548fa96ca1f2ab5808ec9f131288 further-error-handling
+20b5bd72ccdbd8077fa405beefa33f0f9accce04 gql-refactor
+7fcc10992b3d90ce3575c3020b6acf6e170770f2 hook-extraction
+76f383d2afafa1cd9c01bcaa93b9987a6310b8df input-types
+629a231e1c44bffe06d72f65c05d0a0a690f7a33 link-readmes
+7ede0e31cff64d7bb516f14d07aec4ea60461ff5 mit-license
+06101177dc01b8f1c9c1bd5f9a5327c31eadff7f new-docs
+1b3c306fde38c52cf789a7757ba6748ab76288a0 preserve-zod-3-access
+34d41ee8ef13cc610252658c1e6787cd17c9d0cf publish-workflow
+9892bd16745764200ecfa53466ef796ef27e9ea6 register-type-safety
+83fb596ef2be1ffb5ffdf4c648b6d744a3fbc6e8 remove-internal-zod
+fae8f8c24b4441d12084c4154bc4844b984358f1 search
+1fc01e546391e0ae917826ab8c613de4b1390d79 seo-opt
+5d34a7d1aa340d83a30749e5f273da9abd291e8a showcase-clean
+67e6b7415b788983980639e69abba4d5a9f34445 testing-fixes
+39e0e228b2b8b452929cdaf23ed44ca52e44322c type-safety-milestone-2
+ca1ec010569d3e4aeffa2cb5322011b52f6cfd33 validation-testing-2
+9f554150f2abd024e406984425844d681447bd8d zod-4-migration
+e886c1d91425e48b0b6aa0ce6a2af2e170aa8233 zod-4-support
+
+## Kept (unmerged) branches — NOT deleted:
+9537aec675d6bbcbdc69a6696d87da6300bb79e9 ai-integration
+1ddfbdaf7832c4e21bcb0432d73285caf44cad9c discrimated-union-test
+3c3160ddbccbe1a9276c5c5816470ffc8794c183 docs-sandbox
+3a66464352bcf5f5df151ea63c2f58395bb2a0fd el-form-revival
+4aeb3753422546d0ee9b377c65e1ee047277f0d1 feat/test-suite-and-sweep-skill
+35c5e55aa94f8617345b9b868fd0ffcf4d6549e3 react-query-support
+ad752914915a46c5f36c777a4b5c21fec0d648ff showcase
+5139dfad02dbd93455c71aab14d6c11ec95170cd useFormWatch-hook

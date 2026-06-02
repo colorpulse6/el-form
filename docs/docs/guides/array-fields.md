@@ -14,11 +14,90 @@ keywords:
 Array fields handle dynamic lists — line items, multiple emails, a set of
 contacts — where the user can add and remove rows.
 
-## Array helpers: `addArrayItem` / `removeArrayItem`
+## Recommended: `useFieldArray`
 
-`useForm` returns two helpers for mutating an array field by path. This is the
-most direct way to add and remove rows. Register each element by its dot-path
-(`items.<index>.<key>`):
+`useFieldArray` is the cleanest way to build dynamic arrays. It gives each row a
+stable `id` to use as the React `key`, plus operations for reordering and
+inserting — `append`, `prepend`, `insert`, `remove`, `move`, `swap`, `update`,
+and `replace`.
+
+```tsx
+import {
+  useForm,
+  FormProvider,
+  useFormContext,
+  useFieldArray,
+} from "el-form-react-hooks";
+
+type Form = { items: { name: string; quantity: number }[] };
+
+function ItemsForm() {
+  const form = useForm<Form>({
+    defaultValues: { items: [{ name: "", quantity: 1 }] },
+  });
+
+  return (
+    <FormProvider form={form}>
+      <Items />
+    </FormProvider>
+  );
+}
+
+function Items() {
+  const { register } = useFormContext<Form>();
+  const { fields, append, remove, move } = useFieldArray<Form, "items">({
+    name: "items",
+  });
+
+  return (
+    <>
+      {fields.map((field, index) => (
+        <div key={field.id}>
+          {/* ← stable id, never the array index */}
+          <input {...register(`items.${index}.name`)} placeholder="Name" />
+          <input
+            type="number"
+            {...register(`items.${index}.quantity`)}
+            placeholder="Qty"
+          />
+          <button type="button" onClick={() => remove(index)}>
+            Remove
+          </button>
+          <button type="button" onClick={() => move(index, index - 1)}>
+            Move up
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={() => append({ name: "", quantity: 1 })}>
+        Add item
+      </button>
+    </>
+  );
+}
+```
+
+**Why `field.id` and not the index?** Using the array index as a React `key`
+breaks the moment you insert, reorder, or remove from the middle of the list —
+React reuses the wrong DOM node, so input focus and values jump to the wrong
+row. `useFieldArray` gives each row a stable identity that survives those
+operations.
+
+`useFieldArray` works inside `<FormProvider>` (where it re-renders only when its
+array changes) or with a `form` prop passed directly:
+`useFieldArray({ name: "items", form })`. For arrays of scalars (`string[]`),
+each `field` is `{ id, value }`.
+
+> If your items already have their own `id` field, use `field.id` only as the
+> React key — read the domain id from the form value, since the generated key
+> shadows it in `fields`.
+
+## Low-level helpers: `addArrayItem` / `removeArrayItem`
+
+`useForm` also returns two low-level helpers for mutating an array field by
+path. These are fine for simple append/remove lists, but for anything involving
+insert, reorder, or remove-from-the-middle, prefer [`useFieldArray`](#recommended-usefieldarray)
+above — it provides the stable row keys those operations require. Register each
+element by its dot-path (`items.<index>.<key>`):
 
 ```tsx
 import { useForm } from "el-form-react-hooks";
@@ -35,6 +114,8 @@ export function ItemsForm() {
 
   return (
     <form onSubmit={handleSubmit((data) => console.log(data))}>
+      {/* key={index} is acceptable only for append-only lists; for insert/reorder
+          use useFieldArray and key by field.id (see above). */}
       {items.map((_, index) => (
         <div key={index}>
           <input {...register(`items.${index}.name`)} placeholder="Name" />

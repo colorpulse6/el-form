@@ -11,6 +11,7 @@ export {
 } from "./FormContext";
 export { useFormSelector } from "./useFormSelector";
 export { useField } from "./useField";
+export { useFieldArray } from "./useFieldArray";
 export { shallowEqual } from "./utils";
 export type {
   UseFormOptions,
@@ -20,5 +21,12 @@ export type {
   ResetOptions,
   SetFocusOptions,
   FormContextValue,
+} from "./types";
+export type {
+  UseFieldArrayProps,
+  UseFieldArrayReturn,
+  FieldArrayPath,
+  FieldArrayRow,
+  ArrayElement,
 } from "./types";
 export type { Path, PathValue, RegisterReturn } from "./types/path";

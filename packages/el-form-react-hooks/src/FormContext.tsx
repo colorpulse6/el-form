@@ -170,3 +170,5 @@ export function useDiscriminatedUnionContext():
   | undefined {
   return useContext(DiscriminatedUnionContext);
 }
+
+export { FormContext };
