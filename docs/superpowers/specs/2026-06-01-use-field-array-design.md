@@ -59,7 +59,7 @@ exist) is a **docs** concern, addressed in Phase 5, not new code.
 |---|---|
 | Stable `id` storage | **Hook-internal ref + counter**, NOT in form values. Clean submit data; deterministic (no `Math.random`/`Date.now` — SSR-safe, test-friendly). RHF-style. |
 | Implementation | **Full new array engine** (`utils/arrayEngine.ts`); `addArrayItem`/`removeArrayItem` refactored to delegate. Single source of truth. |
-| Re-render isolation | **Subscribe to the array slice** via `useFormSelector`. |
+| Re-render isolation | **Subscribe to the array slice** via a single unconditional `useSyncExternalStore` on the nullable `SubscriptionContext` (NOT `useFormSelector`, which throws without a provider — see Subscription architecture). In context mode the store's `Object.is` snapshot guard isolates re-renders; prop mode reads `form.formState.values`. |
 | Scope | useFieldArray ONLY. No useWatch. |
 | Release | Additive **minor** on `el-form-react-hooks`; cascade **patch** to components + react umbrella. Batched into the revival's single `3.11.0` release. |
 
@@ -74,7 +74,7 @@ packages/el-form-react-hooks/src/
 │   ├── arrayEngine.ts        ← NEW: pure, immutable array ops at a dot-path
 │   ├── arrayOperations.ts    ← REFACTORED: addArrayItem/removeArrayItem delegate to engine
 │   └── arrayHelpers.ts        ← kept (addArrayItemReact); engine may absorb/reuse its path logic
-├── useFieldArray.ts          ← NEW: the hook (id ref + counter + useFormSelector subscription)
+├── useFieldArray.ts          ← NEW: the hook (id ref + counter + useSyncExternalStore on nullable SubscriptionContext)
 ├── types.ts                  ← extend: UseFieldArrayReturn, UseFieldArrayProps, FieldArrayPath<T>
 └── index.ts                  ← export useFieldArray + types
 ```
