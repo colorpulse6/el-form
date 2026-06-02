@@ -40,6 +40,12 @@ describe("arrayEngine other ops", () => {
     moveItem(v, "items", 0, 1); swapItems(v, "items", 0, 1); updateItem(v, "items", 0, "z");
     expect(v.items).toEqual(["a", "b"]);
   });
+  it("removeItemAt on a non-existent array is a true no-op (does not materialize [])", () => {
+    const v = { other: 1 } as any;
+    const next = removeItemAt(v, "tags", 0);
+    expect(next).toBe(v); // unchanged object, no `tags: []` added
+    expect("tags" in next).toBe(false);
+  });
 });
 
 describe("arrayEngine.appendItem", () => {

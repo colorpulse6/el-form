@@ -25,6 +25,9 @@ export function insertItem(values: any, path: string, index: number, item: any):
   return setNestedValue(values, path, next);
 }
 export function removeItemAt(values: any, path: string, index: number): any {
+  // If there's no array at the path, removing is a true no-op — don't materialize
+  // an empty array (preserves the prior core removeArrayItem behavior).
+  if (!Array.isArray(getNestedValue(values, path))) return values;
   const arr = readArray(values, path);
   if (index < 0 || index >= arr.length) return setNestedValue(values, path, [...arr]);
   const next = [...arr]; next.splice(index, 1);
