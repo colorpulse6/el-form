@@ -92,8 +92,8 @@ function PropModeDemo() {
   return (
     <div>
       <span data-testid="p-count">{fields.length}</span>
-      <span data-testid="p-vals">{fields.map((f: any) => f.value).join(",")}</span>
-      <button onClick={() => append("b" as any)}>p-append</button>
+      <span data-testid="p-vals">{fields.map((f) => f.value).join(",")}</span>
+      <button onClick={() => append("b")}>p-append</button>
       <button onClick={() => remove(0)}>p-remove</button>
     </div>
   );
@@ -110,11 +110,11 @@ describe("useFieldArray prop mode + primitives + nested", () => {
   it("supports nested array paths", () => {
     function Nested() {
       const form = useForm<NestForm>({ defaultValues: { team: [{ skills: ["js"] }] } });
-      const fa = useFieldArray<NestForm, "team.0.skills">({ name: "team.0.skills" as any, form });
+      const fa = useFieldArray<NestForm, "team.0.skills">({ name: "team.0.skills", form });
       return (
         <div>
-          <span data-testid="n">{fa.fields.map((f: any) => f.value).join(",")}</span>
-          <button onClick={() => fa.append("ts" as any)}>n-add</button>
+          <span data-testid="n">{fa.fields.map((f) => f.value).join(",")}</span>
+          <button onClick={() => fa.append("ts")}>n-add</button>
         </div>
       );
     }
