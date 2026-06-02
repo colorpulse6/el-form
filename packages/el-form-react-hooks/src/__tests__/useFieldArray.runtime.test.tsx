@@ -168,3 +168,39 @@ describe("useFieldArray batched synchronous ops", () => {
     expect(screen.getByTestId("bc2").textContent).toBe("y");
   });
 });
+
+describe("useFieldArray keyName", () => {
+  it("default keyName 'id' shadows a domain id (documented behavior)", () => {
+    type F = { items: { id: string; name: string }[] };
+    function C() {
+      const { fields } = useFieldArray<F, "items">({ name: "items" });
+      return <span data-testid="k1">{fields.map((f: any) => f.id).join(",")}</span>;
+    }
+    function App() {
+      const form = useForm<F>({ defaultValues: { items: [{ id: "domain-1", name: "a" }] } });
+      return <FormProvider form={form}><C /></FormProvider>;
+    }
+    render(<App />);
+    // generated id, NOT the domain id
+    expect(screen.getByTestId("k1").textContent).toMatch(/^field-/);
+  });
+  it("custom keyName avoids clobbering the domain id", () => {
+    type F = { items: { id: string; name: string }[] };
+    function C() {
+      const { fields } = useFieldArray<F, "items">({ name: "items", keyName: "_key" });
+      return (
+        <span data-testid="k2">
+          {fields.map((f: any) => `${f.id}:${f._key}`).join(",")}
+        </span>
+      );
+    }
+    function App() {
+      const form = useForm<F>({ defaultValues: { items: [{ id: "domain-1", name: "a" }] } });
+      return <FormProvider form={form}><C /></FormProvider>;
+    }
+    render(<App />);
+    const txt = screen.getByTestId("k2").textContent!;
+    // domain id preserved under f.id; generated key under f._key
+    expect(txt).toMatch(/^domain-1:field-/);
+  });
+});

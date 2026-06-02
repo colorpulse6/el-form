@@ -22,7 +22,7 @@ export function useFieldArray<
 >(
   props: UseFieldArrayProps<T, Name>
 ): UseFieldArrayReturn<ArrayElement<PathValue<T, Name>>> {
-  const { name, form: formProp } = props;
+  const { name, form: formProp, keyName = "id" } = props;
   const sub = useContext(SubscriptionContext);
   const formCtx = useContext(FormContext);
   const form = (formProp ?? (formCtx as any)?.form) as any;
@@ -68,8 +68,8 @@ export function useFieldArray<
 
   const fields = arr.map((item, i) =>
     item !== null && typeof item === "object"
-      ? { ...item, id: s.ids[i] }
-      : { id: s.ids[i], value: item }
+      ? { ...item, [keyName]: s.ids[i] }
+      : { [keyName]: s.ids[i], value: item }
   ) as ReadonlyArray<FieldArrayRow<ArrayElement<PathValue<T, Name>>>>;
 
   // Each op mints/reorders ids in lockstep with the data write. The data array is

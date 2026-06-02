@@ -172,10 +172,11 @@ export type FieldArrayPath<T> = {
  * A row in `fields`. Object items get a generated `id` merged in; primitive items
  * become `{ id, value }`.
  *
- * NOTE: for object items, the generated `id` overwrites any existing `id` field on
- * your item when accessed via `fields` (the original value remains in form state and
- * on submit). If your items have their own `id`, use `field.id` only as the React key,
- * and read the domain id from the form value. A configurable key name may be added later.
+ * NOTE: for object items, the generated `id` (or the `keyName` you choose) overwrites
+ * any existing field of the same name on your item when accessed via `fields` (the
+ * original value remains in form state and on submit). If your items already have a
+ * domain `id`, pass `keyName` (e.g. `"_key"`) to `useFieldArray` so the generated key
+ * lands under a non-colliding name and your domain `id` is preserved on each row.
  */
 export type FieldArrayRow<TItem> = TItem extends object
   ? TItem & { id: string }
@@ -187,6 +188,9 @@ export interface UseFieldArrayProps<
 > {
   name: Name;
   form?: UseFormReturn<T>;
+  /** Property name to attach the generated stable id under. Default "id". Set to a
+   *  non-colliding name (e.g. "_key") if your items already have a domain `id`. */
+  keyName?: string;
 }
 
 export interface UseFieldArrayReturn<TItem> {
