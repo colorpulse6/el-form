@@ -14,6 +14,13 @@ All notable changes to the el-form project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### ✨ New Feature — `el-form-react-hooks@3.11.0`
+
+- **`useFieldArray`**: a new hook for dynamic array fields. Returns a `fields` array where each row carries a stable `id` to use as the React `key` (fixing the `key={index}` anti-pattern that breaks focus and values when rows are inserted, reordered, or removed from the middle), plus `append`, `prepend`, `insert`, `remove`, `move`, `swap`, `update`, and `replace`. Works inside `<FormProvider>` (re-renders only when its array changes) or with a `form` prop. `name` is type-restricted to array-valued paths and item types are inferred. See the [Array Fields guide](./guides/array-fields.md).
+  - The existing `addArrayItem` / `removeArrayItem` helpers are unchanged (now backed by a shared array engine). Fully backward-compatible — additive only.
+
 ## 2026-06-01
 
 ### 🐞 Bug Fixes — `el-form-react-hooks@3.10.2`
