@@ -23,13 +23,6 @@ import type { PathValue } from "./types/path";
 
 const EMPTY_ARRAY: any[] = [];
 
-function arrayChanged(a: any[] | undefined, b: any[]): boolean {
-  if (a === b) return false;
-  if (!a || a.length !== b.length) return true;
-  for (let i = 0; i < a.length; i++) if (!Object.is(a[i], b[i])) return true;
-  return false;
-}
-
 export function useFieldArray<
   T extends Record<string, any>,
   Name extends FieldArrayPath<T>
@@ -54,29 +47,24 @@ export function useFieldArray<
     return Array.isArray(arr) ? arr : EMPTY_ARRAY;
   }, [sub, form, path]);
 
-  const lastArrRef = useRef<any[] | undefined>(undefined);
-
+  // We subscribe to ALL form-state changes; useSyncExternalStore's own Object.is
+  // comparison on getArray()'s return value handles re-render isolation. getArray
+  // returns the RAW array reference (stable when unchanged), unlike useFormSelector's
+  // derived selectors — so no extra slice-gating is needed here.
   const subscribe = useCallback(
-    (onChange: () => void) => {
-      if (!sub) return () => {};
-      return sub.subscribe(() => {
-        const next = getArray();
-        if (arrayChanged(lastArrRef.current, next)) {
-          lastArrRef.current = next;
-          onChange();
-        }
-      });
-    },
-    [sub, getArray]
+    (onChange: () => void) => (sub ? sub.subscribe(onChange) : () => {}),
+    [sub]
   );
 
   const arr = useSyncExternalStore(subscribe, getArray, getArray);
-  lastArrRef.current = arr;
 
   const idState = useRef<{ ids: string[]; counter: number }>({ ids: [], counter: 0 });
   const nextId = () => `field-${idState.current.counter++}`;
 
   const s = idState.current;
+  // Reconcile ids to the array length. Mutating a ref during render is safe here
+  // because this is idempotent and length-guarded: re-running the render (StrictMode/
+  // concurrent) neither double-mints ids nor advances the counter spuriously.
   if (s.ids.length < arr.length) {
     while (s.ids.length < arr.length) s.ids.push(nextId());
   } else if (s.ids.length > arr.length) {

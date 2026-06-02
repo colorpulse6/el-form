@@ -163,6 +163,15 @@ export type FieldArrayPath<T> = {
   [K in Path<T>]: PathValue<T, K> extends ReadonlyArray<any> ? K : never;
 }[Path<T>];
 
+/**
+ * A row in `fields`. Object items get a generated `id` merged in; primitive items
+ * become `{ id, value }`.
+ *
+ * NOTE: for object items, the generated `id` overwrites any existing `id` field on
+ * your item when accessed via `fields` (the original value remains in form state and
+ * on submit). If your items have their own `id`, use `field.id` only as the React key,
+ * and read the domain id from the form value. A configurable key name may be added later.
+ */
 export type FieldArrayRow<TItem> = TItem extends object
   ? TItem & { id: string }
   : { id: string; value: TItem };
@@ -184,6 +193,7 @@ export interface UseFieldArrayReturn<TItem> {
   move: (from: number, to: number) => void;
   swap: (indexA: number, indexB: number) => void;
   update: (index: number, item: TItem) => void;
+  /** Replace the entire array. Re-mints all row ids (every row remounts). */
   replace: (items: TItem[]) => void;
 }
 
