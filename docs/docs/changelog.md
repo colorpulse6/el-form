@@ -19,7 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### ✨ New Feature — `el-form-react-hooks@3.11.0`
 
 - **`useFieldArray`**: a new hook for dynamic array fields. Returns a `fields` array where each row carries a stable `id` to use as the React `key` (fixing the `key={index}` anti-pattern that breaks focus and values when rows are inserted, reordered, or removed from the middle), plus `append`, `prepend`, `insert`, `remove`, `move`, `swap`, `update`, and `replace`. Works inside `<FormProvider>` (re-renders only when its array changes) or with a `form` prop. `name` is type-restricted to array-valued paths and item types are inferred. See the [Array Fields guide](./guides/array-fields.md).
+  - Optional `keyName` (default `"id"`) lets items that already have a domain `id` field choose a non-colliding key (e.g. `keyName: "_key"`) so the generated row key never shadows their data.
   - The existing `addArrayItem` / `removeArrayItem` helpers are unchanged (now backed by a shared array engine). Fully backward-compatible — additive only.
+
+### 🆕 New API — `el-form-react-hooks` `updateValue`
+
+- **`updateValue(path, updater)`**: apply a functional update to a field against the latest state (e.g. `updateValue("items", (prev) => [...prev, item])`). Avoids the stale-snapshot "lost update" pitfall when several updates run in one event handler. `useFieldArray` uses this internally so multiple synchronous operations all apply correctly.
 
 ## 2026-06-01
 
