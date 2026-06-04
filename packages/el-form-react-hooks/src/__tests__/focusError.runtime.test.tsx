@@ -47,8 +47,19 @@ describe("focus-on-error", () => {
   it("does not focus when shouldFocusError is false", async () => {
     const Demo = makeForm({ shouldFocusError: false });
     render(<Demo />);
+    // Pre-focus a sentinel; if focus-on-error were active it would steal focus to input "a".
+    const sentinelBtn = document.createElement("button");
+    sentinelBtn.setAttribute("data-testid", "sentinel");
+    document.body.appendChild(sentinelBtn);
+    sentinelBtn.focus();
+    expect(document.activeElement).toBe(sentinelBtn);
+
     fireEvent.click(screen.getByText("submit"));
     await new Promise((r) => setTimeout(r, 50));
+    // Focus must NOT have been programmatically moved to the first invalid field.
     expect(document.activeElement).not.toBe(screen.getByLabelText("a"));
+    expect(document.activeElement).not.toBe(screen.getByLabelText("b"));
+
+    document.body.removeChild(sentinelBtn);
   });
 });
