@@ -11,6 +11,7 @@ export interface AutoFormFieldConfig {
   label?: string;
   type?: FieldType;
   placeholder?: string;
+  required?: boolean;
   colSpan?: GridColumns;
   component?: React.ComponentType<AutoFormFieldProps>;
   options?: Array<{ value: string; label: string }>;
@@ -35,6 +36,10 @@ export interface AutoFormFieldProps {
   onBlur: (e: React.FocusEvent<any>) => void;
   error?: string;
   touched?: boolean;
+  required?: boolean;
+  inputRef?: (
+    el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
+  ) => void;
   options?: Array<{ value: string; label: string }>;
   fields?: AutoFormFieldConfig[];
   onAddItem?: () => void;
