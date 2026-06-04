@@ -1,4 +1,5 @@
 import { useFormContext } from "el-form-react-hooks";
+import { fieldAriaProps } from "./fieldAria";
 
 // Base field props that all field components should extend
 export interface BaseFieldProps<
@@ -38,6 +39,7 @@ export function TextField<T extends Record<string, any>, K extends keyof T>({
   placeholder,
   className = "",
   type = "text",
+  required,
   ...props
 }: BaseFieldProps<T, K> & {
   type?: "text" | "email" | "password" | "url" | "tel";
@@ -48,6 +50,7 @@ export function TextField<T extends Record<string, any>, K extends keyof T>({
   const error = field.getError(form.form);
   const touched = field.getTouched(form.form);
   const registration = field.register(form.form);
+  const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const inputClasses = `
     w-full px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-500
@@ -77,10 +80,16 @@ export function TextField<T extends Record<string, any>, K extends keyof T>({
         id={String(name)}
         type={type}
         placeholder={placeholder}
+        required={required}
+        aria-invalid={aria["aria-invalid"]}
+        aria-describedby={aria["aria-describedby"]}
+        aria-required={aria["aria-required"]}
         className={inputClasses}
       />
       {touched && error && (
-        <div className="text-red-500 text-xs mt-1">{error}</div>
+        <div id={aria.errorId} role="alert" className="text-red-500 text-xs mt-1">
+          {error}
+        </div>
       )}
     </div>
   );
@@ -95,6 +104,7 @@ export function TextareaField<
   placeholder,
   className = "",
   rows = 4,
+  required,
   ...props
 }: BaseFieldProps<T, K> & {
   rows?: number;
@@ -105,6 +115,7 @@ export function TextareaField<
   const error = field.getError(form.form);
   const touched = field.getTouched(form.form);
   const registration = field.register(form.form);
+  const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const textareaClasses = `
     w-full px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-500
@@ -134,10 +145,16 @@ export function TextareaField<
         id={String(name)}
         placeholder={placeholder}
         rows={rows}
+        required={required}
+        aria-invalid={aria["aria-invalid"]}
+        aria-describedby={aria["aria-describedby"]}
+        aria-required={aria["aria-required"]}
         className={textareaClasses}
       />
       {touched && error && (
-        <div className="text-red-500 text-xs mt-1">{error}</div>
+        <div id={aria.errorId} role="alert" className="text-red-500 text-xs mt-1">
+          {error}
+        </div>
       )}
     </div>
   );
@@ -149,6 +166,7 @@ export function SelectField<T extends Record<string, any>, K extends keyof T>({
   placeholder,
   className = "",
   options = [],
+  required,
   ...props
 }: BaseFieldProps<T, K> & {
   options: Array<{ value: string; label: string }>;
@@ -159,6 +177,7 @@ export function SelectField<T extends Record<string, any>, K extends keyof T>({
   const error = field.getError(form.form);
   const touched = field.getTouched(form.form);
   const registration = field.register(form.form);
+  const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const selectClasses = `
     w-full px-3 py-2 border rounded-md text-sm text-gray-900
@@ -186,6 +205,10 @@ export function SelectField<T extends Record<string, any>, K extends keyof T>({
         {...registration}
         {...props}
         id={String(name)}
+        required={required}
+        aria-invalid={aria["aria-invalid"]}
+        aria-describedby={aria["aria-describedby"]}
+        aria-required={aria["aria-required"]}
         className={selectClasses}
       >
         {placeholder && (
@@ -200,7 +223,9 @@ export function SelectField<T extends Record<string, any>, K extends keyof T>({
         ))}
       </select>
       {touched && error && (
-        <div className="text-red-500 text-xs mt-1">{error}</div>
+        <div id={aria.errorId} role="alert" className="text-red-500 text-xs mt-1">
+          {error}
+        </div>
       )}
     </div>
   );
