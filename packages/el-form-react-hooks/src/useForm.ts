@@ -38,6 +38,7 @@ export function useForm<T extends Record<string, any>>(
     validateOn,
     onSubmit,
     schema,
+    shouldFocusError,
   } = options;
 
   // Core refs and state
@@ -98,6 +99,8 @@ export function useForm<T extends Record<string, any>>(
     setFormState,
     validationManager,
     onSubmit,
+    fieldRefs,
+    shouldFocusError,
   });
 
   const errorManagement = createErrorManagementManager<T>({
