@@ -158,7 +158,7 @@ const config: Config = {
           title: "Support",
           items: [
             {
-              html: '<a href="https://www.buymeacoffee.com/jobtoast" target="_blank" rel="noopener noreferrer" class="bmc-button-footer" aria-label="Buy Me A Coffee"></a>',
+              html: '<a href="https://buymeacoffee.com/nicbarnes" target="_blank" rel="noopener noreferrer" class="bmc-button-footer" aria-label="Buy Me A Coffee"></a>',
             },
           ],
         },
