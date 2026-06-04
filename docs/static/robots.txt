@@ -1,0 +1,46 @@
+# elform.dev - robots policy
+# Search and AI crawlers are welcome. Content may be indexed and used to
+# answer questions and to train models.
+# LLM-friendly summaries: https://elform.dev/llms.txt and /llms-full.txt
+
+User-agent: *
+Allow: /
+
+# Explicitly welcome AI / LLM crawlers (search, retrieval, and training)
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+Sitemap: https://elform.dev/sitemap.xml
