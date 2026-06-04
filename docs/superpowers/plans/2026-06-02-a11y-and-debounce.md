@@ -287,7 +287,14 @@ afterEach(() => vi.useRealTimers());
 // Async: with asyncDebounceMs, N rapid validations resolve once after the delay.
 // Sync (added in step 3): with validationDebounceMs, rapid sync validations coalesce.
 ```
-Implementer: FIRST read `engine.ts` to get the exact public method (`validate`/`validateField`), the `ValidatorContext`/`ValidatorEvent` shapes, and how to construct the engine, then write real tests. Write the async characterization test and run it — it should PASS against current code (proves async debounce works). If it FAILS, that's a real bug — report it before continuing.
+Implementer: FIRST read `engine.ts`. The class is exported as **`ValidationEngine`** (named export, also re-exported from the package index). Public method: `validateField(fieldName, value, values, config, event)` — FIVE args (not the 4-arg hooks wrapper). Construct `new ValidationEngine()` directly and call it with a field-level config to hit the debounce machinery deterministically, e.g.:
+```ts
+const engine = new ValidationEngine();
+const cfg = { onChangeAsync: someAsyncValidator };
+const ev = { type: "onChange", isAsync: true, fieldName: "email" };
+// call validateField 3x rapidly with asyncDebounceMs in cfg, advance timers, assert underlying validator ran once
+```
+Write the async characterization test and run it — it should PASS against current code (proves async debounce works). If it FAILS, that's a real bug — report it before continuing. (Read the exact `ValidatorContext`/`ValidatorEvent`/`ValidatorConfig` shapes from `validators/types.ts` before finalizing.)
 
 - [ ] **Step 2: Add the sync config key**
 
@@ -297,28 +304,62 @@ In `validators/types.ts` `ValidatorConfig`, add:
 validationDebounceMs?: number;
 ```
 
-- [ ] **Step 3: Failing sync-debounce test**
+- [ ] **Step 3: Failing sync-debounce tests — BOTH field-level AND form-level**
 
-Add a test: a sync validator wired with `validationDebounceMs: 200`, called 3x rapidly, runs the underlying validation once after advancing 200ms. Run — FAILS (no sync debounce yet).
+> CRITICAL (from plan review): sync validation has TWO routes. Field-level
+> (`fieldValidators.<field>`) goes through `engine.validateField` → sync `else`. Form-level
+> (`validators.onChange` schema — the common AutoForm/quick-start case) goes through
+> `engine.validateForm` → `validateFormSync`, which currently takes NO config/event and so
+> cannot debounce. The async side is asymmetric-but-complete: `validateFormAsync` already
+> honors `asyncDebounceMs` at form level. To avoid `validationDebounceMs` being a silent
+> no-op at form level (where users will most likely put it, copying the `asyncDebounceMs`
+> pattern), debounce MUST be added to BOTH sync paths.
 
-- [ ] **Step 4: Implement the sync debounce branch**
+Add two failing tests: (a) a **field-level** sync validator with `validationDebounceMs: 200`
+called 3x rapidly runs once after 200ms; (b) a **form-level** `validators` config with
+`validationDebounceMs: 200` likewise coalesces. Run — both FAIL.
 
-In `engine.ts` `validateField`, change the sync branch (currently `else return SchemaAdapter.validate(...)`) to debounce when configured:
+- [ ] **Step 4a: Field-level sync debounce in `validateField`**
+
+In `engine.ts` `validateField`, change the sync `else` branch:
 
 ```ts
 } else {
-  const debounceMs =
-    (config[`${event.type}ValidationDebounceMs` as keyof ValidatorConfig] as number) ||
-    config.validationDebounceMs || 0;
+  const debounceMs = config.validationDebounceMs || 0;
   if (debounceMs > 0) {
     return this.validateSyncWithDebounce(validator, value, context, event, debounceMs);
   }
   return SchemaAdapter.validate(validator, value, context);
 }
 ```
-Add `validateSyncWithDebounce` mirroring `validateWithDebounce` but calling `SchemaAdapter.validate` (sync) inside the timer, reusing `this.debounceTimers` + `this.clearDebounce`. (Per-event key `onChangeValidationDebounceMs` etc. is optional symmetry — include only if trivial; otherwise just the global `validationDebounceMs`. Keep it simple: global key is enough for the spec. If you add per-event, add the keys to types.ts too.)
+Add a private `validateSyncWithDebounce(validator, value, context, event, debounceMs)`
+mirroring `validateWithDebounce` but calling `SchemaAdapter.validate` (sync) inside the
+timer, reusing `this.debounceTimers` + `this.clearDebounce` (key `${context.fieldName}-${event.type}`).
 
-> NOTE: keep error-CLEARING immediate. This branch only affects how the *result* is produced; the hooks `onChange` already clears the field error optimistically before calling validateField (`useForm.ts:264-274`), so a debounced result that comes back valid simply confirms the cleared state. Do not add clearing logic here.
+- [ ] **Step 4b: Form-level sync debounce in `validateFormSync` (symmetry with async)**
+
+`validateForm` (engine.ts:64-68) already has `config`+`event` in scope and forwards them to
+`validateFormAsync`. Forward them to the sync path too, and debounce there:
+
+```ts
+} else {
+  result = this.validateFormSync(validator, context, config, event);
+}
+```
+Change `validateFormSync` to accept `(validator, context, config, event)`. When
+`config.validationDebounceMs > 0`, wrap its final `SchemaAdapter.validate(validator, context.value)`
+return in a debounce timer (mirror `validateFormAsync`'s structure: key `form-${event.type}`,
+`clearDebounce("form", event.type)`, return a `Promise<ValidationResult>`). The function
+becomes `async` (return type `ValidationResult | Promise<ValidationResult>` → just make it
+async; `validateForm` already awaits). The function-validator branches (string/object/fn)
+stay synchronous and un-debounced — only the schema-validate path debounces, matching the
+spirit of debouncing expensive validation.
+
+> Keep it to the GLOBAL `validationDebounceMs` key (no per-event keys this round — YAGNI).
+> Keep error-CLEARING immediate: this only changes how the *result* is produced; the hooks
+> `onChange` already clears the field error optimistically before validating
+> (`useForm.ts:264-274`), so a debounced valid result just confirms the cleared state. Do
+> not add clearing logic here.
 
 - [ ] **Step 5: Run tests — sync + async both pass**
 
@@ -326,9 +367,13 @@ Run the debounce test file. Then `pnpm --filter el-form-core exec vitest --run` 
 
 - [ ] **Step 6: Commit**
 
+- [ ] **Step 7: Run both field-level AND form-level sync debounce tests — both pass**
+
+Confirm Step 3's two tests now pass (field-level via validateField, form-level via validateFormSync). Then full core suite.
+
 ```bash
 git add packages/el-form-core/src/validators/types.ts packages/el-form-core/src/validators/engine.ts packages/el-form-core/src/validators/__tests__/debounce.test.ts
-git commit -m "feat(core): validationDebounceMs for sync validation + characterization tests for async debounce"
+git commit -m "feat(core): validationDebounceMs debounces sync validation (field + form level); async debounce tests"
 ```
 
 ---
@@ -503,7 +548,7 @@ Run `pnpm changeset status` — expect hooks/components/core minor + cascade to 
 - [ ] **Step 3: Docs**
 
 - Add an "Accessibility" section to the AutoForm guide + a note in the field-components/custom-components guide describing the ARIA attributes and `shouldFocusError`.
-- Document `validationDebounceMs` in the validation/async-validation docs alongside the existing `asyncDebounceMs`.
+- Document `validationDebounceMs` in the validation/async-validation docs alongside the existing `asyncDebounceMs`. It works at BOTH levels (form `validators` and `fieldValidators`), now symmetric with `asyncDebounceMs`. Show a form-level example: `useForm({ validators: { onChange: schema, validationDebounceMs: 200 } })`.
 - Add an "Unreleased" bullet group to `docs/docs/changelog.md` under the existing `## [Unreleased]` heading (created in the useFieldArray PR) — a11y + focus-on-error + validationDebounceMs.
 - Build docs: `pnpm --filter el-form-docs build` (must succeed).
 
