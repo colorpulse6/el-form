@@ -1,4 +1,4 @@
-import { useFormContext } from "el-form-react-hooks";
+import { useFormContext, useField } from "el-form-react-hooks";
 import { fieldAriaProps } from "./fieldAria";
 
 // Base field props that all field components should extend
@@ -45,11 +45,11 @@ export function TextField<T extends Record<string, any>, K extends keyof T>({
   type?: "text" | "email" | "password" | "url" | "tel";
 }) {
   const form = useFormContext<T>();
-  const field = createField<T, K>(name);
-
-  const error = field.getError(form.form);
-  const touched = field.getTouched(form.form);
-  const registration = field.register(form.form);
+  const { error, touched } = useField<T, any>(name as any);
+  const registration = form.form.register(String(name) as any) as Record<
+    string,
+    any
+  >;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const inputClasses = `
@@ -110,11 +110,11 @@ export function TextareaField<
   rows?: number;
 }) {
   const form = useFormContext<T>();
-  const field = createField<T, K>(name);
-
-  const error = field.getError(form.form);
-  const touched = field.getTouched(form.form);
-  const registration = field.register(form.form);
+  const { error, touched } = useField<T, any>(name as any);
+  const registration = form.form.register(String(name) as any) as Record<
+    string,
+    any
+  >;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const textareaClasses = `
@@ -172,11 +172,11 @@ export function SelectField<T extends Record<string, any>, K extends keyof T>({
   options: Array<{ value: string; label: string }>;
 }) {
   const form = useFormContext<T>();
-  const field = createField<T, K>(name);
-
-  const error = field.getError(form.form);
-  const touched = field.getTouched(form.form);
-  const registration = field.register(form.form);
+  const { error, touched } = useField<T, any>(name as any);
+  const registration = form.form.register(String(name) as any) as Record<
+    string,
+    any
+  >;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const selectClasses = `

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import React from "react";
 import { z } from "zod";
 import { useForm, FormProvider } from "el-form-react-hooks";
@@ -26,17 +26,8 @@ describe("FieldComponents a11y", () => {
     expect(input.getAttribute("aria-required")).toBe("true");
 
     // produce an error: type an invalid value then blur to mark touched.
-    // The standalone field reads form state through the context holder, which
-    // settles errors/touched one render cycle behind the underlying state, so
-    // we flush microtasks and nudge one more render (a second blur) to let the
-    // touched + error state paint.
     fireEvent.change(input, { target: { value: "x" } });
     fireEvent.blur(input);
-    await act(async () => {
-      await Promise.resolve();
-    });
-    fireEvent.blur(input);
-
     const err = await screen.findByRole("alert");
     expect(err.getAttribute("id")).toBe("email-error");
     expect(input.getAttribute("aria-invalid")).toBe("true");
