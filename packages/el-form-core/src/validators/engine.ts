@@ -39,6 +39,16 @@ export class ValidationEngine {
     if (event.isAsync) {
       return this.validateAsync(validator, context, config, event);
     } else {
+      const debounceMs = config.validationDebounceMs || 0;
+      if (debounceMs > 0) {
+        return this.validateSyncWithDebounce(
+          validator,
+          value,
+          context,
+          event,
+          debounceMs
+        );
+      }
       return SchemaAdapter.validate(validator, value, context);
     }
   }
@@ -64,7 +74,7 @@ export class ValidationEngine {
     if (event.isAsync) {
       result = await this.validateFormAsync(validator, context, config, event);
     } else {
-      result = this.validateFormSync(validator, context);
+      result = await this.validateFormSync(validator, context, config, event);
     }
 
     return result;
@@ -180,10 +190,35 @@ export class ValidationEngine {
     });
   }
 
-  private validateFormSync(
+  private async validateSyncWithDebounce(
     validator: any,
-    context: { value: Record<string, any> }
-  ): ValidationResult {
+    value: any,
+    context: ValidatorContext,
+    event: ValidatorEvent,
+    debounceMs: number
+  ): Promise<ValidationResult> {
+    const key = `${context.fieldName}-${event.type}`;
+
+    // Clear existing timer (supersede the previous pending validation)
+    this.clearDebounce(context.fieldName, event.type);
+
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.debounceTimers.delete(key);
+        const result = SchemaAdapter.validate(validator, value, context);
+        resolve(result);
+      }, debounceMs);
+
+      this.debounceTimers.set(key, timer);
+    });
+  }
+
+  private async validateFormSync(
+    validator: any,
+    context: { value: Record<string, any> },
+    config: ValidatorConfig,
+    event: ValidatorEvent
+  ): Promise<ValidationResult> {
     if (typeof validator === "function") {
       const result = (validator as FormLevelValidator)(context);
 
@@ -206,7 +241,24 @@ export class ValidationEngine {
       }
     }
 
-    // For schema validators at form level, validate the entire form values
+    // For schema validators at form level, validate the entire form values.
+    // Debounce this path when configured (mirrors validateFormAsync). The
+    // function-validator branches above stay synchronous and un-debounced.
+    const debounceMs = config.validationDebounceMs || 0;
+    if (debounceMs > 0) {
+      const key = `form-${event.type}`;
+      this.clearDebounce("form", event.type);
+
+      return new Promise((resolve) => {
+        const timer = setTimeout(() => {
+          this.debounceTimers.delete(key);
+          resolve(SchemaAdapter.validate(validator, context.value));
+        }, debounceMs);
+
+        this.debounceTimers.set(key, timer);
+      });
+    }
+
     return SchemaAdapter.validate(validator, context.value);
   }
 
