@@ -40,6 +40,7 @@ describe("AutoForm a11y", () => {
     const schema = z.object({
       email: z.string().email("bad email"), // required
       nickname: z.string().optional(), // optional
+      country: z.string().default("US"), // has a default => not required
     });
     render(<AutoForm schema={schema} onSubmit={() => {}} />);
 
@@ -48,6 +49,9 @@ describe("AutoForm a11y", () => {
 
     const nickname = screen.getByLabelText(/nickname/i) as HTMLInputElement;
     expect(nickname.getAttribute("aria-required")).toBe(null); // optional => no aria-required
+
+    const country = screen.getByLabelText(/country/i) as HTMLInputElement;
+    expect(country.getAttribute("aria-required")).toBe(null); // default => not required
 
     // AutoForm defaults to validateOn="onSubmit", so submit to surface the
     // error (which also marks the field touched).
