@@ -74,6 +74,22 @@ describe("sync debounce (new — validationDebounceMs)", () => {
     );
   });
 
+  it("propagates the validation RESULT (errors) through the debounced sync path", async () => {
+    const engine = new ValidationEngine();
+    // A field-level schema that rejects empty strings; the debounced result must carry
+    // the failure, not silently resolve valid.
+    const schema = z.string().min(1, "name required");
+    const config: any = { onChange: schema, validationDebounceMs: 200 };
+    const ev: any = { type: "onChange", isAsync: false, fieldName: "name" };
+
+    const last = engine.validateField("name", "", { name: "" }, config, ev);
+    await vi.advanceTimersByTimeAsync(250);
+    const result = await last;
+
+    expect(result.isValid).toBe(false);
+    expect(Object.keys(result.errors).length).toBeGreaterThan(0);
+  });
+
   it("coalesces rapid sync FORM validations with validationDebounceMs", async () => {
     const engine = new ValidationEngine();
     // Use a real schema (NOT a function) so the form-level schema-validate path —
