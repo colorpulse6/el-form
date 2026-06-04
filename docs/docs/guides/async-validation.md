@@ -73,6 +73,26 @@ You can scope the debounce to a specific event with
 `onChangeAsyncDebounceMs` / `onBlurAsyncDebounceMs`, or set `asyncDebounceMs`
 to cover all async validators on that field.
 
+### Debouncing synchronous validation
+
+`asyncDebounceMs` only affects async validators. To debounce **synchronous**
+validation (e.g. an expensive schema, or just to reduce error flicker while the
+user types), use `validationDebounceMs`. It works at both the form and field
+level and defaults to `0` (validate on every change, unchanged):
+
+```typescript
+const form = useForm({
+  validators: {
+    onChange: schema,
+    validationDebounceMs: 200, // coalesce sync validation while typing
+  },
+});
+```
+
+Error *clearing* stays immediate — only the setting of a new error is delayed —
+so a field that becomes valid is never left showing a stale error during the
+quiet period.
+
 ## Validate on blur instead of change
 
 To check only when the user leaves the field, use `onBlurAsync`:

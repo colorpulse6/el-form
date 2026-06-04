@@ -513,6 +513,32 @@ function SignupForm() {
 }
 ```
 
+## Accessibility
+
+AutoForm generates accessible markup out of the box — you don't need to wire any
+ARIA attributes yourself:
+
+- Each input sets **`aria-invalid`** when it has a visible error.
+- Each input links to its error message via **`aria-describedby`**, and the error
+  element carries a matching `id` and **`role="alert"`** so screen readers announce
+  it as soon as it appears.
+- Fields whose schema type is not optional/nullable get **`aria-required`**.
+- Labels are associated with their controls via `htmlFor` / `id`.
+
+### Focus-on-error
+
+After a failed submit, focus automatically moves to the first invalid field, so
+keyboard and screen-reader users land directly on what needs fixing. This is on by
+default. To turn it off, pass `shouldFocusError: false` to the underlying form (via
+the `useForm` hook when you build a custom form, or it is on by default for AutoForm).
+
+The standalone `TextField` / `TextareaField` / `SelectField` components carry the
+same ARIA wiring. Pass `required` to a field component to advertise `aria-required`:
+
+```tsx
+<TextField name="email" label="Email" required />
+```
+
 ## Render Props Pattern
 
 Access form state and methods for advanced customization:
