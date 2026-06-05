@@ -50,6 +50,19 @@ in two modules with near-duplicate logic:
 - `packages/el-form-core/src/validators/__tests__/fileValidators.test.ts` — node env, pure.
 - `packages/el-form-react-hooks/src/utils/__tests__/fileUtils.test.ts` — jsdom (for
   `File`, `FileReader`).
+- `packages/el-form-react-hooks/src/__tests__/fileMethods.runtime.test.tsx` — jsdom; covers
+  `useForm`'s public `addFile` / `removeFile` / `clearFiles` + `filePreview` state (now
+  in scope per the review — they're public, untested methods).
+
+### `FileList` testing constraint (from spec review)
+`FileList` is not constructible in node OR jsdom and is `undefined` in the core node env.
+So:
+- Core tests exercise the array path with **`File[]`** only. The `value instanceof FileList`
+  branch in `createFileValidator`/`validateFiles` is covered behaviorally by `File[]`; the
+  FileList-specific `instanceof` line gets a code comment noting it's a browser-only path
+  not exercised by unit tests. Do NOT attempt to fabricate a `FileList`.
+- `useForm` file-method tests use `File` / `File[]` values (which is what `register`
+  produces — it already converts a `FileList` to an array on change).
 
 ### Dedupe (source)
 - `fileUtils.ts`: remove its local `validateFile`/`validateFiles` and re-export core's
@@ -87,6 +100,16 @@ in two modules with near-duplicate logic:
 - `validateFile`/`validateFiles` post-dedupe: behave identically to core (now returning
   `undefined`); a test documents they delegate to core.
 
+### useForm file methods (jsdom runtime — now in scope)
+- `addFile(name, file)`: on an empty/single field → sets the file; on an existing
+  array/FileList field → appends (`[...existing, file]`).
+- `removeFile(name, index)`: splices the file at `index` from the array AND splices the
+  matching `filePreview` entry.
+- `removeFile(name)` (no index): clears the field to `null` and deletes its `filePreview`.
+- `clearFiles(name)`: sets the field to `null`.
+- Construct files via `new File(["x"], "a.png", { type: "image/png" })`; drive through a
+  rendered `useForm` (mirror the existing hooks runtime test setup).
+
 ## Error handling / risk
 
 - `getFilePreview` uses `FileReader` (async, DOM) — tests mock it deterministically rather
@@ -99,22 +122,31 @@ in two modules with near-duplicate logic:
 
 - New test files pass; `pnpm --filter el-form-core exec vitest --run` and
   `pnpm --filter el-form-react-hooks exec vitest --environment jsdom --run` green.
-- `pnpm build:packages` clean; `dist/index.d.ts` for hooks still exports `FileInfo`,
-  `FileValidationOptions`, `getFileInfo`, `getFilePreview` (no public-surface regression).
+- **Build FIRST, then assert the public surface:** run `pnpm build:packages`, then check
+  the freshly-built `packages/el-form-react-hooks/dist/index.d.ts` still exports `FileInfo`,
+  `FileValidationOptions`, `getFileInfo`, `getFilePreview` and does NOT newly expose
+  `validateFile`/`validateFiles` (no public-surface regression). Don't rely on a stale/absent
+  dist.
 - Existing component file tests (`AdvancedFileValidation`/`ZodFileValidation` demos +
   `AutoForm` file paths) unaffected.
 - tsd green (the `FileValidationOptions` type move must not break type tests).
 
 ## Open questions (resolve in plan, each with a test)
 
-1. **`maxSize: 0` / `minSize: 0` falsy-skip** — `if (options.maxSize && ...)` means a
-   `0` threshold is ignored. Is that a real bug or intended ("0 = no limit")? **Leaning:**
-   it's a footgun but plausibly intended as "unset"; pin current behavior with a test and a
-   code comment rather than changing it — `0` as a meaningful limit is an odd use case.
-   Confirm in plan; if we DO change it, that's a public `el-form-core` behavior change →
-   changeset.
-2. **`null` vs `undefined` divergence** — resolved by dedupe (hooks adopts core's
-   `undefined`). Confirm no internal caller relied on `null` (none found).
+1. **`maxSize: 0` / `minSize: 0` (and `maxFiles: 0` / `minFiles: 0`) falsy-skip** —
+   `if (options.maxSize && ...)` (and the same pattern for maxFiles/minFiles in
+   `validateFiles`) means a `0` threshold is ignored. Real bug or intended ("0 = no
+   limit")? **Leaning:** footgun but plausibly "unset"; **pin current behavior** with tests
+   + a code comment rather than changing it (`0` as a meaningful limit is an odd use case).
+   Pin all four (maxSize/minSize/maxFiles/minFiles) for symmetry. If we DO change it, that's
+   a public `el-form-core` behavior change → changeset.
+2. **`getFileExtension` quirks** — `("README").slice(((lastIndexOf(".")-1)>>>0)+2)` returns
+   the WHOLE string `"README"` (not `""`) for a no-dot filename; dotfiles (`.gitignore`)
+   return `"gitignore"`. These are unintuitive — assert them explicitly with a comment so a
+   future reader doesn't "fix" the quirk. Pin, don't change (it's a shared helper; changing
+   it would shift `getFileInfo().extension`, a public field → changeset).
+3. **`null` vs `undefined` divergence** — resolved by dedupe (hooks adopts core's
+   `undefined`). Confirmed no internal caller relied on `null` (grep-verified in review).
 
 ## Success criteria
 
