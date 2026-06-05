@@ -39,11 +39,6 @@ Thumbs.db
 *.tmp
 *.temp
 
-# Test projects
-el-form-test-project/
-examples/showcase/
-examples/tests/
-
 # Development tracking
 FEATURE_CHECKLIST.md
 agent-actions/
