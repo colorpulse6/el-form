@@ -111,7 +111,7 @@ const config: Config = {
       logo: {
         alt: "El Form Logo",
         src: "img/logo.png",
-        href: "/docs/intro",
+        href: "/",
       },
       hideOnScroll: false,
       style: "dark",
