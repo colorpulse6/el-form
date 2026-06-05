@@ -138,7 +138,7 @@ export class SchemaAdapter {
   }
 
   private static validateFunction(
-    validator: Function,
+    validator: (context: ValidatorContext) => any,
     value: any,
     context?: ValidatorContext
   ): ValidationResult {
@@ -170,7 +170,7 @@ export class SchemaAdapter {
   }
 
   private static async validateAsyncFunction(
-    validator: Function,
+    validator: (context: ValidatorContext) => any,
     value: any,
     context?: ValidatorContext
   ): Promise<ValidationResult> {

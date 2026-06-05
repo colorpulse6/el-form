@@ -84,15 +84,11 @@ describe("AutoForm nested object support", () => {
       }),
     });
 
-    let submittedData: any = null;
-
     render(
       <AutoForm
         schema={schema}
         initialValues={{ address: { street: "", city: "" } }}
-        onSubmit={(data) => {
-          submittedData = data;
-        }}
+        onSubmit={() => {}}
       />
     );
 

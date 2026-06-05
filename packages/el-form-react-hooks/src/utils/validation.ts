@@ -175,7 +175,7 @@ export function createValidationManager<T extends Record<string, any>>(
       const configuredKeys = (cfg: ValidatorConfig | undefined) =>
         SYNC_KEYS.filter((k) => cfg && typeof (cfg as any)[k] !== "undefined");
 
-      let allErrors: Record<string, string> = {};
+      const allErrors: Record<string, string> = {};
       let isValid = true;
 
       // Validate all fields with field-level validators

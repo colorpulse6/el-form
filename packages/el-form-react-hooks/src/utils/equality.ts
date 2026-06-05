@@ -17,7 +17,7 @@ export function shallowEqual(obj1: any, obj2: any): boolean {
 
   if (keys1.length !== keys2.length) return false;
 
-  for (let key of keys1) {
+  for (const key of keys1) {
     if (!keys2.includes(key) || obj1[key] !== obj2[key]) {
       return false;
     }
@@ -51,7 +51,7 @@ export function deepEqual(obj1: any, obj2: any): boolean {
 
   if (keys1.length !== keys2.length) return false;
 
-  for (let key of keys1) {
+  for (const key of keys1) {
     if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) {
       return false;
     }

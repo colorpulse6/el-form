@@ -316,10 +316,12 @@ const FormSwitchImpl = (props: any) => {
     }
 
     // Type guard for FormCase elements
-    function isFormCaseElement(el: unknown): el is React.ReactElement<{
+    const isFormCaseElement = (
+      el: unknown
+    ): el is React.ReactElement<{
       value: DiscriminatorPrimitive;
       children: (form: UseFormReturn<any>) => React.ReactNode;
-    }> {
+    }> => {
       if (!React.isValidElement(el)) return false;
       const props: any = el.props;
       return (
@@ -327,7 +329,7 @@ const FormSwitchImpl = (props: any) => {
         ["string", "number", "boolean"].includes(typeof props.value) &&
         typeof props.children === "function"
       );
-    }
+    };
 
     for (const child of childrenArray) {
       if (!isFormCaseElement(child)) continue;

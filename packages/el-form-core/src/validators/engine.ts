@@ -10,8 +10,29 @@ import { SchemaAdapter } from "./adapters";
 // Framework-agnostic timer type that works in both browser and Node.js
 type Timer = number | any;
 
+// A pending debounced validation: its scheduled timer plus the resolver of the
+// Promise handed to the caller. Keeping the resolver reachable lets a superseding
+// call (or an explicit clear) settle the dangling promise instead of leaving any
+// awaiter hung forever.
+interface PendingDebounce {
+  timer: Timer;
+  resolve: (result: ValidationResult) => void;
+}
+
+// Resolution handed to superseded/cleared debounced calls. Safe because: (a) a
+// newer validation for the same key is already in flight and will produce the
+// authoritative result; (b) the hooks layer treats `isValid: true` as "nothing to
+// set", so a superseded result never writes stale errors. Its sole purpose is to
+// unblock the dangling promise.
+// Frozen so an accidental future `result.errors[x] = ...` on a superseded result
+// throws loudly (strict mode) rather than silently corrupting the shared reference.
+const SUPERSEDED_RESULT: ValidationResult = Object.freeze({
+  isValid: true,
+  errors: Object.freeze({}) as Record<string, string>,
+});
+
 export class ValidationEngine {
-  private debounceTimers: Map<string, Timer> = new Map();
+  private debounceTimers: Map<string, PendingDebounce> = new Map();
 
   /**
    * Validates a single field using the provided validator configuration
@@ -41,12 +62,10 @@ export class ValidationEngine {
     } else {
       const debounceMs = config.validationDebounceMs || 0;
       if (debounceMs > 0) {
-        return this.validateSyncWithDebounce(
-          validator,
-          value,
-          context,
-          event,
-          debounceMs
+        return this.debounce(
+          `${context.fieldName}-${event.type}`,
+          debounceMs,
+          () => SchemaAdapter.validate(validator, value, context)
         );
       }
       return SchemaAdapter.validate(validator, value, context);
@@ -122,20 +141,58 @@ export class ValidationEngine {
    * Clears debounce timer for a specific field
    */
   clearDebounce(fieldName: string, eventType: string): void {
-    const key = `${fieldName}-${eventType}`;
-    const timer = this.debounceTimers.get(key);
-    if (timer) {
-      clearTimeout(timer);
-      this.debounceTimers.delete(key);
-    }
+    this.clearDebounceKey(`${fieldName}-${eventType}`);
   }
 
   /**
    * Clears all debounce timers
    */
   clearAllDebounce(): void {
-    this.debounceTimers.forEach((timer) => clearTimeout(timer));
+    // Resolve every pending awaiter with the safe sentinel before clearing, so an
+    // explicit clear-all never leaves a debounced caller hung.
+    this.debounceTimers.forEach(({ timer, resolve }) => {
+      clearTimeout(timer);
+      resolve(SUPERSEDED_RESULT);
+    });
     this.debounceTimers.clear();
+  }
+
+  /**
+   * Clears the pending debounced validation for a key. If one exists, its awaiter
+   * is resolved with the safe sentinel (a newer call/clear supersedes it) and its
+   * timer is cancelled, so superseded callers never hang.
+   */
+  private clearDebounceKey(key: string): void {
+    const pending = this.debounceTimers.get(key);
+    if (pending) {
+      clearTimeout(pending.timer);
+      pending.resolve(SUPERSEDED_RESULT);
+      this.debounceTimers.delete(key);
+    }
+  }
+
+  /**
+   * Schedules a debounced validation under `key`, superseding any pending call for
+   * the same key. The superseded call's promise is resolved with the safe sentinel
+   * (a newer validation is now in flight that will produce the real result) before
+   * its timer is cleared — preventing superseded awaiters from hanging forever.
+   * The single source of truth for all debounced validation paths.
+   */
+  private debounce(
+    key: string,
+    debounceMs: number,
+    run: () => ValidationResult | Promise<ValidationResult>
+  ): Promise<ValidationResult> {
+    this.clearDebounceKey(key);
+
+    return new Promise<ValidationResult>((resolve) => {
+      const timer = setTimeout(async () => {
+        this.debounceTimers.delete(key);
+        resolve(await run());
+      }, debounceMs);
+
+      this.debounceTimers.set(key, { timer, resolve });
+    });
   }
 
   private async validateAsync(
@@ -151,66 +208,14 @@ export class ValidationEngine {
       (config[specificDebounceKey] as number) || config.asyncDebounceMs || 0;
 
     if (debounceMs > 0) {
-      return this.validateWithDebounce(
-        validator,
-        context,
-        config,
-        event,
-        debounceMs
+      return this.debounce(
+        `${context.fieldName}-${event.type}`,
+        debounceMs,
+        () => SchemaAdapter.validateAsync(validator, context.value, context)
       );
     }
 
     return SchemaAdapter.validateAsync(validator, context.value, context);
-  }
-
-  private async validateWithDebounce(
-    validator: any,
-    context: ValidatorContext,
-    _config: ValidatorConfig,
-    event: ValidatorEvent,
-    debounceMs: number
-  ): Promise<ValidationResult> {
-    const key = `${context.fieldName}-${event.type}`;
-
-    // Clear existing timer
-    this.clearDebounce(context.fieldName, event.type);
-
-    return new Promise((resolve) => {
-      const timer = setTimeout(async () => {
-        this.debounceTimers.delete(key);
-        const result = await SchemaAdapter.validateAsync(
-          validator,
-          context.value,
-          context
-        );
-        resolve(result);
-      }, debounceMs);
-
-      this.debounceTimers.set(key, timer);
-    });
-  }
-
-  private async validateSyncWithDebounce(
-    validator: any,
-    value: any,
-    context: ValidatorContext,
-    event: ValidatorEvent,
-    debounceMs: number
-  ): Promise<ValidationResult> {
-    const key = `${context.fieldName}-${event.type}`;
-
-    // Clear existing timer (supersede the previous pending validation)
-    this.clearDebounce(context.fieldName, event.type);
-
-    return new Promise((resolve) => {
-      const timer = setTimeout(() => {
-        this.debounceTimers.delete(key);
-        const result = SchemaAdapter.validate(validator, value, context);
-        resolve(result);
-      }, debounceMs);
-
-      this.debounceTimers.set(key, timer);
-    });
   }
 
   private async validateFormSync(
@@ -246,17 +251,9 @@ export class ValidationEngine {
     // function-validator branches above stay synchronous and un-debounced.
     const debounceMs = config.validationDebounceMs || 0;
     if (debounceMs > 0) {
-      const key = `form-${event.type}`;
-      this.clearDebounce("form", event.type);
-
-      return new Promise((resolve) => {
-        const timer = setTimeout(() => {
-          this.debounceTimers.delete(key);
-          resolve(SchemaAdapter.validate(validator, context.value));
-        }, debounceMs);
-
-        this.debounceTimers.set(key, timer);
-      });
+      return this.debounce(`form-${event.type}`, debounceMs, () =>
+        SchemaAdapter.validate(validator, context.value)
+      );
     }
 
     return SchemaAdapter.validate(validator, context.value);
@@ -271,21 +268,9 @@ export class ValidationEngine {
     const debounceMs = config.asyncDebounceMs || 0;
 
     if (debounceMs > 0) {
-      const key = `form-${event.type}`;
-      this.clearDebounce("form", event.type);
-
-      return new Promise((resolve) => {
-        const timer = setTimeout(async () => {
-          this.debounceTimers.delete(key);
-          const result = await this.executeFormAsyncValidation(
-            validator,
-            context
-          );
-          resolve(result);
-        }, debounceMs);
-
-        this.debounceTimers.set(key, timer);
-      });
+      return this.debounce(`form-${event.type}`, debounceMs, () =>
+        this.executeFormAsyncValidation(validator, context)
+      );
     }
 
     return this.executeFormAsyncValidation(validator, context);
