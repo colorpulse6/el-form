@@ -34,12 +34,12 @@ const InputComponent = React.memo(function InputComponent({
   field: string;
 }) {
   const { form } = useFormContext<any>();
-  const props = form.register(field);
+  const registered = form.register(field);
   return (
     <input
       aria-label={`${field}-input`}
-      value={(props as any).value}
-      onChange={(props as any).onChange}
+      value={(registered as any).value}
+      onChange={(registered as any).onChange}
     />
   );
 });

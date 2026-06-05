@@ -26,7 +26,7 @@ function AsyncValidationForm({
     defaultValues: { username: "", email: "" },
     validateOn: "onChange",
     validators: {
-      onChangeAsync: async ({ value, values }) => {
+      onChangeAsync: async ({ value: _value, values }) => {
         onValidate?.(values);
         const result = schema.safeParse(values);
         if (!result.success) {

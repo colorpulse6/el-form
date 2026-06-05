@@ -141,7 +141,6 @@ describe("AutoForm validation user feedback", () => {
 
     // Verify field types
     const usernameInput = screen.getByLabelText("Username") as HTMLInputElement;
-    const emailInput = screen.getByLabelText("Email") as HTMLInputElement;
     const ageInput = screen.getByLabelText("Age") as HTMLInputElement;
 
     expect(usernameInput.type).toBe("text");

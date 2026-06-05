@@ -17,7 +17,7 @@ export function flattenObject(obj: any, prefix = ""): Record<string, any> {
   const flattened: Record<string, any> = {};
 
   for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const newKey = prefix ? `${prefix}.${key}` : key;
 
       if (

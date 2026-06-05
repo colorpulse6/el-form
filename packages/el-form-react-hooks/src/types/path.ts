@@ -9,7 +9,7 @@ type Primitive =
   | undefined
   | Date
   | bigint
-  | Function;
+  | ((...args: any[]) => any);
 
 // (reserved) Tuple detection helper – left for potential future refinement
 // type IsTuple<T> = T extends readonly [...infer _R] ? true : false;
