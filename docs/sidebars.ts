@@ -13,6 +13,7 @@ const sidebars = {
         "concepts/validation",
         "concepts/form-state",
         "concepts/performance",
+        "concepts/accessibility",
         "concepts/component-reusability",
       ],
     },
@@ -28,6 +29,7 @@ const sidebars = {
         "guides/array-fields",
         "guides/custom-components",
         "guides/integration-with-ui-libraries",
+        "guides/migration",
       ],
     },
     {

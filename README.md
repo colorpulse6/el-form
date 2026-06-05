@@ -37,6 +37,15 @@ export function SignupForm() {
 - **Machine-readable docs:** [elform.dev/llms.txt](https://elform.dev/llms.txt) · [elform.dev/llms-full.txt](https://elform.dev/llms-full.txt)
 - **MCP server** (live docs + snippets as agent tools): `npx el-form-mcp` — see [`packages/el-form-mcp`](./packages/el-form-mcp)
 
+## 🆕 What's New in 3.11.0
+
+- **`useFieldArray`** — dynamic array fields with stable row `id`s for correct React keys, plus `append` / `prepend` / `insert` / `remove` / `move` / `swap` / `update` / `replace`. [Guide →](https://elform.dev/docs/guides/array-fields)
+- **Accessible by default** — `aria-invalid` / `aria-describedby` / `aria-required` + `role="alert"` errors on AutoForm and the field components, plus opt-in focus-on-error (`shouldFocusError`). [Accessibility →](https://elform.dev/docs/concepts/accessibility)
+- **`validationDebounceMs`** — debounce synchronous validation (field + form level), alongside the existing `asyncDebounceMs`.
+- **`updateValue(path, updater)`** — functional updates against the latest state, safe to batch in one handler.
+
+See the [full changelog](https://elform.dev/docs/changelog).
+
 ## 📋 Table of Contents
 
 - [🚀 Quick Installation](#-quick-installation)

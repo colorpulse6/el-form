@@ -34,6 +34,7 @@ interface UseFormOptions<T extends Record<string, any>> {
   fileValidators?: Partial<Record<keyof T, FileValidationOptions>>;
   mode?: "onChange" | "onBlur" | "onSubmit" | "all";
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
+  shouldFocusError?: boolean; // default true
 }
 ```
 
@@ -187,6 +188,47 @@ const form = useForm({
   },
 });
 ```
+
+#### shouldFocusError
+
+**Type:** `boolean`  
+**Optional:** Yes — **default `true`**
+
+When a submit fails validation, automatically move focus to the **first invalid
+field**. This improves keyboard and screen-reader UX (the user lands directly on what
+needs fixing) and only fires on an invalid submit. Set to `false` to opt out.
+
+```typescript
+const form = useForm({
+  validators: { onSubmit: schema },
+  shouldFocusError: false, // don't auto-focus the first error
+});
+```
+
+Focus-on-error relies on the `ref` that `register` returns — make sure each field is
+registered with `{...register("name")}` so its DOM node can be focused.
+
+#### validationDebounceMs
+
+**Type:** `number`  
+**Optional:** Yes — **default `0`** (no debounce)
+
+Debounce **synchronous** validation (e.g. an expensive schema, or just to reduce error
+flicker while typing). Works at both the form and field level, and is the synchronous
+counterpart to [`asyncDebounceMs`](../guides/async-validation.md#debouncing). Set on a
+`ValidatorConfig` (either `validators` or a `fieldValidators` entry):
+
+```typescript
+const form = useForm({
+  validators: {
+    onChange: schema,
+    validationDebounceMs: 200, // coalesce sync validation while typing
+  },
+});
+```
+
+Error _clearing_ stays immediate — only the _setting_ of a new error is delayed — so a
+field that becomes valid never lingers with a stale error during the quiet period.
 
 ## Return Value
 
@@ -420,6 +462,27 @@ useEffect(() => {
   loadUserData();
 }, [userId, setValues]);
 ```
+
+##### updateValue
+
+**Type:** `<Name extends Path<T>>(path: Name, updater: (current: PathValue<T, Name>) => PathValue<T, Name>) => void`
+
+Apply a **functional update** to a field, computed against the **latest** form state.
+Unlike `setValue` (which takes a precomputed value), `updateValue` passes you the current
+value and uses your return value — so several updates in the same event handler all apply
+correctly instead of clobbering each other.
+
+```typescript
+const { updateValue } = useForm({ defaultValues: { items: [] as string[] } });
+
+// Safe even when called multiple times synchronously:
+updateValue("items", (prev) => [...prev, "a"]);
+updateValue("items", (prev) => [...prev, "b"]); // sees ["a"], appends "b"
+```
+
+Use `updateValue` instead of `setValue` whenever the next value depends on the current
+one (appending to an array, incrementing a counter, toggling). `useFieldArray` uses it
+internally so its operations are safe to batch.
 
 ##### watch
 
