@@ -26,6 +26,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`updateValue(path, updater)`**: apply a functional update to a field against the latest state (e.g. `updateValue("items", (prev) => [...prev, item])`). Avoids the stale-snapshot "lost update" pitfall when several updates run in one event handler. `useFieldArray` uses this internally so multiple synchronous operations all apply correctly.
 
+### ♿ Accessibility
+
+- **AutoForm and the standalone `TextField` / `TextareaField` / `SelectField` are now accessible by default.** Inputs wire `aria-invalid`, `aria-describedby` (pointing at the error element), and `aria-required`; field errors render with `role="alert"` so screen readers announce them. No markup changes required in your code.
+- **Focus-on-error:** `useForm` gains `shouldFocusError` (default `true`). After a failed submit, focus moves to the first invalid field. To opt out: `useForm({ shouldFocusError: false })`. (`register` now also returns a `ref`, which is what makes `setFocus`/focus-on-error work.)
+- **Fix:** the standalone field components now show validation errors on the first blur. They previously could lag one render behind because they read form state through the context getter; they now subscribe via `useField`.
+
+### ⏱️ Validation debounce
+
+- **`validationDebounceMs`**: new config to debounce *synchronous* validation, at both form and field level (default `0` = validate every change, unchanged). Mirrors the existing `asyncDebounceMs`. Example: `useForm({ validators: { onChange: schema, validationDebounceMs: 200 } })`.
+
 ## 2026-06-01
 
 ### 🐞 Bug Fixes — `el-form-react-hooks@3.10.2`

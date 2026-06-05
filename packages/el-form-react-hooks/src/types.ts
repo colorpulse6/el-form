@@ -45,6 +45,9 @@ export interface UseFormOptions<T extends Record<string, any>> {
 
   // Zod schema for discriminated union support and enhanced validation
   schema?: any;
+
+  /** Focus the first invalid field after a failed submit. Default true. */
+  shouldFocusError?: boolean;
 }
 
 export interface FieldState {

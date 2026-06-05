@@ -1,5 +1,6 @@
 import { FormState, UseFormOptions, UseFormReturn } from "../types";
 import { ValidationManager } from "./validation";
+import { findFirstErrorElement } from "./focusError";
 
 /**
  * Submit operations utilities
@@ -20,6 +21,10 @@ export interface SubmitOperationsOptions<T extends Record<string, any>> {
   setFormState: React.Dispatch<React.SetStateAction<FormState<T>>>;
   validationManager: ValidationManager<T>;
   onSubmit?: UseFormOptions<T>["onSubmit"];
+  fieldRefs: React.MutableRefObject<
+    Map<keyof T, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  >;
+  shouldFocusError?: boolean;
 }
 
 /**
@@ -28,7 +33,14 @@ export interface SubmitOperationsOptions<T extends Record<string, any>> {
 export function createSubmitOperationsManager<T extends Record<string, any>>(
   options: SubmitOperationsOptions<T>
 ): SubmitOperationsManager<T> {
-  const { formState, setFormState, validationManager, onSubmit } = options;
+  const {
+    formState,
+    setFormState,
+    validationManager,
+    onSubmit,
+    fieldRefs,
+    shouldFocusError,
+  } = options;
 
   return {
     // Handle submit - simplified
@@ -63,8 +75,17 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
 
         if (isValid) {
           await onValid(formState.values as T);
-        } else if (onError) {
-          onError(errors);
+        } else {
+          if (shouldFocusError !== false) {
+            const el = findFirstErrorElement(
+              errors as Record<string, any>,
+              (name) => fieldRefs.current.get(name as keyof T)
+            );
+            el?.focus();
+          }
+          if (onError) {
+            onError(errors);
+          }
         }
       };
     },

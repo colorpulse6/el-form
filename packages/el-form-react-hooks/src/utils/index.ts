@@ -58,6 +58,11 @@ export * from "./formHistory";
 export * from "./focusManagement";
 
 /**
+ * Focus-on-error utilities
+ */
+export * from "./focusError";
+
+/**
  * Array operations utilities
  */
 export * from "./arrayOperations";

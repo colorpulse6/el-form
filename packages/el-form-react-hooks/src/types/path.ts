@@ -78,6 +78,9 @@ export type RegisterReturn<Value> = {
   name: string;
   onChange: (e: React.ChangeEvent<any>) => void;
   onBlur: (e: React.FocusEvent<any>) => void;
+  ref: (
+    el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
+  ) => void;
 } & (Value extends boolean
   ? { checked: boolean; value?: never; files?: never }
   : Value extends File | FileList | (File | null)[] | File[] | null | undefined

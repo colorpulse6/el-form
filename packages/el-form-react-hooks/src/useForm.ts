@@ -38,6 +38,7 @@ export function useForm<T extends Record<string, any>>(
     validateOn,
     onSubmit,
     schema,
+    shouldFocusError,
   } = options;
 
   // Core refs and state
@@ -98,6 +99,8 @@ export function useForm<T extends Record<string, any>>(
     setFormState,
     validationManager,
     onSubmit,
+    fieldRefs,
+    shouldFocusError,
   });
 
   const errorManagement = createErrorManagementManager<T>({
@@ -221,6 +224,12 @@ export function useForm<T extends Record<string, any>>(
 
       const baseProps = {
         name,
+        ref: (
+          el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
+        ) => {
+          if (el) fieldRefs.current.set(name as keyof T, el);
+          else fieldRefs.current.delete(name as keyof T);
+        },
         onChange: async (e: React.ChangeEvent<any>) => {
           const value = (() => {
             // Handle file inputs

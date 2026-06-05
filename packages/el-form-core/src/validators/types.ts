@@ -40,6 +40,9 @@ export interface ValidatorConfig {
   // Global async debounce (applies to all async validators)
   asyncDebounceMs?: number;
 
+  /** Debounce SYNC validation (ms). Default 0 = off (validate every change). Works at field and form level, like asyncDebounceMs. */
+  validationDebounceMs?: number;
+
   // Run async validators even if sync validators fail
   asyncAlways?: boolean;
 }

@@ -53,6 +53,8 @@ export function getTypeName(schema: AnyZodSchema): string | undefined {
       return "ZodNullable";
     case "optional":
       return "ZodOptional";
+    case "default":
+      return "ZodDefault";
     default:
       return undefined;
   }

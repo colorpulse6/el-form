@@ -21,6 +21,7 @@ import {
   getDef,
 } from "el-form-core";
 import { FormSwitch, FormCase } from "./Form";
+import { fieldAriaProps } from "./fieldAria";
 
 // Zod helpers now come from el-form-core (Zod 4 only)
 
@@ -60,6 +61,8 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
   value,
   onChange,
   onBlur,
+  inputRef,
+  required,
   error,
   touched,
   options,
@@ -69,6 +72,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
   errorClassName,
 }: AutoFormFieldProps) => {
   const fieldId = `field-${name}`;
+  const aria = fieldAriaProps({ fieldId, error, touched, required });
 
   if (type === "checkbox") {
     return (
@@ -80,6 +84,10 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           checked={!!value}
           onChange={onChange}
           onBlur={onBlur}
+          ref={inputRef}
+          aria-invalid={aria["aria-invalid"]}
+          aria-describedby={aria["aria-describedby"]}
+          aria-required={aria["aria-required"]}
           className={inputClassName || "el-form-checkbox"}
         />
         <label
@@ -112,6 +120,10 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           value={value || ""}
           onChange={onChange}
           onBlur={onBlur}
+          ref={inputRef}
+          aria-invalid={aria["aria-invalid"]}
+          aria-describedby={aria["aria-describedby"]}
+          aria-required={aria["aria-required"]}
           placeholder={placeholder}
           className={inputClassName || "el-form-textarea"}
           rows={4}
@@ -123,6 +135,10 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           value={value || ""}
           onChange={onChange}
           onBlur={onBlur}
+          ref={inputRef}
+          aria-invalid={aria["aria-invalid"]}
+          aria-describedby={aria["aria-describedby"]}
+          aria-required={aria["aria-required"]}
           className={inputClassName || "el-form-select"}
         >
           <option value="">{placeholder || "Select an option"}</option>
@@ -140,13 +156,21 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           value={value || ""}
           onChange={onChange}
           onBlur={onBlur}
+          ref={inputRef}
+          aria-invalid={aria["aria-invalid"]}
+          aria-describedby={aria["aria-describedby"]}
+          aria-required={aria["aria-required"]}
           placeholder={placeholder}
           className={inputClasses}
         />
       )}
 
       {hasError && (
-        <div className={errorClassName || "el-form-error-message"}>
+        <div
+          id={aria.errorId}
+          role="alert"
+          className={errorClassName || "el-form-error-message"}
+        >
           <span>⚠️</span>
           <span className="ml-1">{error}</span>
         </div>
@@ -416,12 +440,21 @@ function generateFieldsFromSchema<T extends z.ZodTypeAny>(
     // Unwrap optional/nullable/default wrappers to get the inner type
     const zodType = unwrapZodType(rawZodType);
     const typeName = getTypeName(zodType as any);
+    // A field is required unless the RAW (pre-unwrap) type is one of the
+    // optional/nullable/default wrappers.
+    const rawTypeName = getTypeName(rawZodType as any);
+    const required = !(
+      rawTypeName === "ZodOptional" ||
+      rawTypeName === "ZodNullable" ||
+      rawTypeName === "ZodDefault"
+    );
     const fieldConfig: AutoFormFieldConfig = {
       name: key,
       label: key
         .replace(/([A-Z])/g, " $1")
         .replace(/^./, (s) => s.toUpperCase()),
       type: "text",
+      required,
     };
 
     if (typeName === "ZodString") {
@@ -581,6 +614,8 @@ const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
                           value={fieldValue}
                           onChange={fieldProps.onChange}
                           onBlur={fieldProps.onBlur}
+                          inputRef={fieldProps.ref}
+                          required={field.required}
                           error={error}
                           touched={touched}
                           options={field.options}
@@ -800,6 +835,8 @@ export function AutoForm<T extends Record<string, any>>({
           value={fieldValue}
           onChange={fieldProps.onChange}
           onBlur={fieldProps.onBlur}
+          inputRef={fieldProps.ref}
+          required={fieldConfig.required}
           error={error}
           touched={touched}
           options={fieldConfig.options}
