@@ -81,7 +81,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "el-form-core": "workspace:^",

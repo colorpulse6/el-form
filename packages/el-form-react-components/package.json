@@ -51,7 +51,8 @@
     "build:css": "pnpm exec tailwindcss -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --minify",
     "dev": "tsup --watch",
     "dev:css": "pnpm exec tailwindcss -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --watch",
-    "test": "pnpm -w -r build && vitest --environment jsdom --run"
+    "test": "pnpm -w -r build && vitest --environment jsdom --run",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "el-form-core": "workspace:^",

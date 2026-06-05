@@ -43,7 +43,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {},
   "peerDependencies": {
