@@ -2,8 +2,8 @@
 
 > Honest, current status of the El Form library. Supersedes the old aspirational
 > `agent-actions/FEATURE_CHECKLIST.md` (which was ~90% wishlist and is gitignored).
-> Last updated: 2026-06-05 (after the 3.11.0 release). Grounded in the Phase 0 audit
-> (`docs/superpowers/audit-2026-05-31.md`).
+> Last updated: 2026-06-05 (after the 3.11.0 release + the code-quality cleanup patch).
+> Grounded in the Phase 0 audit (`docs/superpowers/audit-2026-05-31.md`).
 
 ## Shipped & stable
 
@@ -31,23 +31,34 @@
 - **Modular packages** — `el-form-core`, `el-form-react-hooks`,
   `el-form-react-components`, `el-form-react`.
 
-Published versions (npm): `el-form-core@2.3.0`, `el-form-react-hooks@3.11.0`,
-`el-form-react-components@4.5.0`, `el-form-react@4.1.5`, `el-form-mcp@0.1.0`.
+Published versions (npm): `el-form-core@2.3.1`, `el-form-react-hooks@3.11.1`,
+`el-form-react-components@4.5.1`, `el-form-react@4.1.6`, `el-form-mcp@0.1.0`.
+
+## Recently shipped (2.3.1 code-quality patch)
+
+- **Debounce engine fixed & unified** — the four duplicated debounce code paths are now
+  one helper, and superseded debounced validations resolve (with a safe sentinel) instead
+  of leaving awaiters hung forever.
+- **CI now lints package source** — every package has a `lint` script; `pnpm lint` (and
+  `eslint.yml`) covers `packages/*/src`; the 13 outstanding source lint errors are cleared.
+- **Node aligned to 20** across all four workflows.
+- **Dedicated [migration guide](docs/docs/guides/migration.md)** (RHF + Formik) and an
+  [accessibility concept page](docs/docs/concepts/accessibility.md) added.
 
 ## Planned / under consideration
 
 - [ ] **`useWatch`** — *not committed.* `useField` / `useFormSelector` already provide
       isolated value subscriptions; a separate `useWatch` would only be added if it
       genuinely improves on them (see legacy `useFormWatch-hook` branch for exploration).
-- [ ] **Dedicated migration guides** — RHF / Formik (partially covered today across
-      `guides/use-form.md`, `faq.md`, `concepts/philosophy.md`).
-- [ ] **Debounce engine cleanup** — unify the four debounce code paths into one helper,
-      and resolve superseded debounced promises instead of leaving them dangling
-      (pre-existing; tracked separately).
-- [ ] **FormProvider reactivity** — the context getter exposes form state one render
-      behind for direct `useFormContext().form.formState` reads; standalone field
-      components were fixed to subscribe via `useField`, but the underlying getter
-      remains a latent lag worth a deeper fix.
+- [ ] **FormProvider reactivity (deeper fix)** — the context getter exposes form state one
+      render behind for direct `useFormContext().form.formState` reads. The standalone
+      field components were fixed to subscribe via `useField`, but the underlying getter
+      remains a latent lag for anyone reading `form.formState` directly during render.
+- [ ] **Tighten `BaseFieldProps` typing** — `name` is `keyof T`; could be `Path<T>` for
+      nested-path safety in the standalone field components (would remove some `as any`).
+- [ ] **`pnpm test` arg-forwarding** — the hooks `test` script forwards trailing args to
+      `tsd`, so `pnpm test -- --run` exits non-zero though assertions pass. Cosmetic
+      (CI's arg-free call is fine); split the tsd step to fix.
 
 ## Design principles
 
@@ -66,16 +77,11 @@ Published versions (npm): `el-form-core@2.3.0`, `el-form-react-hooks@3.11.0`,
 
 ## Known issues (open as of 2026-06-05)
 
-- **`pnpm lint` lints only the example app** — no `packages/*` has a `lint` script, so
-  shipped source is unlinted; `npx eslint "packages/*/src/**"` surfaces ~13 errors that
-  CI never sees. Fix: add per-package lint scripts (or a root `-r` lint over `src`) and
-  wire into `eslint.yml`, then clear the errors.
-- **Node version inconsistent across CI workflows** — `ci.yml` / `deploy-docs.yml` on
-  Node 20; `eslint.yml` / `release.yml` on Node 18. The publish job differing from the
-  test job is a latent "works in CI, fails in release" risk.
-- **`pnpm test` arg-forwarding** — the hooks `test` script forwards trailing args to
-  `tsd`, so `pnpm test -- --run` exits non-zero even though all assertions pass (CI's
-  arg-free invocation is unaffected).
-- **Debounce machinery** — see the "Debounce engine cleanup" item above (superseded
-  promises never resolve; four duplicated debounce blocks).
-- **FormProvider getter lag** — see the "FormProvider reactivity" item above.
+- **FormProvider getter lag** — see "FormProvider reactivity" under Planned. The only
+  genuinely open *correctness* item; low impact (standalone field components already
+  worked around it via `useField`).
+- **`pnpm test` arg-forwarding** — cosmetic; see Planned. CI is unaffected.
+
+> Previously-listed issues now **resolved** in the 2.3.1 patch: package source is linted
+> in CI, Node aligned to 20, the 13 ESLint errors cleared, and the debounce
+> hang/duplication fixed.
