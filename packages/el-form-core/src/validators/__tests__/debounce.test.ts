@@ -23,7 +23,13 @@ describe("async debounce (characterization — existing behavior)", () => {
     // last call's promise — which is the one whose timer survives to fire.
     void engine.validateField("email", "a", { email: "a" }, config, ev);
     void engine.validateField("email", "ab", { email: "ab" }, config, ev);
-    const last = engine.validateField("email", "abc", { email: "abc" }, config, ev);
+    const last = engine.validateField(
+      "email",
+      "abc",
+      { email: "abc" },
+      config,
+      ev
+    );
 
     await vi.advanceTimersByTimeAsync(250);
     await last;
@@ -63,7 +69,13 @@ describe("sync debounce (new — validationDebounceMs)", () => {
     // Fire 3 times rapidly; only the last should actually run after 200ms.
     void engine.validateField("name", "a", { name: "a" }, config, ev);
     void engine.validateField("name", "ab", { name: "ab" }, config, ev);
-    const last = engine.validateField("name", "abc", { name: "abc" }, config, ev);
+    const last = engine.validateField(
+      "name",
+      "abc",
+      { name: "abc" },
+      config,
+      ev
+    );
 
     await vi.advanceTimersByTimeAsync(250);
     await last;
@@ -117,32 +129,28 @@ describe("sync debounce (new — validationDebounceMs)", () => {
 });
 
 describe("superseded debounced validations resolve (no hang)", () => {
-  it(
-    "resolves ALL awaited debounced calls in a rapid burst, not just the last",
-    async () => {
-      const engine = new ValidationEngine();
-      // A field-level schema that rejects empty strings. Only the LAST call's value
-      // ("abc") is non-empty, so the authoritative result is valid; the superseded
-      // calls must resolve with the safe sentinel { isValid: true, errors: {} }.
-      const schema = z.string().min(1, "name required");
-      const config: any = { onChange: schema, validationDebounceMs: 200 };
-      const ev: any = { type: "onChange", isAsync: false, fieldName: "name" };
+  it("resolves ALL awaited debounced calls in a rapid burst, not just the last", async () => {
+    const engine = new ValidationEngine();
+    // A field-level schema that rejects empty strings. Only the LAST call's value
+    // ("abc") is non-empty, so the authoritative result is valid; the superseded
+    // calls must resolve with the safe sentinel { isValid: true, errors: {} }.
+    const schema = z.string().min(1, "name required");
+    const config: any = { onChange: schema, validationDebounceMs: 200 };
+    const ev: any = { type: "onChange", isAsync: false, fieldName: "name" };
 
-      // Fire 3 rapidly and AWAIT ALL THREE. Against the buggy code the first two
-      // promises never resolve, so Promise.all hangs and this test times out.
-      const p1 = engine.validateField("name", "a", { name: "a" }, config, ev);
-      const p2 = engine.validateField("name", "ab", { name: "ab" }, config, ev);
-      const p3 = engine.validateField("name", "abc", { name: "abc" }, config, ev);
+    // Fire 3 rapidly and AWAIT ALL THREE. Against the buggy code the first two
+    // promises never resolve, so Promise.all hangs and this test times out.
+    const p1 = engine.validateField("name", "a", { name: "a" }, config, ev);
+    const p2 = engine.validateField("name", "ab", { name: "ab" }, config, ev);
+    const p3 = engine.validateField("name", "abc", { name: "abc" }, config, ev);
 
-      await vi.advanceTimersByTimeAsync(250);
-      const [r1, r2, r3] = await Promise.all([p1, p2, p3]);
+    await vi.advanceTimersByTimeAsync(250);
+    const [r1, r2, r3] = await Promise.all([p1, p2, p3]);
 
-      // The two superseded calls resolve with the safe sentinel.
-      expect(r1).toEqual({ isValid: true, errors: {} });
-      expect(r2).toEqual({ isValid: true, errors: {} });
-      // The last (surviving) call resolves with the real result.
-      expect(r3.isValid).toBe(true);
-    },
-    2000
-  );
+    // The two superseded calls resolve with the safe sentinel.
+    expect(r1).toEqual({ isValid: true, errors: {} });
+    expect(r2).toEqual({ isValid: true, errors: {} });
+    // The last (surviving) call resolves with the real result.
+    expect(r3.isValid).toBe(true);
+  }, 2000);
 });

@@ -24,7 +24,12 @@ interface PendingDebounce {
 // authoritative result; (b) the hooks layer treats `isValid: true` as "nothing to
 // set", so a superseded result never writes stale errors. Its sole purpose is to
 // unblock the dangling promise.
-const SUPERSEDED_RESULT: ValidationResult = { isValid: true, errors: {} };
+// Frozen so an accidental future `result.errors[x] = ...` on a superseded result
+// throws loudly (strict mode) rather than silently corrupting the shared reference.
+const SUPERSEDED_RESULT: ValidationResult = Object.freeze({
+  isValid: true,
+  errors: Object.freeze({}) as Record<string, string>,
+});
 
 export class ValidationEngine {
   private debounceTimers: Map<string, PendingDebounce> = new Map();
@@ -57,8 +62,10 @@ export class ValidationEngine {
     } else {
       const debounceMs = config.validationDebounceMs || 0;
       if (debounceMs > 0) {
-        return this.debounce(`${context.fieldName}-${event.type}`, debounceMs, () =>
-          SchemaAdapter.validate(validator, value, context)
+        return this.debounce(
+          `${context.fieldName}-${event.type}`,
+          debounceMs,
+          () => SchemaAdapter.validate(validator, value, context)
         );
       }
       return SchemaAdapter.validate(validator, value, context);
@@ -201,8 +208,10 @@ export class ValidationEngine {
       (config[specificDebounceKey] as number) || config.asyncDebounceMs || 0;
 
     if (debounceMs > 0) {
-      return this.debounce(`${context.fieldName}-${event.type}`, debounceMs, () =>
-        SchemaAdapter.validateAsync(validator, context.value, context)
+      return this.debounce(
+        `${context.fieldName}-${event.type}`,
+        debounceMs,
+        () => SchemaAdapter.validateAsync(validator, context.value, context)
       );
     }
 
