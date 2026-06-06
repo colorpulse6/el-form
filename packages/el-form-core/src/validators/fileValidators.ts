@@ -91,11 +91,14 @@ export function createFileValidator(
   return ({ value }) => {
     if (!value) return undefined;
 
-    if (value instanceof File) {
+    if (typeof File !== "undefined" && value instanceof File) {
       return validateFile(value, options);
     }
 
-    if (value instanceof FileList || Array.isArray(value)) {
+    if (
+      Array.isArray(value) ||
+      (typeof FileList !== "undefined" && value instanceof FileList)
+    ) {
       return validateFiles(value, options);
     }
 
