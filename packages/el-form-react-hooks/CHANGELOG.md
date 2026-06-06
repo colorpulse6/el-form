@@ -1,5 +1,13 @@
 # el-form-react-hooks
 
+## 3.11.2
+
+### Patch Changes
+
+- 8b5350c: Fix file validators so File array inputs no longer throw in non-browser runtimes where `File` or `FileList` globals are unavailable, and ensure `clearFiles` clears file preview state.
+- Updated dependencies [8b5350c]
+  - el-form-core@2.3.2
+
 ## 3.11.1
 
 ### Patch Changes

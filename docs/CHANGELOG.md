@@ -1,5 +1,13 @@
 # el-form-docs
 
+## 0.10.5
+
+### Patch Changes
+
+- Updated dependencies [8b5350c]
+  - el-form-core@2.3.2
+  - el-form-react@4.1.7
+
 ## 0.10.4
 
 ### Patch Changes
