@@ -95,7 +95,10 @@ export function createFileValidator(
       return validateFile(value, options);
     }
 
-    if (value instanceof FileList || Array.isArray(value)) {
+    if (
+      Array.isArray(value) ||
+      (typeof FileList !== "undefined" && value instanceof FileList)
+    ) {
       return validateFiles(value, options);
     }
 
