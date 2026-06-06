@@ -452,7 +452,14 @@ export function useForm<T extends Record<string, any>>(
 
   const clearFiles = useCallback(
     (name: string) => {
+      const fieldName = name as keyof T;
       formStateManager.setValue(name, null);
+
+      setFilePreview((prev) => {
+        const updated = { ...prev };
+        delete updated[fieldName];
+        return updated;
+      });
     },
     [formStateManager]
   );

@@ -37,9 +37,9 @@ function FileMethodsDemo() {
 }
 
 function FilePreviewDemo() {
-  const { register, filePreview, removeFile } = useForm<{ docs: File | null }>({
-    defaultValues: { docs: null },
-  });
+  const { register, filePreview, removeFile, clearFiles } = useForm<{
+    docs: File | null;
+  }>({ defaultValues: { docs: null } });
   const registration = register("docs");
 
   return (
@@ -55,6 +55,7 @@ function FilePreviewDemo() {
       </button>
       <span data-testid="preview">{filePreview.docs ?? ""}</span>
       <button onClick={() => removeFile("docs")}>remove-all</button>
+      <button onClick={() => clearFiles("docs")}>clear</button>
     </div>
   );
 }
@@ -125,6 +126,33 @@ describe("file methods", () => {
     });
 
     fireEvent.click(screen.getByText("remove-all"));
+
+    expect(screen.getByTestId("preview").textContent).toBe("");
+  });
+
+  it("clearFiles clears filePreview state", async () => {
+    const dataUrl = "data:image/png;base64,cHJldmlldw==";
+
+    class MockFileReader {
+      onload: ((event: { target?: { result: string } }) => void) | null = null;
+      onerror: (() => void) | null = null;
+
+      readAsDataURL() {
+        this.onload?.({ target: { result: dataUrl } });
+      }
+    }
+
+    vi.stubGlobal("FileReader", MockFileReader);
+
+    render(<FilePreviewDemo />);
+
+    fireEvent.click(screen.getByText("select-a"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("preview").textContent).toBe(dataUrl);
+    });
+
+    fireEvent.click(screen.getByText("clear"));
 
     expect(screen.getByTestId("preview").textContent).toBe("");
   });

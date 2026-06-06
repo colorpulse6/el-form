@@ -139,6 +139,25 @@ describe("createFileValidator / fileValidator", () => {
     ).toBeUndefined();
   });
 
+  it("returns undefined for non-file values when File globals are unavailable", () => {
+    const hadFile = "File" in globalThis;
+    const hadFileList = "FileList" in globalThis;
+    const originalFile = (globalThis as any).File;
+    const originalFileList = (globalThis as any).FileList;
+
+    try {
+      delete (globalThis as any).File;
+      delete (globalThis as any).FileList;
+
+      expect(
+        createFileValidator({ maxSize: 1 })({ value: "hello" } as any)
+      ).toBeUndefined();
+    } finally {
+      if (hadFile) (globalThis as any).File = originalFile;
+      if (hadFileList) (globalThis as any).FileList = originalFileList;
+    }
+  });
+
   it("fileValidator returns a validator function", () => {
     expect(typeof fileValidator({ maxSize: 1 })).toBe("function");
   });
