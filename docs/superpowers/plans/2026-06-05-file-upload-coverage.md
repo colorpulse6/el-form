@@ -200,10 +200,13 @@ describe("formatFileSize", () => {
 describe("getFileExtension (PINNED quirks)", () => {
   it("normal extension", () => expect(getFileExtension("a.png")).toBe("png"));
   it("multi-dot returns last segment", () => expect(getFileExtension("a.b.tar.gz")).toBe("gz"));
-  it("dotfile returns the name after the dot", () => expect(getFileExtension(".gitignore")).toBe("gitignore"));
-  // QUIRK: no-dot filename returns the WHOLE string (the `>>> 0` trick), not "".
-  // Pinned deliberately — changing it shifts getFileInfo().extension (public). Do not "fix".
-  it("no-extension returns the whole name (pinned quirk)", () => expect(getFileExtension("README")).toBe("README"));
+  // VERIFIED behavior of the `slice(((lastIndexOf(".")-1)>>>0)+2)` trick:
+  // for a no-dot name ("README") and a dotfile (".gitignore"), lastIndexOf(".") is -1 / 0,
+  // so the unsigned-shift produces a huge slice index → "". The trick INTENTIONALLY returns
+  // "" for no-extension and dotfile names. Pinned; changing it shifts getFileInfo().extension
+  // (public). Do NOT "fix".
+  it("dotfile returns empty string (.gitignore -> '')", () => expect(getFileExtension(".gitignore")).toBe(""));
+  it("no-extension returns empty string (README -> '')", () => expect(getFileExtension("README")).toBe(""));
 });
 
 describe("getFileInfo", () => {
@@ -425,7 +428,25 @@ export async function getFilePreview(file: File): Promise<string | null> {
 
 > Verify `el-form-core` exports `validateFile`, `validateFiles`, and `FileValidationOptions` (it does, via `validators/index.ts`). Confirm `types.ts` still resolves `FileValidationOptions` and `FileInfo` from `./utils/fileUtils` (both are still exported above — `FileValidationOptions` is now a re-export, `FileInfo` stays local).
 
-- [ ] **Step 2: Re-run BOTH file test files** — they must still pass (the fileUtils test imports only the DOM helpers; if it imported the local validateFile, update those to expect `undefined` now):
+- [ ] **Step 1b: Add a delegation assertion to the fileUtils test** (documents the dedupe)
+
+Append to `src/utils/__tests__/fileUtils.test.ts` — confirms the re-exported `validateFile`
+now comes from core and returns `undefined` on pass (not the old `null`):
+
+```ts
+import { validateFile as fileUtilsValidateFile } from "../fileUtils";
+describe("validateFile (delegated to el-form-core after dedupe)", () => {
+  const f = (name: string, type: string, size = 10) => new File([new ArrayBuffer(size)], name, { type });
+  it("passes -> undefined (core's sentinel, not null)", () => {
+    expect(fileUtilsValidateFile(f("a.png", "image/png", 5), { maxSize: 100 })).toBeUndefined();
+  });
+  it("fails -> message", () => {
+    expect(fileUtilsValidateFile(f("a.png", "image/png", 200), { maxSize: 100 })).toMatch(/less than/);
+  });
+});
+```
+
+- [ ] **Step 2: Re-run BOTH file test files** — they must still pass:
 
 ```
 pnpm --filter el-form-core build   # core must be built so the hooks import resolves
@@ -442,9 +463,14 @@ pnpm --filter el-form-react-hooks exec tsd --files tsd.test-d.ts
 ```
 Then assert the public surface is unchanged:
 ```
-grep -nE "validateFile|validateFiles|FileInfo|FileValidationOptions|getFileInfo|getFilePreview" packages/el-form-react-hooks/dist/index.d.ts
+grep -nE "export \* from .el-form-core|FileInfo|FileValidationOptions|getFileInfo|getFilePreview" packages/el-form-react-hooks/dist/index.d.ts
 ```
-Expected: `FileInfo`, `FileValidationOptions`, `getFileInfo`, `getFilePreview` present (as before); `validateFile`/`validateFiles` NOT newly added to the public d.ts (they weren't public before and must not become public).
+Expected: the hooks d.ts still has `export * from 'el-form-core'` (intact) and `FileInfo` /
+`FileValidationOptions` / `getFileInfo` / `getFilePreview` are still present. NOTE: core's
+`validateFile`/`validateFiles` are *already* transitively public via that `export *` — the
+dedupe doesn't change what's exposed, it just stops `fileUtils` from declaring its own
+duplicate copies. So there is no public-surface change; this check confirms nothing was
+accidentally removed.
 
 - [ ] **Step 4: Lint (the new lint coverage must stay clean)**
 

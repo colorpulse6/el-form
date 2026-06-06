@@ -140,11 +140,12 @@ So:
    + a code comment rather than changing it (`0` as a meaningful limit is an odd use case).
    Pin all four (maxSize/minSize/maxFiles/minFiles) for symmetry. If we DO change it, that's
    a public `el-form-core` behavior change → changeset.
-2. **`getFileExtension` quirks** — `("README").slice(((lastIndexOf(".")-1)>>>0)+2)` returns
-   the WHOLE string `"README"` (not `""`) for a no-dot filename; dotfiles (`.gitignore`)
-   return `"gitignore"`. These are unintuitive — assert them explicitly with a comment so a
-   future reader doesn't "fix" the quirk. Pin, don't change (it's a shared helper; changing
-   it would shift `getFileInfo().extension`, a public field → changeset).
+2. **`getFileExtension` quirks (VERIFIED)** — `("README").slice(((lastIndexOf(".")-1)>>>0)+2)`
+   returns **`""`** for a no-dot filename, and `.gitignore` (dotfile) also returns **`""`**.
+   The `>>> 0` unsigned-shift turns the `-1`/`0` lastIndexOf into a huge slice index →
+   empty string. The trick INTENTIONALLY yields `""` for no-extension/dotfile names. Assert
+   explicitly with a comment so a future reader doesn't "fix" it. Pin, don't change (shared
+   helper; changing it would shift `getFileInfo().extension`, a public field → changeset).
 3. **`null` vs `undefined` divergence** — resolved by dedupe (hooks adopts core's
    `undefined`). Confirmed no internal caller relied on `null` (grep-verified in review).
 
