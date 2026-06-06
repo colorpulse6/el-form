@@ -4,6 +4,8 @@ import {
   getFileExtension,
   getFileInfo,
   getFilePreview,
+  validateFile,
+  validateFiles,
 } from "../fileUtils";
 
 const file = (name: string, type: string, size = 10) =>
@@ -114,5 +116,33 @@ describe("getFilePreview", () => {
     await expect(getFilePreview(file("avatar.png", "image/png"))).resolves.toBe(
       null
     );
+  });
+});
+
+describe("validateFile", () => {
+  it("returns the core sentinel for valid files", () => {
+    expect(validateFile(file("avatar.png", "image/png", 10), { maxSize: 100 })).toBe(
+      undefined
+    );
+  });
+
+  it("returns a core validation message for oversized files", () => {
+    expect(validateFile(file("avatar.png", "image/png", 101), { maxSize: 100 })).toBe(
+      "File size must be less than 100 Bytes"
+    );
+  });
+});
+
+describe("validateFiles", () => {
+  it("returns the core sentinel for valid file arrays", () => {
+    expect(
+      validateFiles([file("avatar.png", "image/png", 10)], { maxFiles: 2 })
+    ).toBeUndefined();
+  });
+
+  it("returns a core validation message for invalid file arrays", () => {
+    expect(
+      validateFiles([file("avatar.png", "image/png", 101)], { maxSize: 100 })
+    ).toBe("File size must be less than 100 Bytes");
   });
 });
