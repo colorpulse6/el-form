@@ -1,5 +1,11 @@
 # el-form-react-hooks
 
+## 3.11.3
+
+### Patch Changes
+
+- 66212ab: Fix form-history snapshots and change tracking so snapshots do not alias nested form state, restored snapshots recalculate dirty fields at leaf paths, and Date-valued fields are compared by timestamp.
+
 ## 3.11.2
 
 ### Patch Changes
