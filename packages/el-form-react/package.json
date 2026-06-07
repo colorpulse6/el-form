@@ -82,6 +82,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "test": "pnpm -w build:packages && vitest --run",
     "lint": "eslint \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
@@ -101,6 +102,7 @@
   "devDependencies": {
     "@types/react": "^18.0.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
   }
 }

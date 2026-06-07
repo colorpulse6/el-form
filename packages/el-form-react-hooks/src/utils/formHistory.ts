@@ -1,6 +1,7 @@
 import { FormState, FormSnapshot } from "../types";
 import { DirtyStateManager } from "./dirtyState";
 import { getNestedValue, setNestedValue } from "el-form-core";
+import { deepEqual } from "./equality";
 
 /**
  * Form history and persistence utilities
@@ -21,6 +22,64 @@ export interface FormHistoryOptions<T extends Record<string, any>> {
   defaultValues: Partial<T>;
 }
 
+function isPlainObject(value: unknown): value is Record<string, any> {
+  if (value === null || typeof value !== "object") return false;
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function cloneFormHistoryValue<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => cloneFormHistoryValue(item)) as T;
+  }
+
+  if (value instanceof Date) {
+    return new Date(value.getTime()) as T;
+  }
+
+  if (isPlainObject(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [
+        key,
+        cloneFormHistoryValue(nestedValue),
+      ])
+    ) as T;
+  }
+
+  return value;
+}
+
+function collectDirtyFieldPaths(
+  value: unknown,
+  defaultValue: unknown,
+  path: string,
+  dirtyPaths: string[]
+): void {
+  if (deepEqual(value, defaultValue)) return;
+
+  if (isPlainObject(value) && isPlainObject(defaultValue)) {
+    const keys = new Set([
+      ...Object.keys(value),
+      ...Object.keys(defaultValue),
+    ]);
+
+    keys.forEach((key) => {
+      collectDirtyFieldPaths(
+        value[key],
+        defaultValue[key],
+        path ? `${path}.${key}` : key,
+        dirtyPaths
+      );
+    });
+    return;
+  }
+
+  if (path) {
+    dirtyPaths.push(path);
+  }
+}
+
 /**
  * Create form history manager for handling snapshots and change tracking
  */
@@ -33,34 +92,44 @@ export function createFormHistoryManager<T extends Record<string, any>>(
     // Form History & Persistence methods
     getSnapshot: (): FormSnapshot<T> => {
       return {
-        values: { ...formState.values },
-        errors: { ...formState.errors },
-        touched: { ...formState.touched },
+        values: cloneFormHistoryValue(formState.values),
+        errors: cloneFormHistoryValue(formState.errors),
+        touched: cloneFormHistoryValue(formState.touched),
         timestamp: Date.now(),
         isDirty: formState.isDirty,
       };
     },
 
     restoreSnapshot: (snapshot: FormSnapshot<T>) => {
+      const values = cloneFormHistoryValue(snapshot.values);
+      const errors = cloneFormHistoryValue(snapshot.errors);
+      const touched = cloneFormHistoryValue(snapshot.touched);
+
       // Clear current dirty state tracking
       dirtyManager.clearDirtyState();
 
       // Recalculate dirty state based on restored values vs defaults
-      Object.entries(snapshot.values).forEach(([path, value]) => {
+      Object.entries(values).forEach(([path, value]) => {
         const defaultValue = getNestedValue(defaultValues, path);
-        if (value !== defaultValue) {
-          dirtyManager.updateFieldDirtyState(path, value, defaultValues);
-        }
+        const dirtyPaths: string[] = [];
+
+        collectDirtyFieldPaths(value, defaultValue, path, dirtyPaths);
+        dirtyPaths.forEach((dirtyPath) => {
+          dirtyManager.updateFieldDirtyState(
+            dirtyPath,
+            getNestedValue(values, dirtyPath),
+            defaultValues
+          );
+        });
       });
 
       setFormState({
-        values: { ...snapshot.values },
-        errors: { ...snapshot.errors },
-        touched: { ...snapshot.touched },
+        values,
+        errors,
+        touched,
         isSubmitting: false,
-        isValid: Object.keys(snapshot.errors).length === 0,
-        isDirty:
-          snapshot.isDirty || dirtyManager.dirtyFieldsRef.current.size > 0,
+        isValid: Object.keys(errors).length === 0,
+        isDirty: dirtyManager.dirtyFieldsRef.current.size > 0,
       });
     },
 
@@ -69,18 +138,20 @@ export function createFormHistoryManager<T extends Record<string, any>>(
     },
 
     getChanges: (): Partial<T> => {
-      const changes: Partial<T> = {};
+      let changes: Partial<T> = {};
 
       // Get all fields that are dirty
       dirtyManager.dirtyFieldsRef.current.forEach((fieldPath) => {
         const currentValue = getNestedValue(formState.values, fieldPath);
         const defaultValue = getNestedValue(defaultValues, fieldPath);
 
-        if (currentValue !== defaultValue) {
-          if (fieldPath.includes(".")) {
-            setNestedValue(changes, fieldPath, currentValue);
+        if (!deepEqual(currentValue, defaultValue)) {
+          const changedValue = cloneFormHistoryValue(currentValue);
+
+          if (fieldPath.includes(".") || fieldPath.includes("[")) {
+            changes = setNestedValue(changes, fieldPath, changedValue);
           } else {
-            (changes as any)[fieldPath] = currentValue;
+            (changes as any)[fieldPath] = changedValue;
           }
         }
       });
