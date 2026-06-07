@@ -47,6 +47,9 @@ jobs:
       - name: Test el-form-react-components (vitest)
         run: pnpm --filter el-form-react-components exec vitest --environment jsdom --run
 
+      - name: Test el-form-react (public API smoke)
+        run: pnpm --filter el-form-react exec vitest --run
+
       - name: Type-check el-form-mcp
         run: pnpm --filter el-form-mcp type-check
 

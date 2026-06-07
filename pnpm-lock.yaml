@@ -321,6 +321,9 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.8.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9
 
   packages/el-form-react-components:
     dependencies:
