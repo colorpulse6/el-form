@@ -13,12 +13,14 @@ type Values = {
   name: string;
   profile: Profile;
   tags: string[];
+  publishedAt: Date;
 };
 
 const defaultValues: Values = {
   name: "Ada",
   profile: { city: "London", newsletter: false },
   tags: ["stable"],
+  publishedAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
 function cloneDefaults(): Values {
@@ -26,6 +28,7 @@ function cloneDefaults(): Values {
     name: defaultValues.name,
     profile: { ...defaultValues.profile },
     tags: [...defaultValues.tags],
+    publishedAt: new Date(defaultValues.publishedAt.getTime()),
   };
 }
 
@@ -88,6 +91,7 @@ describe("createFormHistoryManager", () => {
         name: "Ada",
         profile: { city: "Paris", newsletter: true },
         tags: ["stable", "new"],
+        publishedAt: new Date("2026-02-01T00:00:00.000Z"),
       },
       errors: { profile: { city: "Required" } } as any,
       touched: { profile: { city: true } } as any,
@@ -101,6 +105,7 @@ describe("createFormHistoryManager", () => {
         name: "Ada",
         profile: { city: "Paris", newsletter: true },
         tags: ["stable", "new"],
+        publishedAt: new Date("2026-02-01T00:00:00.000Z"),
       },
       errors: { profile: { city: "Required" } },
       touched: { profile: { city: true } },
@@ -167,15 +172,36 @@ describe("createFormHistoryManager", () => {
           name: "Grace",
           profile: { city: "Paris", newsletter: false },
           tags: ["stable"],
+          publishedAt: new Date("2026-03-01T00:00:00.000Z"),
         },
         isDirty: true,
       },
-      ["name", "profile.city", "tags"]
+      ["name", "profile.city", "tags", "publishedAt"]
     );
 
     expect(manager.getChanges()).toEqual({
       name: "Grace",
       profile: { city: "Paris" },
+      publishedAt: new Date("2026-03-01T00:00:00.000Z"),
     });
+  });
+
+  it("restores changed Date values as dirty fields", () => {
+    const harness = createHarness();
+    const snapshot: FormSnapshot<Values> = {
+      values: {
+        ...cloneDefaults(),
+        publishedAt: new Date("2026-04-01T00:00:00.000Z"),
+      },
+      errors: {},
+      touched: {},
+      timestamp: 123,
+      isDirty: true,
+    };
+
+    harness.manager.restoreSnapshot(snapshot);
+
+    expect(harness.dirtyFieldsRef.current).toEqual(new Set(["publishedAt"]));
+    expect(harness.state.isDirty).toBe(true);
   });
 });
