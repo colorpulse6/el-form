@@ -22,6 +22,11 @@ type FormControlsValues = {
   };
 };
 
+type OperationLogEntry = {
+  index: number;
+  label: string;
+};
+
 const controlsSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Enter a valid email"),
@@ -54,12 +59,12 @@ export function FormControlsLab() {
   const [submitResult, setSubmitResult] = useState<Record<string, unknown>>({
     status: "idle",
   });
-  const [operationLog, setOperationLog] = useState<string[]>([]);
+  const [operationLog, setOperationLog] = useState<OperationLogEntry[]>([]);
   const [activeField, setActiveField] = useState("none");
 
   const logOperation = (label: string) => {
     setOperationLog((current) => [
-      `${new Date().toISOString()} ${label}`,
+      { index: (current[0]?.index ?? 0) + 1, label },
       ...current.slice(0, 19),
     ]);
   };
@@ -189,6 +194,27 @@ export function FormControlsLab() {
     logOperation("handleSubmit error");
   };
 
+  const submitProgrammatic = async () => {
+    setSubmitResult({
+      source: "submit",
+      status: "invoked",
+      message: "Programmatic submit invoked; waiting for validation.",
+    });
+
+    const validationResult = controlsSchema.safeParse(values);
+    await runAsyncOperation("Submit Programmatic", submit);
+
+    if (!validationResult.success) {
+      setSubmitResult({
+        source: "submit",
+        success: false,
+        status: "validation-failed",
+        message:
+          "Programmatic submit was invoked but validation failed. Inspect errors-json for current errors.",
+      });
+    }
+  };
+
   const buttonClass = "mr-2 mb-2";
   const statusLine = [
     `isValid=${formState.isValid}`,
@@ -213,7 +239,7 @@ export function FormControlsLab() {
       <Card variant="info" className="text-sm">
         <div data-testid="status-line">{statusLine}</div>
         <div className="mt-2">
-          Active field: <span data-testid="active-field">{activeField}</span>
+          Focused field: <span data-testid="active-field">{activeField}</span>
         </div>
       </Card>
 
@@ -509,7 +535,7 @@ export function FormControlsLab() {
         <Button
           type="button"
           className={buttonClass}
-          onClick={() => runAsyncOperation("Submit Programmatic", submit)}
+          onClick={submitProgrammatic}
         >
           Submit Programmatic
         </Button>
