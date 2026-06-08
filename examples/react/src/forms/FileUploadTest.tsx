@@ -36,6 +36,13 @@ export default function FileUploadTest() {
   // File previews are automatically managed and separate from formState
   const avatarPreview = filePreview.avatar;
 
+  const registerFileInput = (name: "avatar" | "documents") => {
+    const { value: _value, files: _files, ...registration } = register(
+      name
+    ) as any;
+    return registration;
+  };
+
   const summarizeFile = (file: File) => ({
     name: file.name,
     type: file.type || "Unknown type",
@@ -112,7 +119,7 @@ export default function FileUploadTest() {
             Avatar (Single Image)
           </label>
           <input
-            {...register("avatar")}
+            {...registerFileInput("avatar")}
             type="file"
             accept="image/*"
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -168,7 +175,7 @@ export default function FileUploadTest() {
             Documents (Multiple Files)
           </label>
           <input
-            {...register("documents")}
+            {...registerFileInput("documents")}
             type="file"
             multiple
             accept=".pdf,.txt"

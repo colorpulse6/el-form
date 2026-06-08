@@ -101,6 +101,15 @@ export default function AdvancedFileValidationTest() {
     addFile("portfolio", mockImage);
   };
 
+  const registerFileInput = (
+    name: "profilePicture" | "portfolio" | "resume"
+  ) => {
+    const { value: _value, files: _files, ...registration } = register(
+      name
+    ) as any;
+    return registration;
+  };
+
   return (
     <div className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-md">
       <h2 className="text-2xl font-bold mb-4">Advanced File Validation Test</h2>
@@ -156,7 +165,7 @@ export default function AdvancedFileValidationTest() {
             </span>
           </label>
           <input
-            {...register("profilePicture")}
+            {...registerFileInput("profilePicture")}
             type="file"
             accept="image/*"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -212,7 +221,7 @@ export default function AdvancedFileValidationTest() {
             </span>
           </label>
           <input
-            {...register("portfolio")}
+            {...registerFileInput("portfolio")}
             type="file"
             multiple
             accept="image/*"
@@ -290,7 +299,7 @@ export default function AdvancedFileValidationTest() {
             </span>
           </label>
           <input
-            {...register("resume")}
+            {...registerFileInput("resume")}
             type="file"
             accept=".pdf"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -327,7 +336,7 @@ export default function AdvancedFileValidationTest() {
         {/* Submit button */}
         <button
           type="submit"
-          disabled={formState.isSubmitting || !formState.isValid}
+          disabled={formState.isSubmitting}
           className="w-full bg-blue-500 text-white py-3 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-300 transition-colors font-medium"
         >
           {formState.isSubmitting ? "Submitting..." : "Submit Application"}

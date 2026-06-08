@@ -118,6 +118,15 @@ export default function ZodFileValidationTest() {
     console.log("❌ Validation errors:", errors);
   };
 
+  const registerFileInput = (
+    name: "resume" | "coverLetter" | "portfolio"
+  ) => {
+    const { value: _value, files: _files, ...registration } = register(
+      name
+    ) as any;
+    return registration;
+  };
+
   return (
     <div className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow-md">
       <h2 className="text-2xl font-bold mb-4">Zod + File Validation Test</h2>
@@ -188,7 +197,7 @@ export default function ZodFileValidationTest() {
             </span>
           </label>
           <input
-            {...register("resume")}
+            {...registerFileInput("resume")}
             type="file"
             accept=".pdf"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -233,7 +242,7 @@ export default function ZodFileValidationTest() {
             </span>
           </label>
           <input
-            {...register("coverLetter")}
+            {...registerFileInput("coverLetter")}
             type="file"
             accept=".pdf,.txt,.doc,.docx"
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -276,7 +285,7 @@ export default function ZodFileValidationTest() {
             </span>
           </label>
           <input
-            {...register("portfolio")}
+            {...registerFileInput("portfolio")}
             type="file"
             multiple
             accept="image/*,.pdf"
