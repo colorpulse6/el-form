@@ -1,12 +1,13 @@
 ---
 name: sweep-form-app
-description: Use before promoting/releasing el-form to verify the example app works end-to-end. Boots the example app and drives all 15 form demos in a real browser with Playwright, asserting behavior, capturing screenshots, and writing a pass/fail report. Manual pre-launch gate — not run in CI.
+description: Use before promoting/releasing el-form to verify the example app works end-to-end. Boots the example app and drives the current example app demos in a real browser with Playwright, asserting current runtime support, capturing screenshots, and writing a coverage-aware pass/fail report. Manual pre-launch gate — not run in CI.
 ---
 
 # Sweep the El Form example app
 
 Drives every demo in `examples/react` (port 3001) in a real browser and writes a
-report you skim before promoting the library.
+report you skim before promoting the library. The sweep covers current runtime
+support visible in the example app, including the browser coverage labs.
 
 ## When to use
 
@@ -36,9 +37,9 @@ whole app actually works, not just the unit suite.
    ```
 
 4. **Read the report**: `.sweep-results/REPORT.md` — a table of PASS/FAIL per
-   demo, console-error counts, and screenshots. Summarize it for the user:
-   how many passed, which failed and why. Do NOT claim "all good" unless the
-   report shows it.
+   demo with route, coverage class, console-error counts, and screenshots.
+   Summarize it for the user: how many passed, which failed and why. Do NOT
+   claim "all good" unless the report shows it.
 
 5. **Stop the dev server** you started.
 
@@ -46,14 +47,19 @@ whole app actually works, not just the unit suite.
 
 - `.sweep-results/REPORT.md` — pass/fail table + console errors
 - `.sweep-results/<demo>.png` — one screenshot per demo
+- `.sweep-results/fixtures/*` — tiny local files used by file-input scenarios
 
-Both are git-ignored.
+`.sweep-results/` is git-ignored and should remain uncommitted.
 
 ## Notes
 
 - The runner exits non-zero if any demo fails — surface that to the user.
 - One broken demo does not abort the sweep; each is isolated.
-- The assertions are intentionally conservative (does it render, do validation
-  errors appear, do arrays grow). For deeper per-feature checks, extend `DEMOS`
-  in `run-sweep.mjs` — the committed vitest suite is the source of truth for what
-  each feature should do.
+- The assertions are route-specific and conservative: they check visible runtime
+  behavior or explicit coverage fixtures, not private implementation details.
+- Non-Zod optional validation adapters are adapter-shape coverage only. The
+  validation adapters lab labels those non-real package branches as adapter
+  shape fixtures, and the sweep reports that coverage class separately from
+  full runtime behavior.
+- The committed unit suite remains the source of truth for type-only and deeper
+  edge-case coverage that is not observable through the example app UI.
