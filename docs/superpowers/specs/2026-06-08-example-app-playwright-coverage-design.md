@@ -18,6 +18,8 @@ then make Playwright assert behavior against that harness.
 ## Goals
 
 - Build a public-surface coverage inventory for the runtime library features.
+- Cover the support that exists today; do not add new optional validation
+  library dependencies in this slice.
 - Ensure every public runtime feature has one of:
   - an example-app workflow plus a Playwright scenario,
   - a committed unit/integration test because browser coverage is the wrong
@@ -37,6 +39,9 @@ then make Playwright assert behavior against that harness.
   the resulting app state.
 - Cross-browser/device matrix in this slice. The existing sweep remains
   Chromium/manual unless explicitly expanded later.
+- Real Yup, Valibot, ArkType, or Effect package interop. Current support is
+  adapter-branch support tested with local schema-shaped fixtures, plus real Zod
+  and Standard Schema/custom validator paths.
 
 ## Recommended Approach
 
@@ -113,8 +118,9 @@ every row has either browser coverage or an explicit non-browser fallback.
 
 ### Core
 
-- Schema adapter flow: Zod, Standard Schema, Yup-shape, Valibot-shape,
-  ArkType-shape, Effect-shape, and custom validator functions.
+- Schema adapter flow that exists today: real Zod, Standard Schema-shaped
+  schemas, custom validator functions, and Yup-like, Valibot-like,
+  ArkType-like, and Effect-like adapter branches using local fixture shapes.
 - File validators: `image`, `avatar`, `document`, `gallery`, `video`, `audio`,
   and custom `fileValidator` options for size, count, type, extension, min/max.
 - Core nested value/array/zod helper utilities are exercised through form
@@ -128,10 +134,11 @@ Keep existing demos and add focused "lab" demos for missing public surface:
   variants, state queries, manual errors, trigger, touched helpers, focus.
 - **Field Array Lab:** complete `useFieldArray` operations, primitive/nested
   arrays, prop/context modes, custom `keyName`.
-- **Validation Adapters Lab:** one visible workflow per adapter branch. Zod uses
-  the real dependency already installed. Optional non-Zod adapters can be tested
-  either with real dev dependencies or adapter-shaped fixtures; if real package
-  interop is desired, that is a deliberate dependency-expansion subtask.
+- **Validation Adapters Lab:** one visible workflow per current adapter branch.
+  Zod uses the real dependency already installed. Standard Schema, Yup-like,
+  Valibot-like, ArkType-like, and Effect-like paths use local fixture shapes.
+  The UI and report labels must say "adapter shape" or "adapter branch" where a
+  real package is not installed, so the app does not overclaim package interop.
 - **File Validators Lab:** all presets plus custom min/max/type/extension cases.
 - **Component Lab:** `TextField`, `TextareaField`, `SelectField`, `createField`,
   AutoForm custom component/error/layout/children behavior.
@@ -179,8 +186,10 @@ These remain outside Playwright by design:
 - Pure helpers and branch-heavy internals: unit tests.
 - Native file picker UI: not scriptable; use `setInputFiles`.
 - Visual correctness: screenshots are for review, not pixel baselines.
-- Real third-party adapter package compatibility for optional packages unless
-  those packages are intentionally added to the example app.
+- Real third-party Yup, Valibot, ArkType, or Effect package compatibility. This
+  slice should not add those packages; if product messaging wants to claim real
+  interop, add dedicated integration tests and optional dependency handling in a
+  later slice.
 
 ## Success Criteria
 
@@ -189,4 +198,5 @@ These remain outside Playwright by design:
 - Sweep runs all app routes and fails on behavior regressions.
 - Sweep report is generated under `.sweep-results/REPORT.md`.
 - Unit/type fallback rows are explicit, not accidental gaps.
+- No new Yup, Valibot, ArkType, or Effect dependencies are added.
 - Full package verification still passes after app/sweep changes.
