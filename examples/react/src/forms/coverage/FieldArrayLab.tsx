@@ -1,5 +1,10 @@
 import { useRef, useState } from "react";
-import { FormProvider, useFieldArray, useForm } from "el-form-react-hooks";
+import {
+  FormProvider,
+  useFieldArray,
+  useForm,
+  type UseFormReturn,
+} from "el-form-react-hooks";
 import { Button, Card, inputBaseClasses } from "../../components/ui";
 
 type Data = {
@@ -36,8 +41,9 @@ type OperationControls = {
 };
 
 function ItemArrayControls({
+  form,
   logOperation,
-}: OperationControls) {
+}: OperationControls & { form: UseFormReturn<Data> }) {
   const countersRef = useRef<Record<string, number>>({});
   const {
     fields,
@@ -49,7 +55,7 @@ function ItemArrayControls({
     swap,
     update,
     replace,
-  } = useFieldArray<Data, "items">({ name: "items", keyName: "_key" });
+  } = useFieldArray<Data, "items">({ name: "items", form, keyName: "_key" });
   const keyedFields = fields as ReadonlyArray<
     Data["items"][number] & { _key: string }
   >;
@@ -420,7 +426,7 @@ export function FieldArrayLab() {
 
       <FormProvider form={form}>
         <div className="space-y-6">
-          <ItemArrayControls logOperation={logOperation} />
+          <ItemArrayControls form={form} logOperation={logOperation} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <TagArrayControls logOperation={logOperation} />
