@@ -120,7 +120,7 @@ const adapterBranches: AdapterBranch[] = [
   {
     id: "zod",
     title: "Zod",
-    description: "Zod adapter shape fixture",
+    description: "Zod branch fixture without Standard Schema marker",
     buildOptions: () => ({
       defaultValues,
       validators: { onSubmit: zodLike() },

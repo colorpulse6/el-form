@@ -47,7 +47,6 @@ const ADAPTER_BRANCHES = [
 ];
 
 const ADAPTER_SHAPE_FIXTURES = [
-  "zod",
   "standard-schema-shape",
   "yup-like",
   "valibot-like",
@@ -121,6 +120,8 @@ function createFixtureFiles() {
     noteTxt: join(FIXTURE_DIR, "notes.txt"),
     extraTxt: join(FIXTURE_DIR, "extra.txt"),
     resumePdf: join(FIXTURE_DIR, "resume.pdf"),
+    videoMp4: join(FIXTURE_DIR, "clip.mp4"),
+    audioMp3: join(FIXTURE_DIR, "sound.mp3"),
   };
 
   const tinyPng = Buffer.from(
@@ -133,6 +134,8 @@ function createFixtureFiles() {
   writeFileSync(files.noteTxt, "tiny text fixture\n");
   writeFileSync(files.extraTxt, "second tiny text fixture\n");
   writeFileSync(files.resumePdf, "%PDF-1.1\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n");
+  writeFileSync(files.videoMp4, "tiny mp4 fixture\n");
+  writeFileSync(files.audioMp3, "tiny mp3 fixture\n");
 
   return files;
 }
@@ -508,8 +511,17 @@ async function assertUseFieldRerender(page) {
 async function assertFormControlsLab(page) {
   return scenario("behavior", async () => {
     await expectVisible(main(page).getByTestId("form-controls-lab"), "form controls lab root");
+    const initialValues = await readJsonTestId(page, "values-json");
+    ensure(typeof initialValues.age === "number", "form controls lab initial age was not numeric");
     await clickMainButton(page, "Set Name Ada");
     await waitForJsonTestId(page, "values-json", (json) => json.name === "Ada", "name set via setValue");
+    await clickMainButton(page, "Update Age");
+    await waitForJsonTestId(
+      page,
+      "values-json",
+      (json) => json.age === initialValues.age + 1,
+      "updateValue increments age"
+    );
     await clickMainButton(page, "Set Many");
     await waitForJsonTestId(
       page,
@@ -517,10 +529,35 @@ async function assertFormControlsLab(page) {
       (json) => json.email === "ada@example.com" && json.profile?.city === "Paris",
       "setValues updates email and city"
     );
+    await fillByLabel(page, "Notes", "Browser notes");
+    await waitForJsonTestId(
+      page,
+      "values-json",
+      (json) => json.notes === "Browser notes",
+      "textarea registration updates notes"
+    );
+    await main(page).getByLabel("Agreed", { exact: true }).check();
+    await waitForJsonTestId(
+      page,
+      "values-json",
+      (json) => json.agreed === true,
+      "checkbox registration updates agreed"
+    );
     await clickMainButton(page, "Set Email Error");
     await waitForJsonTestId(page, "errors-json", (json) => json.email === "Email already taken", "setError updates errors");
     await clickMainButton(page, "Clear Email Error");
     await waitForJsonTestId(page, "errors-json", (json) => !json.email, "clearErrors removes email error");
+    await clickMainButton(page, "Trigger Email");
+    await waitForJsonTestId(
+      page,
+      "operation-log",
+      (json) => Array.isArray(json) && json.some((entry) => entry.label.includes("Trigger Email")),
+      "trigger email operation is logged"
+    );
+    await clickMainButton(page, "Mark Email Touched");
+    await waitForJsonTestId(page, "touched-json", (json) => json.email === true, "markFieldTouched updates touched state");
+    await clickMainButton(page, "Mark Email Untouched");
+    await waitForJsonTestId(page, "touched-json", (json) => !json.email, "markFieldUntouched clears touched state");
     await clickMainButton(page, "Focus Email");
     await waitFor(
       async () => ((await main(page).getByTestId("active-field").textContent())?.includes("Email") ? true : null),
@@ -533,7 +570,84 @@ async function assertFormControlsLab(page) {
       (json) => json.source === "handleSubmit onValid" && json.success === true,
       "handleSubmit submit result"
     );
-    return "value, error, focus, and handleSubmit APIs update JSON panels";
+    await clickMainButton(page, "Submit Async Result");
+    await waitForJsonTestId(
+      page,
+      "submit-result",
+      (json) => json.source === "submitAsync" && json.result?.success === true,
+      "submitAsync result"
+    );
+
+    await clickMainButton(page, "Set Email Error");
+    await waitForJsonTestId(
+      page,
+      "errors-json",
+      (json) => json.email === "Email already taken",
+      "setError updates errors before reset"
+    );
+    await clickMainButton(page, "Reset Keep Errors");
+    await waitForJsonTestId(
+      page,
+      "values-json",
+      (json) =>
+        json.name === initialValues.name &&
+        json.email === initialValues.email &&
+        json.age === initialValues.age &&
+        json.notes === initialValues.notes &&
+        json.agreed === initialValues.agreed &&
+        json.profile?.city === initialValues.profile?.city,
+      "reset keep errors restores default values"
+    );
+    await waitForJsonTestId(
+      page,
+      "errors-json",
+      (json) => json.email === "Email already taken",
+      "reset keep errors preserves email error"
+    );
+    await clickMainButton(page, "Clear Email Error");
+    await waitForJsonTestId(
+      page,
+      "errors-json",
+      (json) => !json.email,
+      "clearErrors removes email error after reset"
+    );
+
+    await clickMainButton(page, "Set Name Ada");
+    await waitForJsonTestId(
+      page,
+      "values-json",
+      (json) => json.name === "Ada",
+      "name reset setup via setValue"
+    );
+    await clickMainButton(page, "Reset Field Name");
+    await waitForJsonTestId(
+      page,
+      "values-json",
+      (json) => json.name === initialValues.name,
+      "resetField restores name"
+    );
+    await clickMainButton(page, "Set Name Ada");
+    await clickMainButton(page, "Set Many");
+    await waitForJsonTestId(
+      page,
+      "values-json",
+      (json) => json.name === "Ada" && json.email === "ada@example.com" && json.profile?.city === "Paris",
+      "resetValues setup updates required fields"
+    );
+    await clickMainButton(page, "Reset Values");
+    await waitForJsonTestId(
+      page,
+      "values-json",
+      (json) =>
+        json.name === initialValues.name &&
+        json.email === initialValues.email &&
+        json.age === initialValues.age &&
+        json.notes === initialValues.notes &&
+        json.agreed === initialValues.agreed &&
+        json.profile?.city === initialValues.profile?.city,
+      "resetValues restores defaults"
+    );
+    return "value, reset, trigger, touched, focus, handleSubmit, and submitAsync APIs update JSON panels";
   });
 }
 
@@ -550,12 +664,61 @@ async function assertFieldArrayLab(page) {
       (json) => Array.isArray(json) && json.length === 3 && json.some((item) => item.label === "append-1"),
       "append item updates items values"
     );
+    await clickMainButton(page, "Prepend Item");
+    await waitForJsonTestId(
+      page,
+      "items-json",
+      (json) => Array.isArray(json) && json[0]?.label === "prepend-1",
+      "prepend item updates first item"
+    );
+    await clickMainButton(page, "Insert Item");
+    await waitForJsonTestId(
+      page,
+      "items-json",
+      (json) => Array.isArray(json) && json[1]?.label === "insert-1",
+      "insert item updates index one"
+    );
+    await clickMainButton(page, "Move Item");
+    await waitForJsonTestId(
+      page,
+      "items-json",
+      (json) =>
+        Array.isArray(json) &&
+        json[0]?.label === "insert-1" &&
+        json[json.length - 1]?.label === "prepend-1",
+      "move item reorders object array"
+    );
+    await clickMainButton(page, "Swap Items");
+    await waitForJsonTestId(
+      page,
+      "items-json",
+      (json) => Array.isArray(json) && json[0]?.label === "alpha" && json[1]?.label === "insert-1",
+      "swap item reorders first two object items"
+    );
     await clickMainButton(page, "Update Item");
     await waitForJsonTestId(
       page,
       "items-json",
       (json) => Array.isArray(json) && json[0]?.label === "update-1",
       "update item changes first item"
+    );
+    await clickMainButton(page, "Remove Item");
+    await waitForJsonTestId(
+      page,
+      "items-json",
+      (json) =>
+        Array.isArray(json) &&
+        json.length === 4 &&
+        json[0]?.label === "insert-1" &&
+        !json.some((item) => item.label === "update-1"),
+      "remove item removes first object item"
+    );
+    await clickMainButton(page, "Replace Items");
+    await waitForJsonTestId(
+      page,
+      "items-json",
+      (json) => Array.isArray(json) && json.length === 2 && json.every((item) => String(item.label).startsWith("replace-")),
+      "replace item operation updates object array"
     );
     await clickMainButton(page, "Append Tag");
     await waitForJsonTestId(
@@ -574,8 +737,8 @@ async function assertFieldArrayLab(page) {
 
     const customKeys = await readJsonTestId(page, "custom-key-json");
     ensure(customKeys.every((row) => row._key), "custom key rows did not include _key");
-    await waitForJsonTestId(page, "operation-log", (json) => Array.isArray(json) && json.length >= 4, "operation log updates");
-    return "object, primitive, nested, and custom-key array panels update";
+    await waitForJsonTestId(page, "operation-log", (json) => Array.isArray(json) && json.length >= 10, "operation log updates");
+    return "append, prepend, insert, remove, move, swap, update, replace, primitive, nested, and custom-key arrays update";
   });
 }
 
@@ -635,6 +798,48 @@ async function assertFileValidatorsLab(page) {
       (json) => json.image?.fileNames?.includes("portfolio-one.png") && json.image?.error === null,
       "image summary is valid"
     );
+    await setInputFilesByLabel(page, "Avatar preset", fixtures.avatarPng);
+    await waitForJsonTestId(
+      page,
+      "file-validators-summary-json",
+      (json) => json.avatar?.fileNames?.includes("avatar.png") && json.avatar?.error === null,
+      "avatar summary is valid"
+    );
+    await setInputFilesByLabel(page, "Document preset", fixtures.noteTxt);
+    await waitForJsonTestId(
+      page,
+      "file-validators-summary-json",
+      (json) => json.document?.fileNames?.includes("notes.txt") && json.document?.error === null,
+      "document summary is valid"
+    );
+    await setInputFilesByLabel(page, "Gallery preset", [fixtures.portfolioPng, fixtures.portfolioJpg]);
+    await waitForJsonTestId(
+      page,
+      "file-validators-summary-json",
+      (json) => json.gallery?.fileNames?.length === 2 && json.gallery?.error === null,
+      "gallery summary is valid"
+    );
+    await setInputFilesByLabel(page, "Video preset", fixtures.videoMp4);
+    await waitForJsonTestId(
+      page,
+      "file-validators-summary-json",
+      (json) => json.video?.fileNames?.includes("clip.mp4") && json.video?.error === null,
+      "video summary is valid"
+    );
+    await setInputFilesByLabel(page, "Audio preset", fixtures.audioMp3);
+    await waitForJsonTestId(
+      page,
+      "file-validators-summary-json",
+      (json) => json.audio?.fileNames?.includes("sound.mp3") && json.audio?.error === null,
+      "audio summary is valid"
+    );
+    await setInputFilesByLabel(page, "Custom extension", fixtures.noteTxt);
+    await waitForJsonTestId(
+      page,
+      "file-validators-summary-json",
+      (json) => json.customExtension?.fileNames?.includes("notes.txt") && json.customExtension?.error === null,
+      "custom extension summary is valid"
+    );
 
     await setInputFilesByLabel(page, "Custom count", [fixtures.noteTxt]);
     await expectMainText(page, /Minimum 2 files required/, "custom count minFiles error");
@@ -655,7 +860,7 @@ async function assertFileValidatorsLab(page) {
     await clickMainButton(page, "Submit file validators");
     await waitForJsonTestId(page, "file-validators-submit-result", (json) => json.status === "valid", "file validators submit result");
 
-    return "file preset labels, minFiles error, recovery, and submit summary are visible";
+    return "all file presets and custom validators accept valid fixtures, minFiles error recovers, and submit summary is visible";
   });
 }
 
