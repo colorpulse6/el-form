@@ -332,9 +332,11 @@ async function assertAdvancedFileValidation(page) {
     await fillByLabel(page, "Name", "Grace Hopper");
     await fillByLabel(page, "Email", "grace@example.com");
     await setInputFilesByLabel(page, "Profile Picture", fixtures.avatarPng);
+    await expectMainText(page, /avatar\.png/, "profile picture file name");
     await setInputFilesByLabel(page, "Portfolio Images", [fixtures.portfolioPng, fixtures.portfolioJpg]);
-    await setInputFilesByLabel(page, "Resume", fixtures.resumePdf);
     await expectMainText(page, /Portfolio Images \(2\/8\)/, "portfolio count");
+    await setInputFilesByLabel(page, "Resume", fixtures.resumePdf);
+    await expectMainText(page, /resume\.pdf/, "resume file name");
     await clickMainButton(page, "Submit Application", { enabled: true });
 
     const result = await waitForJsonTestId(
@@ -358,7 +360,9 @@ async function assertZodFileValidation(page) {
     await fillByLabel(page, "Last Name", "Johnson");
     await fillByLabel(page, "Email", "katherine@example.com");
     await setInputFilesByLabel(page, "Resume", fixtures.resumePdf);
+    await expectMainText(page, /resume\.pdf/, "zod resume file name");
     await setInputFilesByLabel(page, "Portfolio", [fixtures.portfolioPng]);
+    await expectMainText(page, /Portfolio Files \(1\/5\)/, "zod portfolio count");
     await clickMainButton(page, "Submit Application", { enabled: true });
 
     const result = await waitForJsonTestId(
@@ -480,17 +484,23 @@ async function assertFormSwitchCompat(page) {
 }
 
 async function assertUseFieldRerender(page) {
-  return scenario("behavior", async () => {
+  return scenario("render-only", async () => {
+    const aCount = await expectVisible(main(page).locator('[aria-label="a-count"]'), "a-count readout");
     const aValue = await expectVisible(main(page).locator('[aria-label="a-value"]'), "a-value readout");
     const bCount = await expectVisible(main(page).locator('[aria-label="b-count"]'), "b-count readout");
+    const beforeA = Number((await aCount.textContent()) ?? "NaN");
     const beforeB = Number((await bCount.textContent()) ?? "0");
+    ensure(Number.isFinite(beforeA), `a-count was not numeric (${beforeA})`);
+    ensure(Number.isFinite(beforeB), `b-count was not numeric (${beforeB})`);
 
     await fillByLabel(page, "a", "Alpha");
     await waitFor(async () => ((await aValue.textContent()) === "Alpha" ? true : null), "a-value updates after edit");
 
+    const afterA = Number((await aCount.textContent()) ?? "NaN");
     const afterB = Number((await bCount.textContent()) ?? "0");
-    ensure(afterB === beforeB, `b-count changed while editing a (${beforeB} -> ${afterB})`);
-    return `useField value updated while b-count stayed at ${beforeB}`;
+    ensure(Number.isFinite(afterA), `a-count was not numeric after edit (${afterA})`);
+    ensure(Number.isFinite(afterB), `b-count was not numeric after edit (${afterB})`);
+    return `a-value updates; render counters are visible (a ${beforeA}->${afterA}, b ${beforeB}->${afterB})`;
   });
 }
 

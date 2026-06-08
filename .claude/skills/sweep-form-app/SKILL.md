@@ -28,8 +28,9 @@ whole app actually works, not just the unit suite.
    ```bash
    pnpm --filter el-form-testing-app dev
    ```
-   Wait until http://localhost:3001 responds (poll, ~10s). If the port is busy,
-   assume the app is already running and continue.
+   Wait until http://localhost:3001 responds (poll, ~10s). If port 3001 is busy,
+   verify it is serving the El Form Testing Suite before reusing it; otherwise
+   stop that process or start the correct app server on port 3001.
 
 3. **Run the sweep**:
    ```bash
@@ -55,6 +56,9 @@ whole app actually works, not just the unit suite.
 
 - The runner exits non-zero if any demo fails — surface that to the user.
 - One broken demo does not abort the sweep; each is isolated.
+- Console errors are reported as warnings in the table and console-error
+  section. They do not, by themselves, determine row pass/fail or the runner
+  exit status.
 - The assertions are route-specific and conservative: they check visible runtime
   behavior or explicit coverage fixtures, not private implementation details.
 - Non-Zod optional validation adapters are adapter-shape coverage only. The
