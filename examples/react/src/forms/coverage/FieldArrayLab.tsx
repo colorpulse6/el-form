@@ -1,10 +1,5 @@
 import { useRef, useState } from "react";
-import {
-  FormProvider,
-  useFieldArray,
-  useForm,
-  type UseFormReturn,
-} from "el-form-react-hooks";
+import { FormProvider, useFieldArray, useForm } from "el-form-react-hooks";
 import { Button, Card, inputBaseClasses } from "../../components/ui";
 
 type Data = {
@@ -41,9 +36,8 @@ type OperationControls = {
 };
 
 function ItemArrayControls({
-  items,
   logOperation,
-}: OperationControls & { items: Data["items"] }) {
+}: OperationControls) {
   const countersRef = useRef<Record<string, number>>({});
   const {
     fields,
@@ -55,7 +49,12 @@ function ItemArrayControls({
     swap,
     update,
     replace,
-  } = useFieldArray<Data, "items">({ name: "items" });
+  } = useFieldArray<Data, "items">({ name: "items", keyName: "_key" });
+  const keyedFields = fields as ReadonlyArray<
+    Data["items"][number] & { _key: string }
+  >;
+  const hasItems = keyedFields.length > 0;
+  const canReorderItems = keyedFields.length > 1;
 
   const nextLabel = (prefix: string) => {
     const next = (countersRef.current[prefix] ?? 0) + 1;
@@ -77,8 +76,9 @@ function ItemArrayControls({
 
   const insertItem = () => {
     const label = nextLabel("insert");
-    insert(1, { id: `domain-${label}`, label });
-    logOperation(`insert item ${label} at 1`);
+    const index = Math.min(1, keyedFields.length);
+    insert(index, { id: `domain-${label}`, label });
+    logOperation(`insert item ${label} at ${index}`);
   };
 
   const removeItem = () => {
@@ -87,7 +87,7 @@ function ItemArrayControls({
   };
 
   const moveItem = () => {
-    const targetIndex = Math.max(0, fields.length - 1);
+    const targetIndex = keyedFields.length - 1;
     move(0, targetIndex);
     logOperation(`move item 0 to ${targetIndex}`);
   };
@@ -112,6 +112,12 @@ function ItemArrayControls({
     logOperation(`replace items with ${label}`);
   };
 
+  const customKeyRows = keyedFields.map((field) => ({
+    id: field.id,
+    _key: field._key,
+    label: field.label,
+  }));
+
   return (
     <Card>
       <div className="space-y-4">
@@ -120,9 +126,9 @@ function ItemArrayControls({
         </div>
 
         <div className="grid gap-3">
-          {fields.map((field, index) => (
+          {keyedFields.map((field, index) => (
             <div
-              key={field.id}
+              key={field._key}
               className="grid gap-3 rounded-md border border-gray-200 bg-gray-50 p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
             >
               <label className="space-y-1 text-sm font-medium text-gray-700">
@@ -130,7 +136,7 @@ function ItemArrayControls({
                 <input
                   className={inputBaseClasses}
                   readOnly
-                  value={items[index]?.id ?? ""}
+                  value={field.id}
                   aria-label={`Item ${index} domain id`}
                 />
               </label>
@@ -144,7 +150,7 @@ function ItemArrayControls({
                 />
               </label>
               <div className="self-end rounded-md bg-white px-3 py-2 text-xs text-gray-600">
-                field id: {field.id}
+                field key: {field._key}
               </div>
             </div>
           ))}
@@ -160,16 +166,40 @@ function ItemArrayControls({
           <Button type="button" size="sm" onClick={insertItem}>
             Insert Item
           </Button>
-          <Button type="button" size="sm" variant="danger" onClick={removeItem}>
+          <Button
+            type="button"
+            size="sm"
+            variant="danger"
+            onClick={removeItem}
+            disabled={!hasItems}
+          >
             Remove Item
           </Button>
-          <Button type="button" size="sm" variant="secondary" onClick={moveItem}>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={moveItem}
+            disabled={!canReorderItems}
+          >
             Move Item
           </Button>
-          <Button type="button" size="sm" variant="secondary" onClick={swapItems}>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={swapItems}
+            disabled={!canReorderItems}
+          >
             Swap Items
           </Button>
-          <Button type="button" size="sm" variant="secondary" onClick={updateItem}>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={updateItem}
+            disabled={!hasItems}
+          >
             Update Item
           </Button>
           <Button type="button" size="sm" variant="secondary" onClick={replaceItems}>
@@ -178,6 +208,7 @@ function ItemArrayControls({
         </div>
 
         <StatePanel label="items fields" testId="items-fields-json" value={fields} />
+        <CustomKeyCoverage rows={customKeyRows} />
       </div>
     </Card>
   );
@@ -188,6 +219,7 @@ function TagArrayControls({ logOperation }: OperationControls) {
   const { fields, append, remove } = useFieldArray<Data, "tags">({
     name: "tags",
   });
+  const hasTags = fields.length > 0;
 
   const nextLabel = (prefix: string) => {
     const next = (countersRef.current[prefix] ?? 0) + 1;
@@ -239,7 +271,13 @@ function TagArrayControls({ logOperation }: OperationControls) {
           <Button type="button" size="sm" onClick={appendTag}>
             Append Tag
           </Button>
-          <Button type="button" size="sm" variant="danger" onClick={removeTag}>
+          <Button
+            type="button"
+            size="sm"
+            variant="danger"
+            onClick={removeTag}
+            disabled={!hasTags}
+          >
             Remove Tag
           </Button>
         </div>
@@ -253,6 +291,7 @@ function NestedSkillArrayControls({ logOperation }: OperationControls) {
   const { fields, append, remove } = useFieldArray<Data, "team.0.skills">({
     name: "team.0.skills",
   });
+  const hasNestedSkills = fields.length > 0;
 
   const nextLabel = (prefix: string) => {
     const next = (countersRef.current[prefix] ?? 0) + 1;
@@ -304,7 +343,13 @@ function NestedSkillArrayControls({ logOperation }: OperationControls) {
           <Button type="button" size="sm" onClick={appendNestedSkill}>
             Append Nested Skill
           </Button>
-          <Button type="button" size="sm" variant="danger" onClick={removeNestedSkill}>
+          <Button
+            type="button"
+            size="sm"
+            variant="danger"
+            onClick={removeNestedSkill}
+            disabled={!hasNestedSkills}
+          >
             Remove Nested Skill
           </Button>
         </div>
@@ -313,31 +358,18 @@ function NestedSkillArrayControls({ logOperation }: OperationControls) {
   );
 }
 
-function CustomKeyCoverage({ form }: { form: UseFormReturn<Data> }) {
-  const { fields } = useFieldArray<Data, "items">({
-    name: "items",
-    form,
-    keyName: "_key",
-  });
-
-  const customKeyRows = fields.map((field) => {
-    const row = field as typeof field & { _key: string };
-    return {
-      id: row.id,
-      _key: row._key,
-      label: row.label,
-    };
-  });
-
+function CustomKeyCoverage({
+  rows,
+}: {
+  rows: Array<{ id: string; _key: string; label: string }>;
+}) {
   return (
-    <Card variant="info">
-      <div className="space-y-3">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Custom Key Name</h3>
-        </div>
-        <StatePanel label="custom key rows" testId="custom-key-json" value={customKeyRows} />
+    <div className="space-y-3">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">Custom Key Name</h3>
       </div>
-    </Card>
+      <StatePanel label="custom key rows" testId="custom-key-json" value={rows} />
+    </div>
   );
 }
 
@@ -388,14 +420,12 @@ export function FieldArrayLab() {
 
       <FormProvider form={form}>
         <div className="space-y-6">
-          <ItemArrayControls items={items} logOperation={logOperation} />
+          <ItemArrayControls logOperation={logOperation} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <TagArrayControls logOperation={logOperation} />
             <NestedSkillArrayControls logOperation={logOperation} />
           </div>
-
-          <CustomKeyCoverage form={form} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <StatePanel label="items values" testId="items-json" value={items} />
