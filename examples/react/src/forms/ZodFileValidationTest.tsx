@@ -121,9 +121,9 @@ export default function ZodFileValidationTest() {
   const registerFileInput = (
     name: "resume" | "coverLetter" | "portfolio"
   ) => {
-    const { value: _value, files: _files, ...registration } = register(
-      name
-    ) as any;
+    const registration = { ...(register(name) as any) };
+    delete registration.value;
+    delete registration.files;
     return registration;
   };
 

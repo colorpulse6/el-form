@@ -104,9 +104,9 @@ export default function AdvancedFileValidationTest() {
   const registerFileInput = (
     name: "profilePicture" | "portfolio" | "resume"
   ) => {
-    const { value: _value, files: _files, ...registration } = register(
-      name
-    ) as any;
+    const registration = { ...(register(name) as any) };
+    delete registration.value;
+    delete registration.files;
     return registration;
   };
 
