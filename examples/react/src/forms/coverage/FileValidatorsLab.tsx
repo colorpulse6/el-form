@@ -1,5 +1,9 @@
-import { useState } from "react";
-import { fileValidator, fileValidators } from "el-form-core";
+import { useRef, useState } from "react";
+import {
+  fileValidator,
+  fileValidators,
+  type ValidatorFunction,
+} from "el-form-core";
 import { useForm } from "el-form-react-hooks";
 import {
   Button,
@@ -52,6 +56,24 @@ const defaultValues: FileValidatorsLabValues = {
   audio: null,
   customExtension: null,
   customCount: [],
+};
+
+const fieldValidatorMap: Record<FileFieldName, ValidatorFunction> = {
+  image: fileValidators.image,
+  avatar: fileValidators.avatar,
+  document: fileValidators.document,
+  gallery: fileValidators.gallery,
+  video: fileValidators.video,
+  audio: fileValidators.audio,
+  customExtension: fileValidator({
+    acceptedExtensions: ["txt"],
+    minSize: 1,
+  }),
+  customCount: fileValidator({
+    minFiles: 2,
+    maxFiles: 3,
+    acceptedTypes: ["text/plain"],
+  }),
 };
 
 const fieldConfigs: FileFieldConfig[] = [
@@ -139,6 +161,9 @@ export function FileValidatorsLab() {
   const [submitResult, setSubmitResult] = useState<Record<string, unknown>>({
     status: "idle",
   });
+  const inputRefs = useRef<Partial<Record<FileFieldName, HTMLInputElement>>>(
+    {}
+  );
 
   const {
     register,
@@ -148,29 +173,19 @@ export function FileValidatorsLab() {
     removeFile,
     clearFiles,
     clearErrors,
+    setError,
   } = useForm<FileValidatorsLabValues>({
     defaultValues,
     mode: "onChange",
     fieldValidators: {
-      image: { onChange: fileValidators.image },
-      avatar: { onChange: fileValidators.avatar },
-      document: { onChange: fileValidators.document },
-      gallery: { onChange: fileValidators.gallery },
-      video: { onChange: fileValidators.video },
-      audio: { onChange: fileValidators.audio },
-      customExtension: {
-        onChange: fileValidator({
-          acceptedExtensions: ["txt"],
-          minSize: 1,
-        }),
-      },
-      customCount: {
-        onChange: fileValidator({
-          minFiles: 2,
-          maxFiles: 3,
-          acceptedTypes: ["text/plain"],
-        }),
-      },
+      image: { onChange: fieldValidatorMap.image },
+      avatar: { onChange: fieldValidatorMap.avatar },
+      document: { onChange: fieldValidatorMap.document },
+      gallery: { onChange: fieldValidatorMap.gallery },
+      video: { onChange: fieldValidatorMap.video },
+      audio: { onChange: fieldValidatorMap.audio },
+      customExtension: { onChange: fieldValidatorMap.customExtension },
+      customCount: { onChange: fieldValidatorMap.customCount },
     },
   });
 
@@ -192,14 +207,45 @@ export function FileValidatorsLab() {
     );
   };
 
+  const resetInput = (name: FileFieldName) => {
+    const input = inputRefs.current[name];
+    if (input) input.value = "";
+  };
+
+  const validateFieldValue = (name: FileFieldName, value: FileValue) => {
+    const nextValues = {
+      ...formState.values,
+      [name]: value,
+    };
+
+    return fieldValidatorMap[name]({
+      value,
+      fieldName: name,
+      values: nextValues,
+    });
+  };
+
   const clearField = (name: FileFieldName) => {
     clearFiles(name);
     clearErrors(name);
+    resetInput(name);
   };
 
   const removeIndexedFile = (name: FileFieldName, index: number) => {
+    const nextFiles = getSelectedFiles(
+      formState.values[name] as FileValue
+    ).filter((_, fileIndex) => fileIndex !== index);
+    const nextValue = nextFiles;
+    const validationError = validateFieldValue(name, nextValue);
+
     removeFile(name, index);
-    clearErrors(name);
+    resetInput(name);
+
+    if (validationError) {
+      setError(name, validationError);
+    } else {
+      clearErrors(name);
+    }
   };
 
   const onValid = (data: FileValidatorsLabValues) => {
@@ -251,6 +297,8 @@ export function FileValidatorsLab() {
               formState.values[field.name] as FileValue
             );
             const fileInfo = files.map((file) => getFileInfo(file));
+            const registration = register(field.name);
+            const hasFilesOrError = files.length > 0 || Boolean(error);
 
             return (
               <Card key={field.name} className="space-y-4">
@@ -278,7 +326,14 @@ export function FileValidatorsLab() {
                     multiple={field.multiple}
                     aria-label={field.label}
                     data-testid={`${field.id}-input`}
-                    {...register(field.name)}
+                    name={registration.name}
+                    ref={(element) => {
+                      if (element) inputRefs.current[field.name] = element;
+                      else delete inputRefs.current[field.name];
+                      registration.ref(element);
+                    }}
+                    onChange={registration.onChange}
+                    onBlur={registration.onBlur}
                     className={`${inputBaseClasses} ${error ? inputErrorClasses : ""}`}
                   />
                 </FormGroup>
@@ -339,7 +394,7 @@ export function FileValidatorsLab() {
                     size="sm"
                     variant="secondary"
                     onClick={() => clearField(field.name)}
-                    disabled={files.length === 0}
+                    disabled={!hasFilesOrError}
                     data-testid={`${field.id}-clear`}
                   >
                     Clear
