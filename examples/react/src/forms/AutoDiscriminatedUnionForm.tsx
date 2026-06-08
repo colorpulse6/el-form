@@ -1,4 +1,5 @@
 import { AutoForm } from "el-form-react-components";
+import { useState } from "react";
 import { z } from "zod";
 
 const catSchema = z.object({
@@ -16,9 +17,12 @@ const dogSchema = z.object({
 const animalSchema = z.discriminatedUnion("type", [catSchema, dogSchema]);
 
 export function AutoDiscriminatedUnionForm() {
+  const [submitResult, setSubmitResult] = useState<any>(null);
+
   const handleSubmit = (data: any) => {
     console.log("AutoForm submitted:", data);
-    alert("Success! Check the console.");
+    setSubmitResult(data);
+    window.setTimeout(() => alert("Success! Check the console."), 0);
   };
 
   return (
@@ -34,6 +38,12 @@ export function AutoDiscriminatedUnionForm() {
         initialValues={{ type: "cat", meow: "" }}
         columns={1}
       />
+
+      {submitResult && (
+        <pre data-testid="submit-result">
+          {JSON.stringify(submitResult, null, 2)}
+        </pre>
+      )}
     </div>
   );
 }

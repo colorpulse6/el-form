@@ -1,5 +1,6 @@
 import { useForm } from "el-form-react-hooks";
 import { fileValidator, fileValidators } from "el-form-core";
+import { useState } from "react";
 
 interface AdvancedFileFormData {
   profilePicture: File | null;
@@ -10,6 +11,8 @@ interface AdvancedFileFormData {
 }
 
 export default function AdvancedFileValidationTest() {
+  const [submitResult, setSubmitResult] = useState<any>(null);
+
   const {
     register,
     handleSubmit,
@@ -53,6 +56,13 @@ export default function AdvancedFileValidationTest() {
     },
   });
 
+  const summarizeFile = (file: File) => ({
+    name: file.name,
+    type: file.type || "Unknown type",
+    size: file.size,
+    formattedSize: getFileInfo(file).formattedSize,
+  });
+
   const onSubmit = (data: AdvancedFileFormData) => {
     console.log("Advanced Form submitted:", data);
 
@@ -68,6 +78,19 @@ export default function AdvancedFileValidationTest() {
     if (data.portfolio && data.portfolio.length > 0) {
       console.log("Portfolio files:", data.portfolio.map(getFileInfo));
     }
+
+    setSubmitResult({
+      name: data.name,
+      email: data.email,
+      profilePicture: data.profilePicture
+        ? summarizeFile(data.profilePicture)
+        : null,
+      resume: data.resume ? summarizeFile(data.resume) : null,
+      portfolio: {
+        count: data.portfolio?.length ?? 0,
+        files: (data.portfolio ?? []).map(summarizeFile),
+      },
+    });
   };
 
   const handleAddMockPortfolioImage = () => {
@@ -310,6 +333,20 @@ export default function AdvancedFileValidationTest() {
           {formState.isSubmitting ? "Submitting..." : "Submit Application"}
         </button>
       </form>
+
+      {submitResult && (
+        <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+          <h3 className="text-sm font-medium text-green-800 mb-2">
+            Submit Result
+          </h3>
+          <pre
+            data-testid="submit-result"
+            className="text-xs text-green-900 whitespace-pre-wrap overflow-auto"
+          >
+            {JSON.stringify(submitResult, null, 2)}
+          </pre>
+        </div>
+      )}
 
       {/* Advanced form state debug */}
       <div className="mt-6 p-4 bg-gray-100 rounded-lg">

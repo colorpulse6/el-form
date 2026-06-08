@@ -1,4 +1,5 @@
 import { useForm } from "el-form-react-hooks";
+import { useState } from "react";
 import { z } from "zod";
 
 // Define a schema that includes File validation
@@ -51,6 +52,8 @@ const applicationSchema = z.object({
 type ApplicationFormData = z.infer<typeof applicationSchema>;
 
 export default function ZodFileValidationTest() {
+  const [submitResult, setSubmitResult] = useState<any>(null);
+
   const { register, handleSubmit, formState, getFileInfo, clearFiles } =
     useForm<ApplicationFormData>({
       defaultValues: {
@@ -75,6 +78,13 @@ export default function ZodFileValidationTest() {
       // },
     });
 
+  const summarizeFile = (file: File) => ({
+    name: file.name,
+    type: file.type || "Unknown type",
+    size: file.size,
+    formattedSize: getFileInfo(file).formattedSize,
+  });
+
   const onSubmit = (data: ApplicationFormData) => {
     console.log("✅ Form submitted successfully:", data);
 
@@ -90,6 +100,18 @@ export default function ZodFileValidationTest() {
     if (data.portfolio.length > 0) {
       console.log("Portfolio files:", data.portfolio.map(getFileInfo));
     }
+
+    setSubmitResult({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      resume: summarizeFile(data.resume),
+      coverLetter: data.coverLetter ? summarizeFile(data.coverLetter) : null,
+      portfolio: {
+        count: data.portfolio.length,
+        files: data.portfolio.map(summarizeFile),
+      },
+    });
   };
 
   const onError = (errors: Record<string, string>) => {
@@ -314,6 +336,20 @@ export default function ZodFileValidationTest() {
           {formState.isSubmitting ? "Submitting..." : "Submit Application"}
         </button>
       </form>
+
+      {submitResult && (
+        <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+          <h3 className="text-sm font-medium text-green-800 mb-2">
+            Submit Result
+          </h3>
+          <pre
+            data-testid="submit-result"
+            className="text-xs text-green-900 whitespace-pre-wrap overflow-auto"
+          >
+            {JSON.stringify(submitResult, null, 2)}
+          </pre>
+        </div>
+      )}
 
       {/* Schema validation info */}
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">

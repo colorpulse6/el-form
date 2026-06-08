@@ -1,5 +1,6 @@
 import { useForm } from "el-form-react-hooks";
 import { fileValidators } from "el-form-core";
+import { useState } from "react";
 
 interface FileFormData {
   avatar: File | null;
@@ -8,6 +9,8 @@ interface FileFormData {
 }
 
 export default function FileUploadTest() {
+  const [submitResult, setSubmitResult] = useState<any>(null);
+
   const {
     register,
     handleSubmit,
@@ -33,6 +36,13 @@ export default function FileUploadTest() {
   // File previews are automatically managed and separate from formState
   const avatarPreview = filePreview.avatar;
 
+  const summarizeFile = (file: File) => ({
+    name: file.name,
+    type: file.type || "Unknown type",
+    size: file.size,
+    formattedSize: getFileInfo(file).formattedSize,
+  });
+
   const onSubmit = (data: FileFormData) => {
     console.log("Form submitted:", data);
     console.log("Avatar:", data.avatar);
@@ -51,6 +61,15 @@ export default function FileUploadTest() {
         console.log(`Document ${index + 1} info:`, docInfo);
       });
     }
+
+    setSubmitResult({
+      name: data.name,
+      avatar: data.avatar ? summarizeFile(data.avatar) : null,
+      documents: {
+        count: data.documents?.length ?? 0,
+        files: (data.documents ?? []).map(summarizeFile),
+      },
+    });
   };
 
   // Demo function to show addFile in action
@@ -228,6 +247,20 @@ export default function FileUploadTest() {
           {formState.isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </form>
+
+      {submitResult && (
+        <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+          <h3 className="text-sm font-medium text-green-800 mb-2">
+            Submit Result
+          </h3>
+          <pre
+            data-testid="submit-result"
+            className="text-xs text-green-900 whitespace-pre-wrap overflow-auto"
+          >
+            {JSON.stringify(submitResult, null, 2)}
+          </pre>
+        </div>
+      )}
 
       {/* Form state debug */}
       <div className="mt-6 p-4 bg-gray-100 rounded">

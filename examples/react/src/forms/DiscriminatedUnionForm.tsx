@@ -1,4 +1,5 @@
 import { useForm } from "el-form-react-hooks";
+import { useState } from "react";
 import { z } from "zod";
 import { FormSwitch, FormCase } from "el-form-react-components";
 
@@ -17,6 +18,8 @@ const animalSchema = z.discriminatedUnion("type", [catSchema, dogSchema]);
 type AnimalSchema = z.infer<typeof animalSchema>;
 
 export function DiscriminatedUnionForm() {
+  const [submitResult, setSubmitResult] = useState<any>(null);
+
   const form = useForm<AnimalSchema>({
     validators: {
       onChange: animalSchema,
@@ -32,7 +35,8 @@ export function DiscriminatedUnionForm() {
 
   const onSubmit = handleSubmit((data) => {
     console.log("Form submitted:", data);
-    alert("Success! Check the console.");
+    setSubmitResult(data);
+    window.setTimeout(() => alert("Success! Check the console."), 0);
   });
 
   return (
@@ -68,6 +72,12 @@ export function DiscriminatedUnionForm() {
       </FormSwitch>
 
       <button type="submit">Submit</button>
+
+      {submitResult && (
+        <pre data-testid="submit-result">
+          {JSON.stringify(submitResult, null, 2)}
+        </pre>
+      )}
     </form>
   );
 }
