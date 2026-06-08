@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useForm, type UseFormOptions } from "el-form-react-hooks";
-import z from "zod";
 import {
   Button,
   Card,
@@ -52,6 +51,19 @@ function standardSchema(message = "Standard Schema invalid") {
   };
 }
 
+function zodLike(message = "Zod invalid") {
+  return {
+    _def: {},
+    safeParse: (value: any) =>
+      value.value === "ok"
+        ? { success: true, data: value }
+        : {
+            success: false,
+            error: { issues: [{ path: ["value"], message }] },
+          },
+  };
+}
+
 function yupLike(message = "Yup-like invalid") {
   return {
     __isYupSchema__: true,
@@ -87,13 +99,11 @@ function arkTypeLike(message = "ArkType-like invalid") {
   };
 }
 
-function effectLike(message = "Effect-like invalid") {
+function effectLike() {
   return {
     _schema: {},
     validate: (value: any) =>
-      value.value === "ok"
-        ? { _tag: "Success" }
-        : { _tag: "Failure", message },
+      value.value === "ok" ? { _tag: "Success" } : { _tag: "Failure" },
   };
 }
 
@@ -101,10 +111,6 @@ function customFunction(message = "Custom function invalid") {
   return ({ value }: { value: string }) =>
     value === "ok" ? undefined : message;
 }
-
-const zodSchema = z.object({
-  value: z.string().refine((value) => value === "ok", "Zod invalid"),
-});
 
 const defaultValues: AdapterValues = {
   value: "invalid",
@@ -114,10 +120,10 @@ const adapterBranches: AdapterBranch[] = [
   {
     id: "zod",
     title: "Zod",
-    description: "Real zod schema",
+    description: "Zod adapter shape fixture",
     buildOptions: () => ({
       defaultValues,
-      validators: { onSubmit: zodSchema },
+      validators: { onSubmit: zodLike() },
     }),
   },
   {
