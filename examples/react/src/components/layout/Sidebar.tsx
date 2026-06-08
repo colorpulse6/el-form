@@ -15,7 +15,12 @@ export type TestId =
   | "form-switch-field"
   | "form-switch-select"
   | "form-switch-compat"
-  | "use-field-rerender";
+  | "use-field-rerender"
+  | "form-controls-lab"
+  | "field-array-lab"
+  | "validation-adapters-lab"
+  | "file-validators-lab"
+  | "component-lab";
 
 interface NavItem {
   id: TestId;
@@ -90,6 +95,17 @@ const navigation: NavCategory[] = [
     icon: "code",
     items: [
       { id: "use-field-rerender", label: "useField Rerender" },
+    ],
+  },
+  {
+    label: "Coverage Labs",
+    icon: "code",
+    items: [
+      { id: "form-controls-lab", label: "Form Controls Lab" },
+      { id: "field-array-lab", label: "Field Array Lab" },
+      { id: "validation-adapters-lab", label: "Validation Adapters Lab" },
+      { id: "file-validators-lab", label: "File Validators Lab" },
+      { id: "component-lab", label: "Component Lab" },
     ],
   },
 ];

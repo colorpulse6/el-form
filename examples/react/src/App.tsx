@@ -17,6 +17,11 @@ import FormSwitchFieldExample from "./tests/FormSwitch_Field_Example";
 import FormSwitchSelectExample from "./tests/FormSwitch_Select_Example";
 import FormSwitchBackCompatExample from "./tests/FormSwitch_BackCompat_Example";
 import UseFieldRerenderTest from "./tests/UseField_Rerender_Test";
+import { FormControlsLab } from "./forms/coverage/FormControlsLab";
+import { FieldArrayLab } from "./forms/coverage/FieldArrayLab";
+import { ValidationAdaptersLab } from "./forms/coverage/ValidationAdaptersLab";
+import { FileValidatorsLab } from "./forms/coverage/FileValidatorsLab";
+import { ComponentLab } from "./forms/coverage/ComponentLab";
 
 function App() {
   const [currentTest, setCurrentTest] = useState<TestId>("basic-validation");
@@ -53,6 +58,16 @@ function App() {
         return <FormSwitchBackCompatExample />;
       case "use-field-rerender":
         return <UseFieldRerenderTest />;
+      case "form-controls-lab":
+        return <FormControlsLab />;
+      case "field-array-lab":
+        return <FieldArrayLab />;
+      case "validation-adapters-lab":
+        return <ValidationAdaptersLab />;
+      case "file-validators-lab":
+        return <FileValidatorsLab />;
+      case "component-lab":
+        return <ComponentLab />;
       default:
         return <BasicValidationTest />;
     }
