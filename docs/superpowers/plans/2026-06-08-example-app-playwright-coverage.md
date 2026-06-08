@@ -10,6 +10,10 @@
 
 **Spec:** `docs/superpowers/specs/2026-06-08-example-app-playwright-coverage-design.md`
 
+**Status update (2026-06-08):** implemented and merged on `main`. This plan is now
+historical; do not resume its unchecked tasks as active work. Use
+`docs/superpowers/HANDOFF-2026-06-08.md` and `ROADMAP.md` for the next feature slice.
+
 ---
 
 ## Scope Rules
@@ -686,4 +690,3 @@ Report:
 - sweep pass/fail summary,
 - verification commands run,
 - remaining browser coverage limits.
-
