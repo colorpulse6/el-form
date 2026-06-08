@@ -1,8 +1,13 @@
 # El Form Phase C — Example App Coverage + Playwright Sweep
 
 **Date:** 2026-06-08  
-**Status:** User-approved design, pending review  
+**Status:** Implemented on `main` as of 2026-06-08
 **Branch:** `main`
+
+**Status update:** the example-app coverage labs, coverage matrix, and route-specific
+manual Playwright sweep assertions described here have merged. See
+`docs/superpowers/audits/2026-06-08-example-app-playwright-coverage-matrix.md` and
+`docs/superpowers/HANDOFF-2026-06-08.md` for the current state.
 
 ## Problem
 

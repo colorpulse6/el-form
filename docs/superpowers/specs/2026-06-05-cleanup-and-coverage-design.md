@@ -5,6 +5,11 @@
 **Owner:** Nic (colorpulse6)
 **Branch:** direct-to-main for Phase A (per owner decision)
 
+**Status update (2026-06-08):** this is now a historical umbrella spec. Phase A, the Phase
+B coverage slices, and Phase C example-app Playwright sweep work have merged to `main`.
+Use `ROADMAP.md` and `docs/superpowers/HANDOFF-2026-06-08.md` for current feature-work
+resume guidance.
+
 ## Context
 
 Post-revival, the library is released (3.11.0 + 2.3.1 patch), documented, and CI-clean.
