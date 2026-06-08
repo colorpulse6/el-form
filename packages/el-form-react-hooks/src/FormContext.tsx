@@ -46,9 +46,14 @@ export function FormProvider<T extends Record<string, any>>({
   const listenersRef = useRef(new Set<() => void>());
   const latestFormRef = useRef(form);
 
-  useEffect(() => {
-    latestFormRef.current = form;
-  }, [form]);
+  // Keep the latest form available to the context getter DURING render, not in
+  // a post-commit effect. Reading it from an effect made direct
+  // `useFormContext().form.formState` reads lag one render behind, because the
+  // getter still returned the previous render's form until the effect ran.
+  // Assigning here (the idempotent "latest ref" pattern) makes the getter
+  // current within the same render pass, while the stable context identity and
+  // the selector subscriptions below are unchanged.
+  latestFormRef.current = form;
 
   // Notify subscribers whenever the formState object changes
   useEffect(() => {
