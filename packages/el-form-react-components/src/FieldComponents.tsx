@@ -1,20 +1,13 @@
 import { useFormContext, useField } from "el-form-react-hooks";
+import type { Path } from "el-form-react-hooks";
+import type { BaseFieldProps } from "./types";
 import { fieldAriaProps } from "./fieldAria";
 
-// Base field props that all field components should extend
-export interface BaseFieldProps<
-  T extends Record<string, any>,
-  K extends keyof T
-> {
-  name: K;
-  label?: string;
-  placeholder?: string;
-  className?: string;
-  disabled?: boolean;
-  required?: boolean;
-}
+export type { BaseFieldProps };
 
-// Typed field component factory
+// Typed field component factory.
+// Stays at `keyof T`: its shallow `values[name]` access only resolves top-level
+// keys, so widening to nested paths here would silently read `undefined`.
 export function createField<T extends Record<string, any>, K extends keyof T>(
   name: K
 ) {
@@ -33,7 +26,7 @@ export function createField<T extends Record<string, any>, K extends keyof T>(
 }
 
 // Pre-built field components
-export function TextField<T extends Record<string, any>, K extends keyof T>({
+export function TextField<T extends Record<string, any>, Name extends Path<T>>({
   name,
   label,
   placeholder,
@@ -41,15 +34,12 @@ export function TextField<T extends Record<string, any>, K extends keyof T>({
   type = "text",
   required,
   ...props
-}: BaseFieldProps<T, K> & {
+}: BaseFieldProps<T, Name> & {
   type?: "text" | "email" | "password" | "url" | "tel";
 }) {
   const form = useFormContext<T>();
-  const { error, touched } = useField<T, any>(name as any);
-  const registration = form.form.register(String(name) as any) as Record<
-    string,
-    any
-  >;
+  const { error, touched } = useField<T, Name>(name);
+  const registration = form.form.register(name) as Record<string, any>;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const inputClasses = `
@@ -97,7 +87,7 @@ export function TextField<T extends Record<string, any>, K extends keyof T>({
 
 export function TextareaField<
   T extends Record<string, any>,
-  K extends keyof T
+  Name extends Path<T>
 >({
   name,
   label,
@@ -106,15 +96,12 @@ export function TextareaField<
   rows = 4,
   required,
   ...props
-}: BaseFieldProps<T, K> & {
+}: BaseFieldProps<T, Name> & {
   rows?: number;
 }) {
   const form = useFormContext<T>();
-  const { error, touched } = useField<T, any>(name as any);
-  const registration = form.form.register(String(name) as any) as Record<
-    string,
-    any
-  >;
+  const { error, touched } = useField<T, Name>(name);
+  const registration = form.form.register(name) as Record<string, any>;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const textareaClasses = `
@@ -160,7 +147,7 @@ export function TextareaField<
   );
 }
 
-export function SelectField<T extends Record<string, any>, K extends keyof T>({
+export function SelectField<T extends Record<string, any>, Name extends Path<T>>({
   name,
   label,
   placeholder,
@@ -168,15 +155,12 @@ export function SelectField<T extends Record<string, any>, K extends keyof T>({
   options = [],
   required,
   ...props
-}: BaseFieldProps<T, K> & {
+}: BaseFieldProps<T, Name> & {
   options: Array<{ value: string; label: string }>;
 }) {
   const form = useFormContext<T>();
-  const { error, touched } = useField<T, any>(name as any);
-  const registration = form.form.register(String(name) as any) as Record<
-    string,
-    any
-  >;
+  const { error, touched } = useField<T, Name>(name);
+  const registration = form.form.register(name) as Record<string, any>;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
   const selectClasses = `

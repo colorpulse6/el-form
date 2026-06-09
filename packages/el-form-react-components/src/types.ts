@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ValidatorConfig } from "el-form-core";
 import { UseFormReturn } from "el-form-react-hooks";
+import type { Path } from "el-form-react-hooks";
 
 // Grid layout types
 export type GridColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
@@ -57,12 +58,15 @@ export interface AutoFormErrorProps {
   touched: Record<string, boolean>;
 }
 
-// Reusable field component types
+// Reusable field component types.
+// `name` accepts any `Path<T>` (top-level keys plus nested dotted/array paths),
+// not just top-level `keyof T`, so standalone field components are path-safe for
+// nested fields. The second type parameter defaults to `Path<T>`.
 export interface BaseFieldProps<
   T extends Record<string, any>,
-  K extends keyof T
+  Name extends Path<T> = Path<T>
 > {
-  name: K;
+  name: Name;
   label?: string;
   placeholder?: string;
   className?: string;
