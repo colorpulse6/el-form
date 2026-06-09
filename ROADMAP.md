@@ -2,18 +2,18 @@
 
 > Honest, current status of the El Form library. Supersedes the old aspirational
 > `agent-actions/FEATURE_CHECKLIST.md` (which was ~90% wishlist and is gitignored).
-> Last updated: 2026-06-08 (after Phase B coverage + Phase C example-app sweep work).
+> Last updated: 2026-06-09 (after FormProvider reactivity, BaseFieldProps `Path<T>`,
+> CI Node 24, `useWatch`, and the `pnpm test` arg-forwarding fix).
 > Grounded in the Phase 0 audit (`docs/superpowers/audit-2026-05-31.md`), the
 > cleanup/coverage effort, and the current Playwright coverage matrix.
 
 ## Current package versions
 
 Package manifests on `main` currently show: `el-form-core@2.3.2`,
-`el-form-react-hooks@3.11.3`, `el-form-react-components@4.5.3`,
-`el-form-react@4.1.8`, `el-form-mcp@0.1.0`.
+`el-form-react-hooks@3.12.0`, `el-form-react-components@4.6.1`,
+`el-form-react@4.1.11`, `el-form-mcp@0.1.0`.
 
-The latest `main` Release workflow was green on 2026-06-08. Live npm registry
-versions were not rechecked from the sandboxed local environment.
+These versions were published to npm and verified on 2026-06-09.
 
 ## Shipped & stable
 
@@ -57,6 +57,19 @@ versions were not rechecked from the sandboxed local environment.
 - **Latest manual sweep evidence** — `.sweep-results/REPORT.md` showed 20/20 pass and
   0 console errors after the 2026-06-08 work. `.sweep-results/` remains gitignored.
 
+## Recently shipped (2026-06-09)
+
+- **`useWatch`** *(hooks 3.12.0)* — reactive RHF-style value subscription by path
+  (`useWatch()` / `useWatch(name)` / `useWatch([a, b])`), a thin wrapper over the selector
+  store; values only. The 2026-06-01 decision to cut it was reversed for RHF migration
+  friction. See the [migration guide](docs/docs/guides/migration.md).
+- **CI actions on Node 24** — every GitHub Action bumped to its Node-24 major (checkout
+  v6, setup-node v6, pnpm/action-setup v6, github-script v9, the Pages trio) to clear the
+  Node-20-runtime deprecation; `pnpm/action-setup` now reads `packageManager`. The project
+  Node target (`node-version: 20`) is unchanged.
+- **`pnpm test` arg-forwarding fixed** — the hooks `test` script now ends with `vitest`, so
+  `pnpm test -- -t <name>` reaches the runner instead of being swallowed by `tsd`.
+
 ## Recently shipped (BaseFieldProps path typing)
 
 - **`BaseFieldProps.name` widened to `Path<T>`** — the standalone field components
@@ -88,18 +101,10 @@ versions were not rechecked from the sandboxed local environment.
 
 ## Planned / under consideration
 
-- [ ] **`pnpm test` arg-forwarding** — the hooks `test` script forwards trailing args to
-      `tsd`, so `pnpm test -- --run` exits non-zero though assertions pass. Cosmetic
-      (CI's arg-free call is fine); split the tsd step to fix.
-- [ ] **`useWatch`** — *not committed.* `useField` / `useFormSelector` already provide
-      isolated value subscriptions; a separate `useWatch` should only be added if it
-      genuinely improves on them. The 2026-06-01 `useFieldArray` design explicitly cut
-      `useWatch`; see the legacy `useFormWatch-hook` branch only as exploration.
-
-Suggested next order for feature work:
-
-1. Fix `pnpm test` arg-forwarding as tooling polish.
-2. Revisit `useWatch` only after proving it adds value over existing selector APIs.
+No feature items are currently queued — the revival roadmap (correctness fixes, path-safe
+typing, `useFieldArray` + `useWatch`, accessibility, debounce, coverage, and CI
+modernization) is shipped. Further work is maintenance-driven or user-requested; see
+**Explicitly NOT planned** for parked scope.
 
 ## Design principles
 
@@ -116,10 +121,14 @@ Suggested next order for feature work:
 - Other frameworks (Vue / Svelte / Angular / React Native).
 - Analytics, devtools, rich-text/code editors, i18n, multi-step wizard components.
 
-## Known issues (open as of 2026-06-08)
+## Known issues (open as of 2026-06-09)
 
-- **`pnpm test` arg-forwarding** — cosmetic; see Planned. CI is unaffected.
+No open correctness, tooling, or typing issues.
 
+> The **`pnpm test` arg-forwarding** papercut is **resolved** — the hooks `test` script
+> ends with `vitest`, so forwarded args reach the runner (the earlier exit-code symptom no
+> longer reproduced; current `tsd` tolerates unknown flags).
+>
 > The **FormProvider getter lag** is now **resolved**: direct
 > `useFormContext().form.formState` reads are current within the same render pass (the
 > context getter is refreshed during render instead of in a post-commit effect). No open
