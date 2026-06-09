@@ -62,7 +62,8 @@ const { register, handleSubmit, formState } = useForm({
   `onBlur`, `ref`) and supports nested paths like `register("address.city")` and array
   paths like `register("items.0.name")`.
 - `handleSubmit(onValid, onError?)` validates, then calls your handler.
-- `formState` exposes `errors`, `isDirty`, `isValid`, `isSubmitting`, `touched`.
+- `formState` exposes `errors`, `isDirty`, `isValid`, `isSubmitting`, `touched`, plus the
+  submit-status fields `isSubmitted`, `isSubmitSuccessful`, and `submitCount`.
 - `setValue`, `reset`, `watch`, `trigger`, `setFocus`, `getFieldState` all exist.
 - `useFieldArray` exists for dynamic lists (see [Array Fields](./array-fields.md)).
 - Focus-on-error is on by default (`shouldFocusError`), just like RHF.

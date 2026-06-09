@@ -42,6 +42,9 @@ function makeState(
     isSubmitting: false,
     isValid: true,
     isDirty: false,
+    isSubmitted: false,
+    isSubmitSuccessful: false,
+    submitCount: 0,
     ...overrides,
   };
 }

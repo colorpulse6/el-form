@@ -59,6 +59,9 @@ export function useForm<T extends Record<string, any>>(
     isSubmitting: false,
     isValid: false,
     isDirty: false,
+    isSubmitted: false,
+    isSubmitSuccessful: false,
+    submitCount: 0,
   });
 
   // Separate state for file previews
@@ -516,6 +519,9 @@ export function useForm<T extends Record<string, any>>(
         isSubmitting: false,
         isValid: false,
         isDirty: options?.keepDirty ? formState.isDirty : false,
+        isSubmitted: false,
+        isSubmitSuccessful: false,
+        submitCount: 0,
       });
 
       // Clear file previews on reset

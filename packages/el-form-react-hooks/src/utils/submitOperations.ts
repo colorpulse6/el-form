@@ -50,7 +50,13 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
     ) => {
       return async (e: React.FormEvent) => {
         e.preventDefault();
-        setFormState((prev) => ({ ...prev, isSubmitting: true }));
+        setFormState((prev) => ({
+        ...prev,
+        isSubmitting: true,
+        isSubmitted: true,
+        submitCount: prev.submitCount + 1,
+        isSubmitSuccessful: false,
+      }));
 
         const { isValid, errors } = await validationManager.validateForm(
           formState.values
@@ -75,6 +81,7 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
 
         if (isValid) {
           await onValid(formState.values as T);
+          setFormState((prev) => ({ ...prev, isSubmitSuccessful: true }));
         } else {
           if (shouldFocusError !== false) {
             const el = findFirstErrorElement(
@@ -97,7 +104,13 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
         return;
       }
 
-      setFormState((prev) => ({ ...prev, isSubmitting: true }));
+      setFormState((prev) => ({
+        ...prev,
+        isSubmitting: true,
+        isSubmitted: true,
+        submitCount: prev.submitCount + 1,
+        isSubmitSuccessful: false,
+      }));
 
       try {
         // Always validate before submitting
@@ -113,6 +126,7 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
 
         if (isValid) {
           await onSubmit(formState.values as T);
+          setFormState((prev) => ({ ...prev, isSubmitSuccessful: true }));
         }
       } finally {
         setFormState((prev) => ({ ...prev, isSubmitting: false }));
@@ -123,7 +137,13 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
       | { success: true; data: T }
       | { success: false; errors: Partial<Record<keyof T, string>> }
     > => {
-      setFormState((prev) => ({ ...prev, isSubmitting: true }));
+      setFormState((prev) => ({
+        ...prev,
+        isSubmitting: true,
+        isSubmitted: true,
+        submitCount: prev.submitCount + 1,
+        isSubmitSuccessful: false,
+      }));
 
       try {
         // Always validate before submitting
@@ -142,6 +162,7 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
           if (onSubmit) {
             await onSubmit(formState.values as T);
           }
+          setFormState((prev) => ({ ...prev, isSubmitSuccessful: true }));
           return { success: true, data: formState.values as T };
         } else {
           return { success: false, errors };
