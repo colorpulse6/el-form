@@ -1,5 +1,6 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { Path, PathValue, RegisterReturn } from "./types/path";
+import { deepEqual } from "./utils/equality";
 import {
   FormState,
   UseFormOptions,
@@ -39,6 +40,8 @@ export function useForm<T extends Record<string, any>>(
     onSubmit,
     schema,
     shouldFocusError,
+    values: externalValues,
+    keepDirtyValues = false,
   } = options;
 
   // Core refs and state
@@ -50,7 +53,7 @@ export function useForm<T extends Record<string, any>>(
   const formStateRef = useRef<FormState<T>>();
 
   const [formState, setFormState] = useState<FormState<T>>({
-    values: defaultValues,
+    values: externalValues ?? defaultValues,
     errors: {},
     touched: {},
     isSubmitting: false,
@@ -71,6 +74,39 @@ export function useForm<T extends Record<string, any>>(
 
   // Create utility managers
   const dirtyManager = createDirtyStateManager<T>(dirtyFieldsRef);
+
+  // Reactive external `values`: re-sync the form when the `values` option's
+  // content changes. Deep-compared against the last synced snapshot so a
+  // new-object / same-content render does not re-sync or loop. Dirty state is a
+  // mutation-driven set, so writing values here doesn't disturb dirty tracking.
+  const syncedValuesRef = useRef(externalValues);
+  useEffect(() => {
+    if (externalValues === undefined) return;
+    if (deepEqual(externalValues, syncedValuesRef.current)) return;
+    syncedValuesRef.current = externalValues;
+    if (keepDirtyValues) {
+      // Keep user-edited (dirty) paths; sync everything else from the new data.
+      setFormState((prev) => {
+        let merged: Partial<T> = { ...externalValues };
+        for (const path of dirtyFieldsRef.current) {
+          merged = setNestedValue(
+            merged as any,
+            path,
+            getNestedValue(prev.values as any, path)
+          ) as Partial<T>;
+        }
+        return { ...prev, values: merged };
+      });
+    } else {
+      // Overwrite: the form now matches the new source of truth -> nothing dirty.
+      dirtyManager.clearDirtyState();
+      setFormState((prev) => ({
+        ...prev,
+        values: { ...externalValues },
+        isDirty: false,
+      }));
+    }
+  }, [externalValues, keepDirtyValues]);
   const validationManager = createValidationManager<T>({
     validationEngine,
     validators,
