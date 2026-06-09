@@ -57,6 +57,16 @@ versions were not rechecked from the sandboxed local environment.
 - **Latest manual sweep evidence** — `.sweep-results/REPORT.md` showed 20/20 pass and
   0 console errors after the 2026-06-08 work. `.sweep-results/` remains gitignored.
 
+## Recently shipped (BaseFieldProps path typing)
+
+- **`BaseFieldProps.name` widened to `Path<T>`** — the standalone field components
+  (`TextField` / `TextareaField` / `SelectField`) now type-check nested dotted/array paths
+  (`name="address.street"`, `name="tags.0"`), not just top-level keys; the duplicated
+  `BaseFieldProps` definition was consolidated and `name as any` casts dropped. Minor bump
+  for `el-form-react-components`. Backward compatible (top-level string keys are still
+  valid `Path<T>`); `createField` stays at `keyof T` because its lookup is shallow. Locked
+  by a new package-local `tsd` type test plus a nested-path runtime test.
+
 ## Recently shipped (FormProvider reactivity fix)
 
 - **FormProvider getter lag fixed** — direct `useFormContext().form.formState` reads are
@@ -78,8 +88,6 @@ versions were not rechecked from the sandboxed local environment.
 
 ## Planned / under consideration
 
-- [ ] **Tighten `BaseFieldProps` typing** — `name` is `keyof T`; could be `Path<T>` for
-      nested-path safety in the standalone field components (would remove some `as any`).
 - [ ] **`pnpm test` arg-forwarding** — the hooks `test` script forwards trailing args to
       `tsd`, so `pnpm test -- --run` exits non-zero though assertions pass. Cosmetic
       (CI's arg-free call is fine); split the tsd step to fix.
@@ -90,9 +98,8 @@ versions were not rechecked from the sandboxed local environment.
 
 Suggested next order for feature work:
 
-1. Tighten `BaseFieldProps.name` to `Path<T>` if the public typing remains ergonomic.
-2. Fix `pnpm test` arg-forwarding as tooling polish.
-3. Revisit `useWatch` only after proving it adds value over existing selector APIs.
+1. Fix `pnpm test` arg-forwarding as tooling polish.
+2. Revisit `useWatch` only after proving it adds value over existing selector APIs.
 
 ## Design principles
 
@@ -112,7 +119,6 @@ Suggested next order for feature work:
 ## Known issues (open as of 2026-06-08)
 
 - **`pnpm test` arg-forwarding** — cosmetic; see Planned. CI is unaffected.
-- **`BaseFieldProps.name` typing** — polish; see Planned.
 
 > The **FormProvider getter lag** is now **resolved**: direct
 > `useFormContext().form.formState` reads are current within the same render pass (the
