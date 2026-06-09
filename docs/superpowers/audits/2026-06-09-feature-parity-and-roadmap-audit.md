@@ -107,7 +107,57 @@ A/D1), it produces the perf evidence the agent-first article and positioning nee
 harness is reusable for every future perf claim. Then take **B (reactive values)** as the first
 *feature* slice, and **D2 (preset styles)** as the first *visible/marketing* slice.
 
-## Decision needed
-1. Confirm the **benchmark harness (A + E)** as the first slice — or pick a different start.
-2. Want a short **competitor-feature research pass** to harden the parity matrix (mainly
-   TanStack v1), or is the code-verified verdict above enough to proceed?
+## Research validation (2026-06-09 feature-inventory pass)
+
+A dedicated deep-research pass (25 claims → **22 confirmed, 3 refuted**) validated the parity
+matrix and sharpened the gaps.
+
+**Confirmed:**
+- **Standard Schema ✅ already shipped** (`el-form-core/src/validators/adapters.ts`) — RHF gained
+  it only via `@hookform/resolvers` v4 (`standardSchemaResolver`, Feb 2025); TanStack v1 has it
+  natively; Formik / Final-Form lack it. el-form is at parity with the leaders, ahead of the
+  laggards.
+- **Selector subscriptions are the modern convergence** — TanStack v1 is selector-first
+  (`useStore(form.store, selector)`, `form.Subscribe`); RHF uses a Proxy-wrapped `formState`.
+  el-form's `useField` / `useFormSelector` / `useWatch` are the same shape. ✅
+- **Formik is frozen** (2.4.9, patch-only) — el-form competes with RHF + TanStack on modern
+  features, not Formik.
+- Field arrays, per-trigger field+form validators, and debounced async are all el-form ✅.
+
+**Gaps sharpened / newly surfaced (folded into candidates):**
+- **P2 is bigger than first scored** — RHF's `formState` exposes **15** fields (isDirty,
+  dirtyFields, touchedFields, defaultValues, isSubmitted, isSubmitSuccessful, isSubmitting,
+  isLoading, submitCount, isValid, isValidating, validatingFields, errors, disabled, isReady)
+  vs el-form's **6**. el-form has `getDirtyFields()`/`getTouchedFields()` as *methods* but not
+  reactive `formState` fields, and lacks `isSubmitted`/`isSubmitSuccessful`/`submitCount`/
+  `isValidating`. → upgrade P2 to a solid Tier-3 item.
+- **B / P1 confirmed** — RHF `values` prop + `resetOptions` (KeepStateOptions: `keepDirtyValues`,
+  `keepErrors`, …). el-form has no reactive external-values path.
+- **P8 (new) — distinct input/output types from schema transforms.** RHF resolvers v5 moved to
+  `useForm<Input, Context, Output>()`, so a Zod `.transform()` yields different submit vs field
+  types (`z.input` vs `z.output`). el-form infers a single `T`; a schema-first library is now
+  expected to distinguish. New Tier-3 candidate — worth a design look.
+- **P9 (new) — `mode: "onTouched"` + `reValidateMode`.** el-form's `mode` has
+  onChange/onBlur/onSubmit/all but not `onTouched`, and there's no separate post-submit
+  `reValidateMode`. Small parity item.
+- **Field-meta granularity (minor)** — TanStack exposes per-field `isPristine`/`isBlurred`/
+  `isDefaultValue`/`isValidating`; el-form's `useField` gives value/error/touched. Nice-to-have.
+
+**Still uncovered (zero verified claims — *not* absences):** react-final-form's current API,
+SSR/RSC official support, `unregister`/`shouldUnregister`, `criteriaMode`, devtools. A future
+targeted pass (candidate F) could close these.
+
+**Net:** the verdict holds — el-form is at/above parity, ahead on a11y / files / AutoForm /
+agent tooling / Standard Schema. The actionable additions are **P2 (formState completeness),
+B/P1 (reactive values), and P8 (input/output typing)**.
+
+## Status (resolved)
+
+- ✅ **Benchmark harness (A + E)** shipped (PR #77).
+- ✅ **A — `Path<T>` perf — FIXED** (PR #78): el-form now type-checks faster than RHF (~7.8×
+  fewer instantiations at depth 6); published in `el-form-react-hooks@3.13.0` /
+  `el-form-react-components@4.7.0`.
+- ✅ **Competitor-feature research pass** ran and is folded in above.
+
+**Next slices** per the tiers: **B / P1 reactive external `values`** (feature) and **D2 preset
+AutoForm styles** (visible/marketing); **P2 formState completeness** is a strong Tier-3 follow.

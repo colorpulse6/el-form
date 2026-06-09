@@ -116,15 +116,20 @@ Detail lives in the linked docs.
 **From the competitor pain-point audit**
 ([`audits/2026-06-09-competitor-pain-points.md`](docs/superpowers/audits/2026-06-09-competitor-pain-points.md)):
 
-- [ ] **A — `Path<T>` TS-perf** — benchmark + harden the eager path type on deep/array
-      schemas (lazy path / `string` escape hatch). *Highest-value; also underpins the
-      agent-first bet.*
-- [ ] **B — Reactive external `values`** syncing (RHF's cached-`defaultValues` footgun).
+- [x] **A — `Path<T>` TS-perf** — ✅ **DONE** (PR #78, hooks 3.13.0 / components 4.7.0): bracket
+      trim → ~7.8× fewer instantiations at depth 6, now faster than RHF. Benchmark harness
+      shipped (PR #77). Future (own slice): depth-cap / lazy path for beyond-RHF perf.
+- [ ] **B — Reactive external `values`** syncing (RHF `values` prop + `resetOptions`). *Next feature.*
 - [ ] **C — Schema-aligned `undefined`/optional/nullable policy** (RHF's `undefined` footgun).
 - [ ] **D — First-class controlled-component story** (MUI/React-Select; beat RHF `Controller`).
-- [ ] **E — Prove the subscription-perf advantage** (render-count benchmark + perf doc).
+- [x] **E — Prove the subscription-perf advantage** — ✅ **DONE** (PR #77 render benchmark:
+      el-form 1/20 vs Formik 20/20; matches RHF controlled). Scope marketing claim to "vs Formik".
 - [ ] **F — Follow-up research** on a11y, async races, field-array correctness, cross-field
       validation (zero verified claims last pass).
+- [ ] **P2 — `formState` completeness** — add `isSubmitted`/`isSubmitSuccessful`/`submitCount`/
+      `isValidating` (+ reactive `dirtyFields`/`touchedFields`); RHF exposes 15 fields, el-form 6.
+- [ ] **P8 — Distinct input/output types** from schema transforms (`z.input`/`z.output`; RHF
+      resolvers v5 `useForm<Input,Ctx,Output>`). See parity audit.
 
 **From the agent-first positioning**
 ([`strategy/2026-06-09-agent-first-positioning.md`](docs/superpowers/strategy/2026-06-09-agent-first-positioning.md)):
