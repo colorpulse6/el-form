@@ -130,6 +130,9 @@ export function createFormHistoryManager<T extends Record<string, any>>(
         isSubmitting: false,
         isValid: Object.keys(errors).length === 0,
         isDirty: dirtyManager.dirtyFieldsRef.current.size > 0,
+        isSubmitted: false,
+        isSubmitSuccessful: false,
+        submitCount: 0,
       });
     },
 

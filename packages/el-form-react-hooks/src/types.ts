@@ -16,6 +16,13 @@ export interface FormState<T extends Record<string, any>> {
   isSubmitting: boolean;
   isValid: boolean;
   isDirty: boolean;
+  /** True after the first submit attempt. Reset by `reset()`. */
+  isSubmitted: boolean;
+  /** True when the last submit passed validation and the submit handler ran
+   *  without throwing. Reset by `reset()`. */
+  isSubmitSuccessful: boolean;
+  /** Number of submit attempts. Reset by `reset()`. */
+  submitCount: number;
 }
 
 export interface FormSnapshot<T extends Record<string, any>> {

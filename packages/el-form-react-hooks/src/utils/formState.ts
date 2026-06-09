@@ -86,6 +86,9 @@ export function createFormStateManager<T extends Record<string, any>>(
         isSubmitting: false,
         isValid: false,
         isDirty: false,
+        isSubmitted: false,
+        isSubmitSuccessful: false,
+        submitCount: 0,
       });
     },
 
