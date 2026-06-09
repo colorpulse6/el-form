@@ -1,5 +1,12 @@
 # el-form-react
 
+## 4.1.10
+
+### Patch Changes
+
+- Updated dependencies [abfa7bb]
+  - el-form-react-components@4.6.0
+
 ## 4.1.9
 
 ### Patch Changes
