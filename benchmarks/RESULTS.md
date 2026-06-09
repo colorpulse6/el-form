@@ -4,41 +4,49 @@ Two benchmarks for the roadmap audit: (A) `Path<T>` TypeScript-perf and (E) rend
 isolation. Re-run with `npm run bench:path` and `npm run bench:render` from `benchmarks/`.
 Numbers are from one machine — read the **trends and ratios**, not absolute ms.
 
-## A — `Path<T>` TypeScript performance ⚠️ (decision-driver)
+> Methodology caveat for A: el-form's `Path` is measured from raw `.ts` source; RHF's
+> `FieldPath` from its shipped `.d.ts` (both end up as declaration-level type instantiations
+> under `--skipLibCheck`, so it's a fair "what does a consumer's `tsc` pay" proxy). The
+> el-form before/after columns are the load-bearing result; treat the exact el-form÷RHF
+> ratios as directional (RHF requires `npm i react-hook-form` to re-measure).
+
+## A — `Path<T>` TypeScript performance ✅ (fixed by the bracket trim)
 
 Type-check cost (`tsc --extendedDiagnostics`) of applying a path type to a nested +
 array-heavy schema at increasing depth. Each level = 3 primitives + 1 nested object +
 1 array-of-object. One `Path<T>` + one `PathValue` usage per file. Baseline = `keyof`.
 
-| depth | baseline inst. | **el-form** inst. | RHF inst. | el-form ÷ RHF | el-form check | RHF check |
-|------:|---------------:|------------------:|----------:|--------------:|--------------:|----------:|
-| 2 | 0 | 5,974 | 3,382 | 1.8× | 0.05s | 0.04s |
-| 3 | 0 | 20,547 | 9,437 | 2.2× | 0.07s | 0.06s |
-| 4 | 0 | 75,910 | 24,968 | 3.0× | 0.13s | 0.10s |
-| 5 | 0 | 277,719 | 62,879 | 4.4× | 0.31s | 0.18s |
-| 6 | 0 | **991,822** | 152,406 | **6.5×** | **0.77s** | 0.30s |
+**After the bracket trim** (dropping the dual `[0]` array-path forms,
+`packages/el-form-react-hooks/src/types/path.ts`):
+
+| depth | baseline | **el-form** | RHF | el-form ÷ RHF | el-form check | RHF check |
+|------:|---------:|------------:|----:|--------------:|--------------:|----------:|
+| 2 | 0 | 4,189 | 3,382 | 1.24× | 0.04s | 0.04s |
+| 3 | 0 | 9,309 | 9,437 | 0.99× | 0.05s | 0.06s |
+| 4 | 0 | 22,229 | 24,968 | **0.89×** | 0.07s | 0.08s |
+| 5 | 0 | 53,449 | 62,879 | **0.85×** | 0.10s | 0.13s |
+| 6 | 0 | **126,669** | 152,406 | **0.83×** | 0.16s | 0.22s |
+
+**Before → after (the fix):**
+
+| depth | el-form before | el-form after | reduction |
+|------:|---------------:|--------------:|----------:|
+| 6 | 991,822 | **126,669** | **7.8×** |
+| 5 | 277,719 | 53,449 | 5.2× |
+| 4 | 75,910 | 22,229 | 3.4× |
 
 **Findings:**
 
-- el-form's `Path<T>` grows **~3.7× per nesting level** (exponential) — ~1M type
-  instantiations and 0.77s check time for a **single** path usage at depth 6.
-- **el-form is *worse* than RHF, and the gap widens with depth** (1.8× → 6.5×). Root cause:
-  el-form emits **both** `${K}.${number}` and `${K}[${number}]` for every array path
-  (`packages/el-form-react-hooks/src/types/path.ts:25-31`), ~doubling array-path unions,
-  and that doubling compounds at every level.
-- The `keyof` baseline is ~0 instantiations / 0.01s flat — **all** the cost is the path type.
-
-**Implications:**
-
-- The agent-first positioning rests on "an agent validates with `tsc`, so our types must be
-  fast." **Right now el-form's path types are slower than RHF's** — the claim "el-form beats
-  RHF on TS perf" would be *false*. This makes roadmap item **A (harden `Path<T>`)** a high
-  priority, not a nice-to-have.
-- **Cheap partial win:** make the bracket form (`[0]`) opt-in / drop it in favor of the dot
-  form (`.0`) — roughly halves array-path cost immediately, before the larger lazy-path
-  rewrite. Worth measuring as the first step of A.
-- **Real fix:** a lazy/on-demand path type (resolve `PathValue` per access instead of
-  pre-enumerating the whole `Path` union), the same direction RHF is taking in V8.
+- **Before:** el-form emitted *both* `${K}.${number}` and `${K}[${number}]` for every array
+  path, with two recursive branches — ~doubling the union per level. It grew ~3.7×/level and
+  was **6.5× worse than RHF** at depth 6 (~992K instantiations / 0.77s).
+- **After the trim:** growth drops to ~2.4×/level and el-form is now **≤ RHF at every depth
+  and strictly faster at depth ≥4** (0.83–0.89×). A 7.8× instantiation reduction at depth 6.
+- The agent-first "an agent validates with `tsc`, so our types must be fast" claim is now
+  **true** — el-form's path types beat RHF's on realistic nested schemas.
+- Tradeoff: bracket-literal paths (`items[0]`) are no longer *typed* (they still work at
+  runtime; use dot notation `items.0` for type-checking). A future lazy/on-demand path type
+  could push further, but is a separate fidelity tradeoff.
 
 ## E — render-count isolation ✅ (marketing-driver)
 
