@@ -66,6 +66,9 @@ const { register, handleSubmit, formState } = useForm({
 - `setValue`, `reset`, `watch`, `trigger`, `setFocus`, `getFieldState` all exist.
 - `useFieldArray` exists for dynamic lists (see [Array Fields](./array-fields.md)).
 - Focus-on-error is on by default (`shouldFocusError`), just like RHF.
+- The reactive `values` prop works the same way for server/prop-driven forms;
+  `keepDirtyValues: true` is the equivalent of RHF's `resetOptions: { keepDirtyValues: true }`
+  (preserve the user's in-progress edits when external data arrives).
 
 ### What's different
 
@@ -138,6 +141,7 @@ const { register, handleSubmit, formState } = useForm({
 | `formik.handleSubmit` | `handleSubmit(onValid)` |
 | `value` + `onChange` + `onBlur` + `name` (4 props) | `{...register("name")}` (one spread) |
 | `formik.values.x` | `watch("x")` or `formState`-driven components |
+| `enableReinitialize` + changing `initialValues` | reactive `values` prop (+ `keepDirtyValues`) |
 | `formik.errors.x` / `formik.touched.x` | `formState.errors.x` / `formState.touched.x` |
 | `<Field>` / `<FieldArray>` render-prop components | `register` + `useFieldArray` hook, or [AutoForm](./auto-form.md) |
 
