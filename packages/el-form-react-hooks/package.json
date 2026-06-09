@@ -48,7 +48,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "pnpm -w -r build && vitest --environment jsdom --run && tsd --files tsd.test-d.ts",
+    "test": "pnpm -w -r build && tsd --files tsd.test-d.ts && vitest --environment jsdom --run",
+    "test:types": "tsd --files tsd.test-d.ts",
     "lint": "eslint \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
