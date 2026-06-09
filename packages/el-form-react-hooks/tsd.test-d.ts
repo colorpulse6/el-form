@@ -1,5 +1,5 @@
 import { expectType, expectError } from "tsd";
-import { useForm, useFieldArray } from "./src";
+import { useForm, useFieldArray, useWatch } from "./src";
 
 // Compile-time assertions for Path and register typings
 // Intentionally in module scope so tsd executes checks
@@ -83,4 +83,32 @@ import { useForm, useFieldArray } from "./src";
   expectError(
     useFieldArray<{ a: string; list: number[] }, "a">({ name: "a" })
   );
+}
+
+{
+  // useWatch overload return types
+  type W = { email: string; age: number; user: { name: string }; skills: { name: string }[] };
+
+  // single path ⇒ value (both type args, like useField<T, Name>)
+  expectType<string>(useWatch<W, "email">("email"));
+  expectType<string>(useWatch<W, "user.name">("user.name"));
+
+  // array-index path (a distinct PathValue branch)
+  expectType<string>(useWatch<W, "skills.0.name">("skills.0.name"));
+
+  // multiple paths ⇒ keyed object
+  expectType<{ email: string; age: number }>(
+    useWatch<W, "email" | "age">(["email", "age"])
+  );
+
+  // no args ⇒ all values
+  expectType<Partial<W>>(useWatch<W>());
+
+  // invalid path is a type error
+  expectError(useWatch<W, "nope">("nope"));
+
+  // mirror: the existing imperative form.watch(names[]) keyed-object overload
+  // (previously untested at the type level — locks the shared inference)
+  const wf = useForm<W>({ defaultValues: { email: "", age: 0, user: { name: "" }, skills: [] } });
+  expectType<{ email: string; age: number }>(wf.watch(["email", "age"]));
 }

@@ -11,6 +11,7 @@ export {
 } from "./FormContext";
 export { useFormSelector } from "./useFormSelector";
 export { useField } from "./useField";
+export { useWatch } from "./useWatch";
 export { useFieldArray } from "./useFieldArray";
 export { shallowEqual } from "./utils";
 export type {

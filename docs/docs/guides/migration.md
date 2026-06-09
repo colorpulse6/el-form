@@ -76,6 +76,7 @@ const { register, handleSubmit, formState } = useForm({
 | `mode: "onChange"` | `validators: { onChange: schema }` (or `validateOn`) | Validation timing is expressed by which event key you put the validator under. |
 | `useFieldArray({ control, name })` | `useFieldArray({ name })` (inside `FormProvider`) or `useFieldArray({ name, form })` | No `control` object — use context or pass `form`. |
 | `field.id` from `useFieldArray` | `field.id` (same idea; configurable via `keyName`) | Stable React keys for rows; see [Array Fields](./array-fields.md). |
+| `useWatch({ control, name })` | `useWatch(name)` / `useWatch([a, b])` / `useWatch()` (inside `FormProvider`) | No `control` — reads context. Returns watched **value(s)** only; reach for `useField` when you also need `error`/`touched`, or `useFormSelector` for a derived slice. |
 
 ### Step-by-step
 
