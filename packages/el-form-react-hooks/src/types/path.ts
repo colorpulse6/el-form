@@ -21,14 +21,16 @@ type ArrayElem<T> = T extends readonly (infer E)[]
   ? E
   : never;
 
-// Build paths for arrays: support both dot-number and bracket-number notations
+// Build paths for arrays using dot-number notation only.
+// Bracket notation (`items[0]`) is intentionally NOT emitted: it doubled the
+// array-path union at every level (the dominant cost for nested/array-heavy
+// schemas). Bracket strings still work at runtime — `getNestedValue` normalizes
+// `[0]`->`.0` — and `PathValue` below still resolves them; they're just no
+// longer offered as typed paths. Use dot notation (`items.0.name`) for typing.
 type ArrayPaths<K extends string, V> =
   | K
   | `${K}.${number}`
-  | `${K}[${number}]`
-  | (V extends object
-      ? `${K}.${number}.${Path<V>}` | `${K}[${number}].${Path<V>}`
-      : never);
+  | (V extends object ? `${K}.${number}.${Path<V>}` : never);
 
 // Core Path builder for objects, including arrays
 export type Path<T, Prev extends string = never> = T extends Primitive
