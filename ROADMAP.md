@@ -101,10 +101,40 @@ These versions were published to npm and verified on 2026-06-09.
 
 ## Planned / under consideration
 
-No feature items are currently queued — the revival roadmap (correctness fixes, path-safe
-typing, `useFieldArray` + `useWatch`, accessibility, debounce, coverage, and CI
-modernization) is shipped. Further work is maintenance-driven or user-requested; see
-**Explicitly NOT planned** for parked scope.
+Candidate-stage, **not yet committed** — to be prioritized in the 2026-06-09 roadmap audit.
+Detail lives in the linked docs.
+
+**User-proposed:**
+
+- [ ] **Sandboxes / interactive playground** — live, embeddable el-form examples (docs +
+      marketing). Old `docs-sandbox` branch (PR #55, **closed**) is stale; start fresh, use
+      only for direction.
+- [ ] **React Query integration** — first-class data-fetching/mutation story. Old
+      `react-query-support` branch (PR #10, **closed**) is stale; restart fresh. (Moved from
+      *parked* to active candidate.)
+
+**From the competitor pain-point audit**
+([`audits/2026-06-09-competitor-pain-points.md`](docs/superpowers/audits/2026-06-09-competitor-pain-points.md)):
+
+- [ ] **A — `Path<T>` TS-perf** — benchmark + harden the eager path type on deep/array
+      schemas (lazy path / `string` escape hatch). *Highest-value; also underpins the
+      agent-first bet.*
+- [ ] **B — Reactive external `values`** syncing (RHF's cached-`defaultValues` footgun).
+- [ ] **C — Schema-aligned `undefined`/optional/nullable policy** (RHF's `undefined` footgun).
+- [ ] **D — First-class controlled-component story** (MUI/React-Select; beat RHF `Controller`).
+- [ ] **E — Prove the subscription-perf advantage** (render-count benchmark + perf doc).
+- [ ] **F — Follow-up research** on a11y, async races, field-array correctness, cross-field
+      validation (zero verified claims last pass).
+
+**From the agent-first positioning**
+([`strategy/2026-06-09-agent-first-positioning.md`](docs/superpowers/strategy/2026-06-09-agent-first-positioning.md)):
+
+- [ ] **D1 — Agent-first design principle** — fix `Path` perf (= A), expand `el-form-mcp`,
+      ship an "el-form with AI agents" guide.
+- [ ] **D2 — Preset AutoForm styles** — official themes + bring-your-own design API
+      (`componentMap` is the seed).
+- [ ] **D3 — Community form-design marketplace/dashboard** — *separate product, parked.*
+      Decompose: preset format → registry → builder UI → community layer.
 
 ## Design principles
 
@@ -116,10 +146,12 @@ modernization) is shipped. Further work is maintenance-driven or user-requested;
 
 ## Explicitly NOT planned (parked / out of scope)
 
-- **React Query integration** — exploratory work exists on the `react-query-support`
-  branch; **parked**, not shipped. (The old checklist wrongly claimed this was complete.)
 - Other frameworks (Vue / Svelte / Angular / React Native).
 - Analytics, devtools, rich-text/code editors, i18n, multi-step wizard components.
+
+> **React Query integration** moved from *parked* to an active **roadmap candidate**
+> (see Planned / under consideration) — to be (re)started fresh; the old
+> `react-query-support` branch (PR #10) is closed and stale.
 
 ## Known issues (open as of 2026-06-09)
 
