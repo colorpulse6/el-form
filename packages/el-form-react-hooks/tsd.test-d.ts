@@ -34,9 +34,10 @@ import { useForm, useFieldArray, useWatch } from "./src";
   const skillName = form.register("skills.0.name");
   expectType<string>(skillName.value);
 
-  // bracket indexing supported
-  const skillName2 = form.register("skills[0].name");
-  expectType<string>(skillName2.value);
+  // bracket indexing is NO LONGER a typed path (perf trim — dropped from Path<T>
+  // to halve array-path unions). It still works at runtime (getNestedValue
+  // normalizes [0]->.0); use dot notation for type-checking.
+  expectError(form.register("skills[0].name"));
 
   // invalid path should error (which it does)
   // form.register("user.nonexistent");
