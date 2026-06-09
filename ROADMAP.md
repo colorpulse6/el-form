@@ -119,15 +119,17 @@ Detail lives in the linked docs.
 - [x] **A — `Path<T>` TS-perf** — ✅ **DONE** (PR #78, hooks 3.13.0 / components 4.7.0): bracket
       trim → ~7.8× fewer instantiations at depth 6, now faster than RHF. Benchmark harness
       shipped (PR #77). Future (own slice): depth-cap / lazy path for beyond-RHF perf.
-- [ ] **B — Reactive external `values`** syncing (RHF `values` prop + `resetOptions`). *Next feature.*
+- [x] **B — Reactive external `values`** — ✅ **DONE** (PR #80, `el-form-react-hooks@3.14.0`):
+      `values` + `keepDirtyValues` options on `useForm` (RHF `values`+`resetOptions` parity).
 - [ ] **C — Schema-aligned `undefined`/optional/nullable policy** (RHF's `undefined` footgun).
 - [ ] **D — First-class controlled-component story** (MUI/React-Select; beat RHF `Controller`).
 - [x] **E — Prove the subscription-perf advantage** — ✅ **DONE** (PR #77 render benchmark:
       el-form 1/20 vs Formik 20/20; matches RHF controlled). Scope marketing claim to "vs Formik".
 - [ ] **F — Follow-up research** on a11y, async races, field-array correctness, cross-field
       validation (zero verified claims last pass).
-- [ ] **P2 — `formState` completeness** — add `isSubmitted`/`isSubmitSuccessful`/`submitCount`/
-      `isValidating` (+ reactive `dirtyFields`/`touchedFields`); RHF exposes 15 fields, el-form 6.
+- [~] **P2 — `formState` completeness** — ✅ **trio shipped** (PR #82, `@3.15.0`):
+      `isSubmitted`/`isSubmitSuccessful`/`submitCount`. **P2b remaining:** `isValidating`
+      (~8 async sites) + reactive `dirtyFields` (~14 `isDirty` sites) — each a fresh slice.
 - [ ] **P8 — Distinct input/output types** from schema transforms (`z.input`/`z.output`; RHF
       resolvers v5 `useForm<Input,Ctx,Output>`). See parity audit.
 
