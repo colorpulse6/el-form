@@ -48,6 +48,17 @@ export interface UseFormOptions<T extends Record<string, any>> {
 
   /** Focus the first invalid field after a failed submit. Default true. */
   shouldFocusError?: boolean;
+
+  /** Reactive external values. When this object's content changes, the form
+   *  re-syncs to it (deep-compared, so a new-object/same-content render is a
+   *  no-op). Takes precedence over `defaultValues` for the initial values —
+   *  useful for forms backed by props or server data. */
+  values?: Partial<T>;
+
+  /** When reactive `values` change, keep fields the user has already edited
+   *  (dirty) instead of overwriting them; untouched fields still sync. Default
+   *  false (overwrite, matching React Hook Form's default). */
+  keepDirtyValues?: boolean;
 }
 
 export interface FieldState {
