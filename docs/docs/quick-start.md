@@ -12,8 +12,6 @@ keywords:
 ---
 
 import { InstallCommand, CodeBlock, Callout, FeatureCard, InteractivePreview, ProgressSteps } from '@site/src/components/DocComponents';
-import { Sandbox } from '@site/src/components';
-import { useFormQuickStartFiles } from '@site/src/sandboxes/useFormQuickStart';
 
 # Quick Start
 
@@ -90,9 +88,29 @@ This generates a complete form with validation, error handling, type safety, and
 
 ## Alternative: useForm Hook
 
+:::tip Try it live
+Edit this example in the [interactive Playground](/playground?example=useform).
+:::
+
 For custom forms with full control, use the `useForm` hook:
 
-<Sandbox files={useFormQuickStartFiles} />
+```tsx
+import { useForm } from "el-form-react-hooks";
+
+function CustomForm() {
+  const { register, handleSubmit, formState } = useForm({
+    defaultValues: { email: "", message: "" },
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register("email")} placeholder="Email" />
+      <textarea {...register("message")} placeholder="Message" />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
 
 ## Validation Options
 

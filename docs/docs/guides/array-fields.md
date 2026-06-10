@@ -9,9 +9,6 @@ keywords:
   - el form arrays
 ---
 
-import { Sandbox } from '@site/src/components';
-import { fieldArrayFiles } from '@site/src/sandboxes/fieldArray';
-
 # Array Fields Guide
 
 Array fields handle dynamic lists — line items, multiple emails, a set of
@@ -19,12 +16,69 @@ contacts — where the user can add and remove rows.
 
 ## Recommended: `useFieldArray`
 
+:::tip Try it live
+Edit this example in the [interactive Playground](/playground?example=fieldarray).
+:::
+
 `useFieldArray` is the cleanest way to build dynamic arrays. It gives each row a
 stable `id` to use as the React `key`, plus operations for reordering and
 inserting — `append`, `prepend`, `insert`, `remove`, `move`, `swap`, `update`,
 and `replace`.
 
-<Sandbox files={fieldArrayFiles} />
+```tsx
+import {
+  useForm,
+  FormProvider,
+  useFormContext,
+  useFieldArray,
+} from "el-form-react-hooks";
+
+type Form = { items: { name: string; quantity: number }[] };
+
+function ItemsForm() {
+  const form = useForm<Form>({
+    defaultValues: { items: [{ name: "", quantity: 1 }] },
+  });
+
+  return (
+    <FormProvider form={form}>
+      <Items />
+    </FormProvider>
+  );
+}
+
+function Items() {
+  const { register } = useFormContext<Form>();
+  const { fields, append, remove, move } = useFieldArray<Form, "items">({
+    name: "items",
+  });
+
+  return (
+    <>
+      {fields.map((field, index) => (
+        <div key={field.id}>
+          {/* ← stable id, never the array index */}
+          <input {...register(`items.${index}.name`)} placeholder="Name" />
+          <input
+            type="number"
+            {...register(`items.${index}.quantity`)}
+            placeholder="Qty"
+          />
+          <button type="button" onClick={() => remove(index)}>
+            Remove
+          </button>
+          <button type="button" onClick={() => move(index, index - 1)}>
+            Move up
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={() => append({ name: "", quantity: 1 })}>
+        Add item
+      </button>
+    </>
+  );
+}
+```
 
 **Why `field.id` and not the index?** Using the array index as a React `key`
 breaks the moment you insert, reorder, or remove from the middle of the list —

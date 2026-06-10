@@ -159,6 +159,11 @@ const config: Config = {
       items: [
         // Search disabled for now
         {
+          to: "/playground",
+          label: "Playground",
+          position: "right",
+        },
+        {
           type: "html",
           position: "right",
           value:

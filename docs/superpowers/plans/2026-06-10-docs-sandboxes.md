@@ -549,3 +549,26 @@ git commit -m "fix(docs): sandbox example/wiring fixes from smoke test"
 ## Out of scope (per spec)
 
 Broad replacement of all examples, a dedicated `/playground` page, StackBlitz embeds, and a bespoke static-code fallback (only add the fallback if the smoke test shows Sandpack's error overlay is too rough).
+
+---
+
+## Revision (2026-06-10): pivot to a Playground page
+
+After the smoke test, the user pivoted the design: instead of inline sandboxes in each
+doc section, build a **dedicated `/playground` page** with a left-sidebar switcher between
+the examples, and have the doc sections link to it.
+
+- **New:** `docs/src/pages/playground.tsx` (the `/playground` route), `docs/src/components/Playground.tsx`
+  (left-sidebar list + panel; live `<Sandbox>` for an example with `files`, static `@theme/CodeBlock`
+  otherwise; selection mirrored to a `?example=<id>` query param for deep-linking),
+  `docs/src/sandboxes/registry.ts` (example registry, reuses the four data files). Navbar gains a
+  **Playground** link.
+- **Reverted:** the four doc sections go back to their original static code blocks, each with a
+  `:::tip` linking to `/playground?example=<id>`. The inline `<Sandbox>` embeds and their imports
+  are removed.
+- **AutoForm is static-only** in the playground: a **live el-form bug** was found during the smoke
+  test — `AutoForm` renders **zero fields with zod 3.x** because `AutoForm.tsx:435` reads
+  `getDef(schema).shape` (`_def.shape`, a *function* in zod 3) as an object. This is a library bug,
+  not a docs/Sandpack issue (confirmed via Node `renderToStaticMarkup` across zod versions). The
+  AutoForm playground entry shows source + a note until that's fixed and released. The fix is a
+  separate follow-up task.

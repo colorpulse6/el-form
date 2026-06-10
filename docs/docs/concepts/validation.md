@@ -10,9 +10,6 @@ keywords:
   - el form validation concepts
 ---
 
-import { Sandbox } from '@site/src/components';
-import { validationFiles } from '@site/src/sandboxes/validation';
-
 # Validation
 
 El Form's schema-agnostic validation is its core feature. Unlike other form libraries that tie you to specific validation libraries, El Form works with any validation approach.
@@ -35,11 +32,27 @@ This simple interface means El Form can work with any validation library or cust
 
 ### Zod (Recommended)
 
-Zod provides excellent TypeScript integration and runtime safety. This example
-validates on every keystroke via `validators.onChange` and surfaces
-`formState.errors` live — type an invalid email or a short password to see it:
+:::tip Try it live
+Edit this example in the [interactive Playground](/playground?example=validation).
+:::
 
-<Sandbox files={validationFiles} />
+Zod provides excellent TypeScript integration and runtime safety:
+
+```typescript
+import { z } from "zod";
+import { useForm } from "el-form-react-hooks";
+
+const schema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  age: z.number().min(18, "Must be 18 or older"),
+});
+
+const form = useForm({
+  validators: { onChange: schema },
+  defaultValues: { email: "", password: "", age: 18 },
+});
+```
 
 ### Yup
 
