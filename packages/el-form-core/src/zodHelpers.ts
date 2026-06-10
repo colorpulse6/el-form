@@ -15,6 +15,22 @@ export function getDef(schema: AnyZodSchema): any {
   return anySchema?._zod?.def ?? anySchema?.def ?? anySchema?._def;
 }
 
+// Returns a ZodObject's field shape as a plain record, across Zod majors.
+// In Zod 3 the shape on `_def.shape` is a getter *function* (you must call it);
+// in Zod 4 the shape on `_zod.def` is already an object. Reading it without
+// invoking the v3 function yields no keys — that's the bug that made AutoForm
+// render zero fields for Zod-3 users. Falls back to the public `.shape` getter.
+export function getObjectShape(
+  schema: AnyZodSchema
+): Record<string, AnyZodSchema> | undefined {
+  const raw = getDef(schema)?.shape ?? (schema as any)?.shape;
+  if (raw == null) return undefined;
+  return (typeof raw === "function" ? raw() : raw) as Record<
+    string,
+    AnyZodSchema
+  >;
+}
+
 export function getTypeName(schema: AnyZodSchema): string | undefined {
   const def = getDef(schema);
   if (!def) return undefined;

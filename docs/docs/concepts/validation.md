@@ -32,6 +32,10 @@ This simple interface means El Form can work with any validation library or cust
 
 ### Zod (Recommended)
 
+:::tip Try it live
+Edit this example in the [interactive Playground](/playground?example=validation).
+:::
+
 Zod provides excellent TypeScript integration and runtime safety:
 
 ```typescript

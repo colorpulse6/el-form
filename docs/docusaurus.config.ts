@@ -1,12 +1,20 @@
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 import path from "path";
+import { getElFormVersions } from "./src/sandboxes/versions";
 
 const config: Config = {
   title: "El Form",
   tagline:
     "TypeScript-first React form library: schema-driven AutoForm + a flexible useForm hook (Zod, Yup, Valibot).",
   favicon: "img/favicon.ico",
+
+  customFields: {
+    // Pinned to the current workspace versions at build time so sandboxes never
+    // go stale. main's package.json == latest published npm (Changesets bumps
+    // version and publishes atomically), so this matches `npm install`.
+    elFormVersions: getElFormVersions(path.resolve(__dirname, "../packages")),
+  },
 
   // Structured data so search engines and LLMs can classify El Form as a
   // developer tool. Rendered into <head> on every page.
@@ -150,6 +158,11 @@ const config: Config = {
       style: "dark",
       items: [
         // Search disabled for now
+        {
+          to: "/playground",
+          label: "Playground",
+          position: "right",
+        },
         {
           type: "html",
           position: "right",

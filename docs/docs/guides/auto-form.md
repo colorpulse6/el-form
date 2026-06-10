@@ -24,6 +24,10 @@ This guide covers everything you need to know to use AutoForm effectively, from 
 
 ### Basic Usage
 
+:::tip Try it live
+Open this example in the [interactive Playground](/playground?example=autoform).
+:::
+
 Generate a complete form from a Zod schema in seconds:
 
 ```tsx

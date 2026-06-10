@@ -11,11 +11,15 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids"
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@codesandbox/sandpack-react": "^2.19.0",
+    "@codesandbox/sandpack-themes": "^2.0.21",
     "@docusaurus/core": "3.8.0",
     "@docusaurus/preset-classic": "3.8.0",
+    "@docusaurus/theme-common": "3.8.0",
     "@easyops-cn/docusaurus-search-local": "^0.52.1",
     "@mdx-js/react": "^3.0.0",
     "@tailwindcss/postcss": "^4.0.0",
@@ -32,7 +36,8 @@
     "@docusaurus/module-type-aliases": "3.8.0",
     "@docusaurus/tsconfig": "3.8.0",
     "@docusaurus/types": "3.8.0",
-    "typescript": "~5.2.0"
+    "typescript": "~5.2.0",
+    "vitest": "^2.1.0"
   },
   "browserslist": {
     "production": [

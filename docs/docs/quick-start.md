@@ -88,6 +88,10 @@ This generates a complete form with validation, error handling, type safety, and
 
 ## Alternative: useForm Hook
 
+:::tip Try it live
+Edit this example in the [interactive Playground](/playground?example=useform).
+:::
+
 For custom forms with full control, use the `useForm` hook:
 
 ```tsx

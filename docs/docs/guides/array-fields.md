@@ -16,6 +16,10 @@ contacts — where the user can add and remove rows.
 
 ## Recommended: `useFieldArray`
 
+:::tip Try it live
+Edit this example in the [interactive Playground](/playground?example=fieldarray).
+:::
+
 `useFieldArray` is the cleanest way to build dynamic arrays. It gives each row a
 stable `id` to use as the React `key`, plus operations for reordering and
 inserting — `append`, `prepend`, `insert`, `remove`, `move`, `swap`, `update`,
@@ -44,7 +48,7 @@ function ItemsForm() {
 }
 
 function Items() {
-  const { register } = useFormContext<Form>();
+  const { register } = useFormContext<Form>().form;
   const { fields, append, remove, move } = useFieldArray<Form, "items">({
     name: "items",
   });
