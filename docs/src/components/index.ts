@@ -7,5 +7,7 @@ export { ApiReference } from "./ApiReference";
 export { InteractivePreview } from "./InteractivePreview";
 export { ProgressSteps } from "./ProgressSteps";
 
+export { Sandbox } from "./Sandbox";
+
 // Export examples
 export * from "./examples";
