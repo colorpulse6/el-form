@@ -13,6 +13,8 @@ keywords:
 import { InteractivePreview } from '@site/src/components';
 import { SimpleAutoFormExample } from '@site/src/components/examples';
 import { Callout } from '@site/src/components/Callout';
+import { Sandbox } from '@site/src/components';
+import { autoFormBasicFiles } from '@site/src/sandboxes/autoFormBasic';
 
 # AutoForm Guide
 
@@ -26,27 +28,7 @@ This guide covers everything you need to know to use AutoForm effectively, from 
 
 Generate a complete form from a Zod schema in seconds:
 
-```tsx
-import { AutoForm } from "el-form-react-components";
-import { z } from "zod";
-
-const userSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
-  age: z.number().min(18, "Must be 18+"),
-  role: z.enum(["admin", "user", "guest"]),
-});
-
-function UserForm() {
-  return (
-    <AutoForm
-      schema={userSchema}
-      onSubmit={(data) => console.log("Success:", data)}
-      onError={(errors) => console.log("Errors:", errors)}
-    />
-  );
-}
-```
+<Sandbox files={autoFormBasicFiles} />
 
 This automatically generates:
 
