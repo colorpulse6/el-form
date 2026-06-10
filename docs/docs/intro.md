@@ -15,6 +15,10 @@ keywords:
 
 Welcome to **El Form** - a powerful, schema-agnostic React form library that makes building forms simple, type-safe, and flexible.
 
+:::info El Form is a React library
+El Form (npm: `el-form-react`) is for **React**. It is not affiliated with Vue Element Plus's built-in `<el-form>` component. Looking for how it stacks up against React Hook Form, Formik, or TanStack Form? See the [comparison](./comparison.md).
+:::
+
 ## What is El Form?
 
 El Form is designed to solve the real problems developers face when building forms in React applications. Whether you need a simple contact form or a complex multi-step wizard, El Form provides the tools you need without locking you into specific validation libraries or architectural patterns.

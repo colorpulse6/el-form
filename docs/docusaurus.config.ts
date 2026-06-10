@@ -4,8 +4,32 @@ import path from "path";
 
 const config: Config = {
   title: "El Form",
-  tagline: "Elegant React forms, powered by Zod",
+  tagline:
+    "TypeScript-first React form library: schema-driven AutoForm + a flexible useForm hook (Zod, Yup, Valibot).",
   favicon: "img/favicon.ico",
+
+  // Structured data so search engines and LLMs can classify El Form as a
+  // developer tool. Rendered into <head> on every page.
+  headTags: [
+    {
+      tagName: "script",
+      attributes: { type: "application/ld+json" },
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: "El Form",
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Web, Node.js",
+        description:
+          "TypeScript-first React form library with schema-driven AutoForm generation and a flexible useForm hook. Works with Zod, Yup, and Valibot.",
+        url: "https://elform.dev",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        license: "https://opensource.org/licenses/MIT",
+        programmingLanguage: "TypeScript",
+        codeRepository: "https://github.com/colorpulse6/el-form",
+      }),
+    },
+  ],
 
   // Set the production url of your site here
   url: "https://elform.dev",
@@ -95,6 +119,15 @@ const config: Config = {
 
   themeConfig: {
     image: "img/docusaurus-social-card.jpg",
+    metadata: [
+      {
+        name: "keywords",
+        content:
+          "react form library, react hook form alternative, autoform, zod forms, yup, valibot, typescript forms, schema form, react forms, formik alternative, tanstack form, ai agent forms",
+      },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
+    ],
     colorMode: {
       defaultMode: "light",
       disableSwitch: false,
