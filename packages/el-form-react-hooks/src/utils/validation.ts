@@ -26,6 +26,29 @@ export interface ValidationManager<T extends Record<string, any>> {
   ) => Promise<{ isValid: boolean; errors: Record<keyof T, string> }>;
 
   shouldValidate: (eventType: "onChange" | "onBlur" | "onSubmit") => boolean;
+
+  hasAsyncValidator: (
+    fieldName: keyof T,
+    eventType: "onChange" | "onBlur" | "onSubmit"
+  ) => boolean;
+
+  shouldRunAsync: (
+    fieldName: keyof T,
+    eventType: "onChange" | "onBlur" | "onSubmit",
+    syncPassed: boolean
+  ) => boolean;
+
+  validateFieldAsync: (
+    fieldName: keyof T,
+    fieldValue: any,
+    formValues: Partial<T>,
+    eventType: "onChange" | "onBlur" | "onSubmit"
+  ) => Promise<{ isValid: boolean; errors: Record<string, string> }>;
+
+  validateFormAsync: (
+    values: Partial<T>,
+    eventType?: "onChange" | "onBlur" | "onSubmit"
+  ) => Promise<{ isValid: boolean; errors: Record<keyof T, string> }>;
 }
 
 export interface ValidationManagerOptions<T extends Record<string, any>> {
@@ -51,6 +74,25 @@ export function createValidationManager<T extends Record<string, any>>(
     validateOn,
     schema,
   } = options;
+
+  // ---------------------------------------------------------------------------
+  // Async gate helpers (defined before the returned object so they can close
+  // over fieldValidators / validators without capturing a stale reference).
+  // ---------------------------------------------------------------------------
+
+  const hasAsyncValidator = (
+    fieldName: keyof T,
+    eventType: "onChange" | "onBlur" | "onSubmit"
+  ): boolean => {
+    const key = `${eventType}Async`;
+    const fc = (fieldValidators as any)[fieldName as any];
+    return !!(fc && fc[key]) || !!(validators && (validators as any)[key]);
+  };
+
+  const asyncAlwaysFor = (fieldName: keyof T): boolean => {
+    const fc = (fieldValidators as any)[fieldName as any];
+    return !!(fc && fc.asyncAlways) || !!(validators && (validators as any).asyncAlways);
+  };
 
   return {
     // Determine if validation should run based on mode and validateOn option
@@ -244,6 +286,104 @@ export function createValidationManager<T extends Record<string, any>>(
           }
         } catch (error: unknown) {
           console.warn("Schema validation error:", error);
+        }
+      }
+
+      return { isValid, errors: allErrors as Record<keyof T, string> };
+    },
+
+    // -------------------------------------------------------------------------
+    // Async counterparts
+    // -------------------------------------------------------------------------
+
+    hasAsyncValidator,
+
+    shouldRunAsync: (
+      fieldName: keyof T,
+      eventType: "onChange" | "onBlur" | "onSubmit",
+      syncPassed: boolean
+    ) => hasAsyncValidator(fieldName, eventType) && (syncPassed || asyncAlwaysFor(fieldName)),
+
+    validateFieldAsync: async (
+      fieldName: keyof T,
+      fieldValue: any,
+      formValues: Partial<T>,
+      eventType: "onChange" | "onBlur" | "onSubmit"
+    ): Promise<{ isValid: boolean; errors: Record<string, string> }> => {
+      const fieldKey = String(fieldName);
+      const fieldConfig = (fieldValidators as any)[fieldKey];
+      const event: ValidatorEvent = { type: eventType, isAsync: true, fieldName: fieldKey };
+      let result: { isValid: boolean; errors: Record<string, string> } = { isValid: true, errors: {} };
+
+      if (fieldConfig) {
+        result = await validationEngine.current.validateField(
+          fieldKey,
+          fieldValue,
+          formValues,
+          fieldConfig,
+          event
+        );
+      }
+
+      if (result.isValid && validators) {
+        const formResult = await validationEngine.current.validateForm(
+          formValues,
+          validators,
+          event
+        );
+        if (!formResult.isValid && formResult.errors[fieldKey]) {
+          result = { isValid: false, errors: { [fieldKey]: formResult.errors[fieldKey] } };
+        }
+      }
+
+      return result;
+    },
+
+    validateFormAsync: async (
+      values: Partial<T>,
+      eventType: "onChange" | "onBlur" | "onSubmit" = "onSubmit"
+    ): Promise<{ isValid: boolean; errors: Record<keyof T, string> }> => {
+      const ASYNC_KEYS = ["onChangeAsync", "onBlurAsync", "onSubmitAsync"] as const;
+      const allErrors: Record<string, string> = {};
+      let isValid = true;
+
+      // Which sync event types map to configured async keys on a given config.
+      const asyncEventTypes = (cfg: ValidatorConfig | undefined): string[] =>
+        eventType === "onSubmit"
+          ? (ASYNC_KEYS.filter((k) => cfg && typeof (cfg as any)[k] !== "undefined") as string[]).map(
+              (k) => k.replace(/Async$/, "")
+            )
+          : [eventType];
+
+      // Validate all fields with field-level async validators
+      for (const [fieldName, fieldConfig] of Object.entries(fieldValidators)) {
+        for (const type of asyncEventTypes(fieldConfig as ValidatorConfig)) {
+          if (!(fieldConfig as any)[`${type}Async`]) continue;
+          const event: ValidatorEvent = { type: type as "onChange" | "onBlur" | "onSubmit", isAsync: true };
+          const r = await validationEngine.current.validateField(
+            fieldName,
+            values[fieldName as keyof T],
+            values,
+            fieldConfig as ValidatorConfig,
+            event
+          );
+          if (!r.isValid) {
+            isValid = false;
+            Object.assign(allErrors, r.errors);
+          }
+        }
+      }
+
+      // Run form-level async validators
+      if (validators) {
+        for (const type of asyncEventTypes(validators)) {
+          if (!(validators as any)[`${type}Async`]) continue;
+          const event: ValidatorEvent = { type: type as "onChange" | "onBlur" | "onSubmit", isAsync: true };
+          const r = await validationEngine.current.validateForm(values, validators, event);
+          if (!r.isValid) {
+            isValid = false;
+            Object.assign(allErrors, r.errors);
+          }
         }
       }
 
