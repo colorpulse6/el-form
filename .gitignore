@@ -43,5 +43,8 @@ Thumbs.db
 FEATURE_CHECKLIST.md
 agent-actions/
 
+# Marketing / launch collateral (kept local, not tracked)
+launch/
+
 # Pre-launch sweep skill artifacts
 .sweep-results/
