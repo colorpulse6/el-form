@@ -371,6 +371,27 @@ export function useForm<T extends Record<string, any>>(
                 isValid: isFormValid,
               };
             });
+
+            // Non-blocking async validation pass (sync-first; engine handles debounce).
+            if (validationManager.shouldRunAsync(fieldName, "onChange", result.isValid)) {
+              const syncPassed = result.isValid;
+              const latestValues = name.includes(".")
+                ? setNestedValue(formStateRef.current?.values ?? {}, name, value)
+                : { ...(formStateRef.current?.values ?? {}), [name]: value };
+              void validationManager
+                .validateFieldAsync(fieldName, value, latestValues, "onChange")
+                .then((asyncResult) => {
+                  // stale guard: drop the result if the field changed since
+                  if (getNestedValue(formStateRef.current?.values ?? {}, name) !== value) return;
+                  setFormState((prev) => {
+                    const newErrors: any = { ...prev.errors };
+                    if (syncPassed) { delete newErrors[fieldName]; delete newErrors.form; }
+                    Object.assign(newErrors, asyncResult.errors);
+                    const isValid = Object.values(newErrors).every((e) => !e);
+                    return { ...prev, errors: newErrors, isValid };
+                  });
+                });
+            }
           }
         },
         onBlur: async (_e: React.FocusEvent<any>) => {
@@ -383,9 +404,10 @@ export function useForm<T extends Record<string, any>>(
 
           if (validationManager.shouldValidate("onBlur")) {
             const currentState = formStateRef.current!;
+            const blurValue = currentState.values[fieldName];
             const result = await validationManager.validateField(
               fieldName,
-              currentState.values[fieldName],
+              blurValue,
               currentState.values,
               "onBlur"
             );
@@ -395,6 +417,27 @@ export function useForm<T extends Record<string, any>>(
                 errors: { ...prev.errors, ...result.errors },
                 isValid: false,
               }));
+            }
+
+            // Non-blocking async validation pass on blur.
+            if (validationManager.shouldRunAsync(fieldName, "onBlur", result.isValid)) {
+              const syncPassed = result.isValid;
+              const latestValues = name.includes(".")
+                ? setNestedValue(formStateRef.current?.values ?? {}, name, blurValue)
+                : { ...(formStateRef.current?.values ?? {}), [name]: blurValue };
+              void validationManager
+                .validateFieldAsync(fieldName, blurValue, latestValues, "onBlur")
+                .then((asyncResult) => {
+                  // stale guard: drop the result if the field changed since
+                  if (getNestedValue(formStateRef.current?.values ?? {}, name) !== blurValue) return;
+                  setFormState((prev) => {
+                    const newErrors: any = { ...prev.errors };
+                    if (syncPassed) { delete newErrors[fieldName]; delete newErrors.form; }
+                    Object.assign(newErrors, asyncResult.errors);
+                    const isValid = Object.values(newErrors).every((e) => !e);
+                    return { ...prev, errors: newErrors, isValid };
+                  });
+                });
             }
           }
         },
