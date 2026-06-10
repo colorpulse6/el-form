@@ -1,4 +1,5 @@
 import type { SandpackFiles } from "@codesandbox/sandpack-react";
+import { EXAMPLE_STYLES } from "./exampleStyles";
 
 const APP = `import {
   useForm,
@@ -6,6 +7,7 @@ const APP = `import {
   useFormContext,
   useFieldArray,
 } from "el-form-react-hooks";
+import "./styles.css";
 
 type Form = { items: { name: string; quantity: number }[] };
 
@@ -17,19 +19,16 @@ export default function App() {
   });
 
   return (
-    <div style={{ padding: 16, fontFamily: "sans-serif", maxWidth: 420 }}>
-      <FormProvider form={form}>
-        <form
-          onSubmit={form.handleSubmit((data) =>
-            alert(JSON.stringify(data, null, 2))
-          )}
-          style={{ display: "grid", gap: 12 }}
-        >
-          <Items />
-          <button type="submit">Submit</button>
-        </form>
-      </FormProvider>
-    </div>
+    <FormProvider form={form}>
+      <form
+        onSubmit={form.handleSubmit((data) =>
+          alert(JSON.stringify(data, null, 2))
+        )}
+      >
+        <Items />
+        <button type="submit">Submit</button>
+      </form>
+    </FormProvider>
   );
 }
 
@@ -42,14 +41,14 @@ function Items() {
   return (
     <>
       {fields.map((field, index) => (
-        <div key={field.id} style={{ display: "flex", gap: 8 }}>
+        <div key={field.id} className="row">
           {/* key is the stable field.id, never the array index */}
           <input {...register(\`items.\${index}.name\`)} placeholder="Name" />
           <input
             type="number"
             {...register(\`items.\${index}.quantity\`)}
             placeholder="Qty"
-            style={{ width: 70 }}
+            style={{ width: 90 }}
           />
           <button type="button" onClick={() => remove(index)}>
             Remove
@@ -64,4 +63,7 @@ function Items() {
 }
 `;
 
-export const fieldArrayFiles: SandpackFiles = { "/App.tsx": APP };
+export const fieldArrayFiles: SandpackFiles = {
+  "/App.tsx": APP,
+  "/styles.css": EXAMPLE_STYLES,
+};

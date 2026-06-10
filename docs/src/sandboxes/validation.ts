@@ -1,7 +1,9 @@
 import type { SandpackFiles } from "@codesandbox/sandpack-react";
+import { EXAMPLE_STYLES } from "./exampleStyles";
 
 const APP = `import { useForm } from "el-form-react-hooks";
 import { z } from "zod";
+import "./styles.css";
 
 // El Form is schema-agnostic — pass any validator. Here we use Zod on every
 // keystroke via validators.onChange, and surface formState.errors live.
@@ -18,32 +20,29 @@ export default function App() {
   });
 
   return (
-    <form
-      onSubmit={handleSubmit((data) => alert(JSON.stringify(data, null, 2)))}
-      style={{ display: "grid", gap: 12, maxWidth: 380, fontFamily: "sans-serif" }}
-    >
-      <label style={{ display: "grid", gap: 4 }}>
+    <form onSubmit={handleSubmit((data) => alert(JSON.stringify(data, null, 2)))}>
+      <label>
         Email
-        <input {...register("email")} />
+        <input {...register("email")} placeholder="you@example.com" />
       </label>
       {formState.errors.email && (
-        <span style={{ color: "crimson" }}>{formState.errors.email}</span>
+        <span className="error">{formState.errors.email}</span>
       )}
 
-      <label style={{ display: "grid", gap: 4 }}>
+      <label>
         Password
         <input type="password" {...register("password")} />
       </label>
       {formState.errors.password && (
-        <span style={{ color: "crimson" }}>{formState.errors.password}</span>
+        <span className="error">{formState.errors.password}</span>
       )}
 
-      <label style={{ display: "grid", gap: 4 }}>
+      <label>
         Age
         <input type="number" {...register("age")} />
       </label>
       {formState.errors.age && (
-        <span style={{ color: "crimson" }}>{formState.errors.age}</span>
+        <span className="error">{formState.errors.age}</span>
       )}
 
       <button type="submit">Submit</button>
@@ -52,4 +51,7 @@ export default function App() {
 }
 `;
 
-export const validationFiles: SandpackFiles = { "/App.tsx": APP };
+export const validationFiles: SandpackFiles = {
+  "/App.tsx": APP,
+  "/styles.css": EXAMPLE_STYLES,
+};
