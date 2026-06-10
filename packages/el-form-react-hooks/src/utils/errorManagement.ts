@@ -91,20 +91,28 @@ export function createErrorManagementManager<T extends Record<string, any>>(
               formState.values,
               "onSubmit"
             );
-            // Blocking async pass per field: only when sync validation passed.
+            // Blocking async pass per field: run all three async event keys.
             if (r.isValid) {
-              const asyncR = await validationManager.validateFieldAsync(
-                name,
-                formState.values[name],
-                formState.values,
-                "onSubmit"
-              );
-              if (!asyncR.isValid) {
+              let asyncValid = true;
+              const asyncErrors = { ...r.errors };
+              for (const ev of ["onChange", "onBlur", "onSubmit"] as const) {
+                const asyncR = await validationManager.validateFieldAsync(
+                  name,
+                  formState.values[name],
+                  formState.values,
+                  ev
+                );
+                if (!asyncR.isValid) {
+                  asyncValid = false;
+                  Object.assign(asyncErrors, asyncR.errors);
+                }
+              }
+              if (!asyncValid) {
                 return {
                   name,
                   r: {
                     isValid: false,
-                    errors: { ...r.errors, ...asyncR.errors },
+                    errors: asyncErrors,
                   },
                 };
               }
@@ -135,19 +143,21 @@ export function createErrorManagementManager<T extends Record<string, any>>(
         "onSubmit"
       );
 
-      // Blocking async pass: only runs when sync validation passed.
+      // Blocking async pass: run all three async event keys.
       let finalValid = result.isValid;
       let finalErrors = result.errors;
       if (finalValid) {
-        const asyncResult = await validationManager.validateFieldAsync(
-          nameOrNames,
-          formState.values[nameOrNames],
-          formState.values,
-          "onSubmit"
-        );
-        if (!asyncResult.isValid) {
-          finalValid = false;
-          finalErrors = { ...finalErrors, ...asyncResult.errors };
+        for (const ev of ["onChange", "onBlur", "onSubmit"] as const) {
+          const asyncResult = await validationManager.validateFieldAsync(
+            nameOrNames,
+            formState.values[nameOrNames],
+            formState.values,
+            ev
+          );
+          if (!asyncResult.isValid) {
+            finalValid = false;
+            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          }
         }
       }
 

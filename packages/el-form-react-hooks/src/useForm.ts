@@ -385,7 +385,7 @@ export function useForm<T extends Record<string, any>>(
                   if (getNestedValue(formStateRef.current?.values ?? {}, name) !== value) return;
                   setFormState((prev) => {
                     const newErrors: any = { ...prev.errors };
-                    if (syncPassed) { delete newErrors[fieldName]; delete newErrors.form; }
+                    if (syncPassed) { delete newErrors[fieldName]; }
                     Object.assign(newErrors, asyncResult.errors);
                     const isValid = Object.values(newErrors).every((e) => !e);
                     return { ...prev, errors: newErrors, isValid };
@@ -432,7 +432,7 @@ export function useForm<T extends Record<string, any>>(
                   if (getNestedValue(formStateRef.current?.values ?? {}, name) !== blurValue) return;
                   setFormState((prev) => {
                     const newErrors: any = { ...prev.errors };
-                    if (syncPassed) { delete newErrors[fieldName]; delete newErrors.form; }
+                    if (syncPassed) { delete newErrors[fieldName]; }
                     Object.assign(newErrors, asyncResult.errors);
                     const isValid = Object.values(newErrors).every((e) => !e);
                     return { ...prev, errors: newErrors, isValid };
