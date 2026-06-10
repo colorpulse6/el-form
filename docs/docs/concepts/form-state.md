@@ -26,6 +26,9 @@ interface FormState<T> {
   isSubmitting: boolean;                       // submit handler in flight
   isValid: boolean;                            // no current errors
   isDirty: boolean;                            // any value changed from default
+  isSubmitted: boolean;                        // true after the first submit attempt
+  isSubmitSuccessful: boolean;                 // true when the last submit passed validation and the handler ran without throwing
+  submitCount: number;                         // number of submit attempts
 }
 ```
 
@@ -36,6 +39,11 @@ A few things worth knowing:
 - **`touched`** flips to `true` when a field is blurred, so you can defer
   showing errors until the user leaves a field.
 - **`isDirty`** compares against `defaultValues`; resetting clears it.
+- **`isSubmitted`** flips to `true` after the first submit attempt and is reset by
+  `reset()`.
+- **`isSubmitSuccessful`** is `true` when the last submit passed validation and the
+  submit handler ran without throwing; it is reset by `reset()`.
+- **`submitCount`** counts submit attempts and is reset by `reset()`.
 
 ```tsx
 const { register, handleSubmit, formState } = useForm({

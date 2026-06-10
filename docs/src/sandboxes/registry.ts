@@ -18,9 +18,7 @@ export interface PlaygroundExample {
   note?: string;
 }
 
-// The four learning-path examples. useForm / validation / field-array run live;
-// AutoForm is shown as static source until a known field-generation bug with
-// zod 3.x is fixed in el-form-react-components (AutoForm renders no fields).
+// The four learning-path examples — all run live in the Sandpack sandbox.
 export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
   {
     id: "useform",
@@ -44,8 +42,7 @@ export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
     id: "autoform",
     label: "AutoForm",
     blurb: "Generate a whole form from a Zod schema.",
-    staticCode: autoFormBasicFiles["/App.tsx"] as string,
-    note: "Static preview for now — the live AutoForm demo is paused while we fix a field-generation issue with recent Zod 3.x versions.",
+    files: autoFormBasicFiles,
   },
 ];
 

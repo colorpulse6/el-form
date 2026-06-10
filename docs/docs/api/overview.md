@@ -126,12 +126,9 @@ const {
   isValid, // Overall form validity
   isDirty, // Form has been modified
   isSubmitting, // Form submission in progress
-  isSubmitted, // Form has been submitted at least once
-  submitCount, // Number of submission attempts
-  isValidating, // Async validation in progress
-  defaultValues, // Original default values
-  isLoading, // Initial form loading state
-  dirtyFields, // Which specific fields are dirty
+  isSubmitted, // True after the first submit attempt
+  isSubmitSuccessful, // True when the last submit passed validation and the handler ran without throwing
+  submitCount, // Number of submit attempts
 } = formState;
 ```
 
@@ -514,27 +511,26 @@ The `formState` object contains all form state information:
 interface FormState<T extends Record<string, any>> {
   // Current Values
   values: Partial<T>; // Current form field values
-  defaultValues: T; // Original default values
 
   // Validation State
-  errors: Partial<Record<keyof T, string>>; // Current validation errors
+  errors: Partial<Record<keyof T, string>>; // Current validation errors (string per field)
   isValid: boolean; // Overall form validity
-  isValidating: boolean; // Async validation in progress
 
   // User Interaction State
   touched: Partial<Record<keyof T, boolean>>; // Fields user has interacted with
-  dirtyFields: Partial<Record<keyof T, boolean>>; // Which fields have been modified
   isDirty: boolean; // Form has been modified from defaults
 
   // Submission State
   isSubmitting: boolean; // Form submission in progress
-  isSubmitted: boolean; // Form has been submitted at least once
-  submitCount: number; // Number of submission attempts
-
-  // Loading State
-  isLoading: boolean; // Initial form loading state
+  isSubmitted: boolean; // True after the first submit attempt; reset by reset()
+  isSubmitSuccessful: boolean; // True when the last submit passed validation and the handler ran without throwing; reset by reset()
+  submitCount: number; // Number of submit attempts; reset by reset()
 }
 ```
+
+> Per-field dirty/touched maps are available via the `getDirtyFields()` /
+> `getTouchedFields()` methods on the form return value — they are not fields on
+> `formState`.
 
 ## Quick Usage Examples
 
@@ -614,6 +610,11 @@ El Form is organized into focused packages:
 - **`useForm`** - Main form hook (everything above)
 - **`FormProvider`** - Context provider for sharing form state
 - **`useFormContext`** - Hook to access form context
+- **`useField`** - Subscribe to a single field's `value` + `error` + `touched`
+- **`useFormSelector`** - Subscribe to an arbitrary derived slice of form state
+- **`useWatch`** - Reactively watch form value(s) by path (values only)
+- **`useFieldArray`** - Manage dynamic array fields with stable row ids
+- **`shallowEqual`** - Equality helper for selector subscriptions
 
 ### `el-form-react-components`
 

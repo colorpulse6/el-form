@@ -258,7 +258,6 @@ return (
   <div>
     {/* Validation state */}
     <p>Valid: {formState.isValid}</p>
-    <p>Validating: {formState.isValidating}</p>
 
     {/* Change tracking */}
     <p>Dirty: {formState.isDirty}</p>
@@ -266,6 +265,8 @@ return (
 
     {/* Submission state */}
     <p>Submitting: {formState.isSubmitting}</p>
+    <p>Submitted: {formState.isSubmitted}</p>
+    <p>Submit successful: {formState.isSubmitSuccessful}</p>
     <p>Submit count: {formState.submitCount}</p>
 
     {/* Errors */}
@@ -350,8 +351,9 @@ const email = watch("email");
 // Watch multiple fields
 const [email, password] = watch(["email", "password"]);
 
-// Watch with selector function
-const isFormValid = watch((formState) => formState.isValid);
+// watch() is for value paths; read form-level status from formState directly
+// (or use useFormSelector for an isolated subscription).
+const isFormValid = formState.isValid;
 
 // Use in effects
 useEffect(() => {
@@ -389,26 +391,24 @@ Complete FormState interface reference:
 ```tsx
 interface FormState<T = any> {
   // Values and validation
-  values: T; // Current form values
-  errors: Record<string, string>; // Validation errors
-  touched: Record<string, boolean>; // Fields user has interacted with
+  values: Partial<T>; // Current form values
+  errors: Partial<Record<keyof T, string>>; // Validation errors (string per field)
+  touched: Partial<Record<keyof T, boolean>>; // Fields user has interacted with
   isValid: boolean; // Overall form validity
-  isValidating: boolean; // Async validation in progress
 
   // Submission state
   isSubmitting: boolean; // Form submission in progress
-  isSubmitted: boolean; // Form has been submitted
-  submitCount: number; // Number of submission attempts
+  isSubmitted: boolean; // True after the first submit attempt; reset by reset()
+  isSubmitSuccessful: boolean; // True when the last submit passed validation and the handler ran without throwing; reset by reset()
+  submitCount: number; // Number of submit attempts; reset by reset()
 
   // Change tracking
-  isDirty: boolean; // Form has been modified
-  dirtyFields: Record<string, boolean>; // Which fields have been modified
-
-  // Advanced state
-  defaultValues: T; // Original default values
-  isLoading: boolean; // Initial form loading state
+  isDirty: boolean; // Form has been modified from defaults
 }
 ```
+
+> Per-field dirty/touched maps are exposed as the `getDirtyFields()` /
+> `getTouchedFields()` methods — they are not fields on `formState`.
 
 ## Best Practices
 

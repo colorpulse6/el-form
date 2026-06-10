@@ -43,7 +43,7 @@ Peer requirement: React 18+ (the hooks API works with React 16.8+).
 | Package                    | Exports                                  | Use when |
 | -------------------------- | ---------------------------------------- | -------- |
 | `el-form-react`            | re-exports hooks + components + styles    | most apps |
-| `el-form-react-hooks`      | `useForm`, `FormProvider`, `useFormContext`, `useField` | custom forms |
+| `el-form-react-hooks`      | `useForm`, `FormProvider`, `useFormContext`, `useFormSelector`, `useField`, `useWatch`, `useFieldArray`, `shallowEqual` | custom forms |
 | `el-form-react-components` | `AutoForm`, field components, `styles.css` | schema-driven forms |
 | `el-form-core`             | validation engine + utilities             | other frameworks / advanced |
 
@@ -150,8 +150,13 @@ export function LoginForm() {
 ```
 
 `useForm` returns (most-used): `register`, `handleSubmit`, `formState`
-(`errors`, `touched`, `isDirty`, `isSubmitting`, `isValid`), `watch`,
-`setError`, `clearErrors`, `reset`, `setValue`, `getValues`.
+(`values`, `errors`, `touched`, `isDirty`, `isSubmitting`, `isValid`,
+`isSubmitted`, `isSubmitSuccessful`, `submitCount`), `watch`,
+`setError`, `clearErrors`, `reset`, `setValue`. Each `errors[field]` is a
+plain string (no `.message`). `isSubmitted`/`isSubmitSuccessful`/`submitCount`
+track submit attempts and are reset by `reset()`. There is no `isValidating`,
+`defaultValues`, `dirtyFields`, or `isLoading` on `formState` — per-field
+dirty/touched maps are the `getDirtyFields()` / `getTouchedFields()` methods.
 
 Validation triggers are configured per event:
 
@@ -247,6 +252,53 @@ function App() {
 Three reusability patterns are supported: **context** (`FormProvider` +
 `useFormContext`), **prop-passing** (`<Field form={form} />`), and **hybrid**
 (`form || useFormContext()`).
+
+--------------------------------------------------------------------------------
+## Reactive hooks (inside `<FormProvider>`)
+
+`useWatch` — reactively subscribe to value(s) by path; a reactive mirror of
+`form.watch()` built on the selector store, so each watcher re-renders in
+isolation. Returns **values only** (use `useField` for `value + error +
+touched`, or `useFormSelector` for an arbitrary derived slice). Must be used
+within a `<FormProvider>`.
+
+```tsx
+import { useWatch } from "el-form-react-hooks";
+const all = useWatch<MyForm>();                          // Partial<MyForm>
+const email = useWatch<MyForm, "email">("email");         // string
+const pair = useWatch<MyForm, "a" | "b">(["a", "b"]);     // { a, b }
+```
+
+`useFieldArray` — dynamic array fields. Returns a `fields` array where each row
+has a stable `id` (use as the React `key`) plus `append`, `prepend`, `insert`,
+`remove`, `move`, `swap`, `update`, and `replace`. `name` is restricted to
+array-valued paths; item types are inferred. Works in `FormProvider` (re-renders
+only when its array changes) or with a `form` prop.
+
+```tsx
+import { useFieldArray } from "el-form-react-hooks";
+const { fields, append, remove } = useFieldArray<MyForm, "items">({ name: "items" });
+```
+
+--------------------------------------------------------------------------------
+## Reactive external values (props / server data)
+
+`useForm({ values })` re-syncs the form whenever the `values` object's content
+changes (deep-compared, so a new-object/same-content render is a no-op — no
+memoization needed). It takes precedence over `defaultValues` for the initial
+state. Pair with `keepDirtyValues: true` to keep fields the user is mid-editing
+while untouched fields sync. This is the el-form equivalent of React Hook Form's
+`values` prop (+ `resetOptions: { keepDirtyValues: true }`) and Formik's
+`enableReinitialize`.
+
+```tsx
+useForm({ values: serverData, keepDirtyValues: true });
+```
+
+Notes: `values` replaces the **whole** value object (full shape, not a partial
+patch); `isDirty` is measured against `defaultValues`, not the latest `values`;
+don't put `File`/`Blob` in reactive `values` (deep-compare can't tell two files
+apart).
 
 --------------------------------------------------------------------------------
 ## Links
