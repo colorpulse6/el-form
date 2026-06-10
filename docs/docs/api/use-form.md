@@ -35,6 +35,8 @@ interface UseFormOptions<T extends Record<string, any>> {
   mode?: "onChange" | "onBlur" | "onSubmit" | "all";
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
   shouldFocusError?: boolean; // default true
+  values?: Partial<T>; // reactive external values (props/server data)
+  keepDirtyValues?: boolean; // keep mid-edit fields when reactive values change
 }
 ```
 
@@ -208,6 +210,55 @@ const form = useForm({
 Focus-on-error relies on the `ref` that `register` returns — make sure each field is
 registered with `{...register("name")}` so its DOM node can be focused.
 
+#### values
+
+**Type:** `Partial<T>`  
+**Optional:** Yes
+
+Reactive external values for forms backed by **props or server data**. When this
+object's _content_ changes, the form re-syncs to it. The comparison is a deep
+compare, so re-rendering with a brand-new object of the same content is a no-op — you
+don't have to memoize it. When present, `values` takes precedence over
+`defaultValues` for the form's initial state.
+
+This is the el-form equivalent of React Hook Form's `values` prop and Formik's
+`enableReinitialize`.
+
+```typescript
+const form = useForm({
+  values: serverData, // re-syncs whenever serverData's content changes
+});
+```
+
+**Caveats:**
+
+- `values` replaces the **whole** value object — provide the full shape, not a
+  partial patch. Omitted keys are dropped.
+- `isDirty` is still measured against the original `defaultValues`, not the latest
+  synced `values`.
+- Don't put `File`/`Blob` instances in reactive `values`; the deep compare can't tell
+  two files apart, so a file swap won't trigger a re-sync.
+
+#### keepDirtyValues
+
+**Type:** `boolean`  
+**Optional:** Yes — **default `false`**
+
+Pairs with reactive [`values`](#values). When the `values` object changes, fields the
+user is **mid-editing** (dirty) are preserved instead of being overwritten; untouched
+fields still sync to the incoming data. The default (`false`) overwrites everything,
+matching React Hook Form's default.
+
+```typescript
+const form = useForm({
+  values: serverData,
+  keepDirtyValues: true, // don't clobber what the user is typing
+});
+```
+
+This is the equivalent of React Hook Form's `values` prop combined with
+`resetOptions: { keepDirtyValues: true }`.
+
 #### validationDebounceMs
 
 **Type:** `number`  
@@ -366,6 +417,9 @@ interface FormState<T> {
   isSubmitting: boolean; // Form submission in progress
   isValid: boolean; // Overall form validity
   isDirty: boolean; // Form has been modified
+  isSubmitted: boolean; // True after the first submit attempt; reset by reset()
+  isSubmitSuccessful: boolean; // True when the last submit passed validation and the handler ran without throwing; reset by reset()
+  submitCount: number; // Number of submit attempts; reset by reset()
 }
 ```
 
@@ -381,6 +435,9 @@ console.log(formState.touched); // Which fields have been touched
 console.log(formState.isValid); // Is the entire form valid?
 console.log(formState.isDirty); // Has the form been modified?
 console.log(formState.isSubmitting); // Is submission in progress?
+console.log(formState.isSubmitted); // Has a submit been attempted?
+console.log(formState.isSubmitSuccessful); // Did the last submit succeed?
+console.log(formState.submitCount); // How many submit attempts?
 
 // Conditional rendering based on state
 {
@@ -517,6 +574,66 @@ useEffect(() => {
   console.log("Form changed:", values);
 }, [values]);
 ```
+
+### useWatch
+
+`useWatch` is a standalone hook (exported from `el-form-react-hooks`) that reactively
+subscribes to form value(s) by path — a reactive mirror of `form.watch()`. It is built
+on the selector store, so each watcher re-renders in isolation. **It must be used
+inside a `<FormProvider>`** and returns **values only** (use
+[`useField`](../concepts/performance.md#usefield--subscribe-to-one-field) when you
+also need `error` + `touched`, or
+[`useFormSelector`](../concepts/performance.md#useformselector--subscribe-to-a-derived-slice)
+for an arbitrary derived slice).
+
+```typescript
+import { useWatch } from "el-form-react-hooks";
+
+// Single path — returns that value
+useWatch<T, Name extends Path<T>>(name: Name): PathValue<T, Name>;
+
+// Multiple paths — returns an object keyed by each path
+useWatch<T, Names extends Path<T>>(names: Names[]): { [K in Names]: PathValue<T, K> };
+
+// No argument — returns all values
+useWatch<T>(): Partial<T>;
+```
+
+**Example:**
+
+```tsx
+import { FormProvider, useForm, useWatch } from "el-form-react-hooks";
+
+function CountryFields() {
+  // Re-renders only when `country` changes
+  const country = useWatch<FormValues, "country">("country");
+  return country === "US" ? <StateSelect /> : null;
+}
+
+function App() {
+  const form = useForm<FormValues>({ defaultValues: { country: "" } });
+  return (
+    <FormProvider form={form}>
+      <CountryFields />
+    </FormProvider>
+  );
+}
+```
+
+```tsx
+// Multiple paths -> object keyed by path name
+const { firstName, lastName } = useWatch<FormValues, "firstName" | "lastName">([
+  "firstName",
+  "lastName",
+]);
+
+// All values
+const all = useWatch<FormValues>(); // Partial<FormValues>
+```
+
+Use `useWatch` to react to value changes in a child component **without** calling
+`register` there. The imperative `form.watch()` is unchanged and still works for reading
+values inside the component that owns the form.
 
 #### Reset Operations
 
@@ -1176,7 +1293,6 @@ function RegistrationForm() {
     <form onSubmit={onSubmit}>
       <div>
         <input {...register("username")} placeholder="Username" />
-        {formState.isValidating && <span>Checking availability...</span>}
         {formState.errors.username && (
           <span className="error">{formState.errors.username}</span>
         )}
@@ -1334,9 +1450,6 @@ const form = useForm();
 // Show loading during async operations
 {
   form.formState.isSubmitting && <LoadingSpinner />;
-}
-{
-  form.formState.isValidating && <span>Validating...</span>;
 }
 
 // Disable form during submission

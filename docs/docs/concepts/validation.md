@@ -28,6 +28,15 @@ type ValidatorFunction = (values: any) => {
 
 This simple interface means El Form can work with any validation library or custom logic.
 
+:::tip Standard Schema support
+El Form automatically detects any validator that implements the
+[**Standard Schema**](https://standardschema.dev) spec — i.e. it exposes a
+`~standard` property — and validates through that protocol. So **Valibot**,
+**ArkType**, and any other Standard Schema-compliant library work out of the box, with
+no resolver or adapter to install. (Zod and Yup are detected via their own shapes as
+well.)
+:::
+
 ## Validation Libraries
 
 ### Zod (Recommended)
@@ -264,7 +273,6 @@ const { formState } = useForm({
 
 // Check validation status
 console.log(formState.isValid); // true/false
-console.log(formState.isValidating); // true during async validation
 console.log(formState.errors); // Current error state
 console.log(formState.touched); // Which fields have been touched
 ```

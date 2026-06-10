@@ -380,9 +380,6 @@ function EmailValidationForm() {
     <form>
       <div>
         <input {...register("email")} placeholder="Email" />
-        {formState.isValidating && (
-          <span className="text-blue-500">Checking email...</span>
-        )}
         {formState.errors.email && (
           <span className="text-red-500">{formState.errors.email}</span>
         )}

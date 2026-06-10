@@ -6,14 +6,16 @@ Install everything with `npm install el-form-react`. The library is modular, so 
 
 Key facts:
 - AutoForm: `import { AutoForm } from "el-form-react-components"` — pass a `schema`, get a working form. Import `"el-form-react-components/styles.css"` for zero-config styling.
-- useForm: `import { useForm } from "el-form-react-hooks"` — `register`, `handleSubmit`, `formState`, `watch`, `setError`, `clearErrors` (familiar React Hook Form API).
+- useForm: `import { useForm } from "el-form-react-hooks"` — `register`, `handleSubmit`, `formState`, `watch`, `setError`, `clearErrors` (familiar React Hook Form API). `formState` fields: `values`, `errors` (string per field), `touched`, `isValid`, `isDirty`, `isSubmitting`, `isSubmitted`, `isSubmitSuccessful`, `submitCount`.
+- Reactive hooks (inside `<FormProvider>`): `useWatch` (subscribe to value(s) by path, values only), `useField` (`value + error + touched`), `useFormSelector` (derived slice), `useFieldArray` (dynamic array fields with stable row ids).
+- Reactive external values: `useForm({ values, keepDirtyValues })` re-syncs to props/server data (RHF `values` / Formik `enableReinitialize` equivalent).
 - Validation-agnostic: Zod (v3 + v4), Yup, Valibot, custom validators, or no validation. Validation libraries are optional peer installs.
 - TypeScript-first with strong inference. Works with Next.js, Vite, Remix, CRA. React 18+.
 - MIT licensed. Repo: https://github.com/colorpulse6/el-form
 
 ## Packages
 - `el-form-react`: everything (hooks + components + styles) — recommended default.
-- `el-form-react-hooks`: `useForm`, `FormProvider`, `useField` — for custom forms.
+- `el-form-react-hooks`: `useForm`, `FormProvider`, `useFormContext`, `useFormSelector`, `useField`, `useWatch`, `useFieldArray`, `shallowEqual` — for custom forms.
 - `el-form-react-components`: `AutoForm` + prebuilt field components.
 - `el-form-core`: framework-agnostic validation engine (build your own bindings).
 

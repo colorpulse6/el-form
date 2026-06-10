@@ -14,6 +14,79 @@ All notable changes to the el-form project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.15.0] - 2026-06-09
+
+Released: `el-form-react-hooks@3.15.0`, `el-form-react-components@4.7.2`,
+`el-form-react@4.1.14`.
+
+### ✨ New `formState` fields — `el-form-react-hooks@3.15.0`
+
+- **Submit-status metadata, for React Hook Form parity.** `formState` gains three additive fields, all set consistently across `handleSubmit`, `submit()`, and `submitAsync()`, and all reset by `reset()`:
+  - **`isSubmitted: boolean`** — `true` after the first submit attempt.
+  - **`isSubmitSuccessful: boolean`** — `true` when the last submit passed validation and the submit handler ran without throwing.
+  - **`submitCount: number`** — number of submit attempts.
+- Purely additive — existing forms are unaffected.
+
+## [3.14.0] - 2026-06-09
+
+Released: `el-form-react-hooks@3.14.0`, `el-form-react-components@4.7.1`,
+`el-form-react@4.1.13`.
+
+### ✨ New Feature — reactive `values` + `keepDirtyValues`
+
+- **`useForm({ values })`**: a reactive external-values option for forms backed by props or server data. When the `values` object's _content_ changes, the form re-syncs to it (deep-compared, so a new-object/same-content render is a no-op — no memoization required). It takes precedence over `defaultValues` for the initial state. This is the el-form equivalent of React Hook Form's `values` prop and Formik's `enableReinitialize`.
+- **`keepDirtyValues: true`**: pair it with reactive `values` to preserve fields the user is mid-editing (dirty) while untouched fields still sync — the equivalent of RHF's `values` + `resetOptions: { keepDirtyValues: true }`.
+- Additive — existing forms are unaffected. Notes: `values` replaces the **whole** value object (provide the full shape, not a partial patch — omitted keys are dropped); `isDirty` is still measured against the original `defaultValues`, not the latest synced `values`; and don't put `File`/`Blob` instances in reactive `values` (the deep-compare can't tell two files apart, so a file swap won't re-sync).
+
+## [3.13.0] - 2026-06-09
+
+Released: `el-form-react-hooks@3.13.0`, `el-form-react-components@4.7.0`,
+`el-form-react@4.1.12`.
+
+### ⚡ TypeScript performance win — `Path<T>`
+
+- **`Path<T>` no longer emits the duplicate bracket (`items[0]`) array-path forms**, which doubled the path union at every nesting level. Type instantiations drop ~7.8× at depth 6 (≈992K → ≈127K), and el-form now type-checks **faster than React Hook Form** on realistic nested schemas (≤ RHF at every depth, strictly faster at depth ≥ 4).
+
+### ⚠️ Breaking (types only)
+
+- **Bracket-index path notation is no longer type-checked** — it becomes a `tsc` error. This affects `Path<T>`-typed APIs in both packages: `register("items[0].name")` / `useField` / `useWatch` (hooks), and the `name` prop of `TextField` / `SelectField` / `TextareaField` / `BaseFieldProps` (components).
+- **Runtime is unaffected** — bracket paths are still normalized internally and `PathValue` still resolves them. The fix is to switch the _type_ to **dot notation**: `items[0].name` → `items.0.name`, and `` `items[${i}]` `` → `` `items.${i}` ``. Dot notation was already the form used throughout el-form's docs and examples.
+
+## [3.12.0] - 2026-06-09
+
+Released: `el-form-react-hooks@3.12.0`, `el-form-react-components@4.6.1`,
+`el-form-react@4.1.11`.
+
+### ✨ New Hook — `useWatch`
+
+- **`useWatch`**: a reactive hook for subscribing to form value(s) by path, for React Hook Form parity. A reactive mirror of `form.watch()`'s overloads, built on the selector store so each watcher re-renders in isolation:
+
+  ```ts
+  const all = useWatch<MyForm>(); // Partial<MyForm>
+  const email = useWatch<MyForm, "email">("email"); // string
+  const pair = useWatch<MyForm, "a" | "b">(["a", "b"]); // { a: ...; b: ... }
+  ```
+
+  Must be used within a `<FormProvider>`. Returns **values only** — use `useField` for `value + error + touched`, or `useFormSelector` for an arbitrary derived slice. The imperative `form.watch()` is unchanged. See the [useForm API → `useWatch`](./api/use-form.md#usewatch).
+
+## [3.11.4] - 2026-06-08
+
+Released: `el-form-react-hooks@3.11.4`, `el-form-react-components@4.5.x`,
+`el-form-react@4.1.x`.
+
+### 🐞 Bug Fix — `FormProvider` context reactivity
+
+- **`FormProvider` context getter no longer lags one render behind.** A component reading `useFormContext().form.formState` directly during render previously observed form state one render late, because the context getter returned a ref refreshed only in a post-commit effect. The ref is now updated during render, so direct reads are current within the same render pass. No public API change. (A `React.memo`-wrapped child with unchanged props still won't re-render on a bare direct read — subscribe via `useField` / `useFormSelector` when a component must react to state changes.)
+
+## Maintenance — Zod 3 AutoForm fix
+
+Released: `el-form-core@2.3.3`, `el-form-react-components@4.7.3`,
+`el-form-react-hooks@3.15.1`, `el-form-react@4.1.15`.
+
+### 🐞 Bug Fix — AutoForm field generation under Zod 3.x
+
+- **AutoForm rendered zero fields when used with Zod 3.x** (only the Submit/Reset buttons appeared). It read a `ZodObject`'s shape from `getDef(schema).shape`, which in Zod 3 is a getter **function** (in Zod 4 the shape is already an object), so iterating it produced no keys. A new `getObjectShape` helper in `el-form-core` invokes the getter when needed and falls back to the public `.shape`, so AutoForm now generates fields across Zod 3 and Zod 4.
+
 ## [3.11.0] - 2026-06-05
 
 Released: `el-form-react-hooks@3.11.0`, `el-form-react-components@4.5.0`,
