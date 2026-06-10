@@ -19,6 +19,7 @@ import {
   getArrayElementType,
   getStringChecks,
   getDef,
+  getObjectShape,
 } from "el-form-core";
 import { FormSwitch, FormCase } from "./Form";
 import { fieldAriaProps } from "./fieldAria";
@@ -432,7 +433,7 @@ function generateFieldsFromSchema<T extends z.ZodTypeAny>(
 
   if (getTypeName(schema as any) !== "ZodObject") return [];
 
-  const shape = getDef(schema as any)?.shape as Record<string, z.ZodTypeAny>;
+  const shape = getObjectShape(schema as any) as Record<string, z.ZodTypeAny>;
   const fields: AutoFormFieldConfig[] = [];
   for (const key in shape) {
     if (!Object.prototype.hasOwnProperty.call(shape, key)) continue;
