@@ -48,7 +48,7 @@ function ItemsForm() {
 }
 
 function Items() {
-  const { register } = useFormContext<Form>();
+  const { register } = useFormContext<Form>().form;
   const { fields, append, remove, move } = useFieldArray<Form, "items">({
     name: "items",
   });

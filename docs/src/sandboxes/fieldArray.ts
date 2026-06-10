@@ -34,7 +34,7 @@ export default function App() {
 }
 
 function Items() {
-  const { register } = useFormContext<Form>();
+  const { register } = useFormContext<Form>().form;
   const { fields, append, remove } = useFieldArray<Form, "items">({
     name: "items",
   });
