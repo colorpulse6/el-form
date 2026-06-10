@@ -416,13 +416,13 @@ import { Sandbox } from '@site/src/components';
 import { useFormQuickStartFiles } from '@site/src/sandboxes/useFormQuickStart';
 ```
 
-Replace the page's **primary** useForm static code block with:
+Replace the useForm static code block under the `## Alternative: useForm Hook` heading with:
 
 ```md
 <Sandbox files={useFormQuickStartFiles} />
 ```
 
-(Leave the surrounding prose and any secondary snippets intact.)
+(That page's AutoForm block is its headline example; the sandbox replaces the **useForm** block specifically. Leave the surrounding prose and the AutoForm snippet intact.)
 
 - [ ] **Step 3: Build and confirm the page renders**
 
@@ -496,7 +496,7 @@ Create `docs/src/sandboxes/validation.ts` — a `useForm` example demonstrating 
 
 - [ ] **Step 3: Field-array example**
 
-Create `docs/src/sandboxes/fieldArray.ts` — `useFieldArray` with append/remove of a small row shape. Wire into `docs/docs/guides/array-fields.md` (replace the primary example).
+Create `docs/src/sandboxes/fieldArray.ts` — `useFieldArray` with append/remove of a small row shape. **Important:** `useFieldArray` reads the form from context, so the App must either wrap the fields in `FormProvider` and consume via `useFormContext` (base it on the "Recommended" snippet in `docs/docs/guides/array-fields.md`, L24-78) **or** pass the form explicitly, e.g. `useFieldArray({ name: "items", form })`. A naive single-component `App.tsx` that calls `useFieldArray` with no form/context will not work. Wire into `docs/docs/guides/array-fields.md` (replace the primary `useFieldArray` example).
 
 - [ ] **Step 4: Build after wiring all three**
 
