@@ -3,7 +3,7 @@ const sidebars = {
     {
       type: "category",
       label: "Getting Started",
-      items: ["intro", "installation", "quick-start", "examples"],
+      items: ["intro", "installation", "quick-start", "examples", "comparison"],
     },
     {
       type: "category",

@@ -7,9 +7,11 @@
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/el-form-react)](https://bundlephobia.com/package/el-form-react)
-[![Build Status](https://img.shields.io/github/workflow/status/colorpulse6/el-form/CI)](https://github.com/colorpulse6/el-form/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/colorpulse6/el-form/ci.yml?branch=main)](https://github.com/colorpulse6/el-form/actions)
 
 **TypeScript-first React form library** with zero-boilerplate AutoForm and powerful useForm hook. The best React Hook Form alternative with schema-first validation (Zod, Yup, Valibot), built-in components, and enterprise-grade form management.
+
+> ℹ️ **El Form** is a **React** library (npm: `el-form-react`). It is unrelated to Vue Element Plus's built-in `<el-form>` component — if you landed here looking for the Vue/Element form, you want [Element Plus](https://element-plus.org/en-US/component/form) instead.
 
 ## 🤖 For AI Agents & LLMs
 
