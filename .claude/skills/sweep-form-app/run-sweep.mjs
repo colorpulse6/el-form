@@ -34,6 +34,9 @@ const DEMOS = [
   { id: "validation-adapters-lab", label: "Validation Adapters Lab", check: assertValidationAdaptersLab },
   { id: "file-validators-lab", label: "File Validators Lab", check: assertFileValidatorsLab },
   { id: "component-lab", label: "Component Lab", check: assertComponentLab },
+  { id: "use-watch-lab", label: "useWatch Lab", check: assertUseWatchLab },
+  { id: "reactive-values-lab", label: "Reactive Values Lab", check: assertReactiveValuesLab },
+  { id: "submit-meta-lab", label: "Submit Meta Lab", check: assertSubmitMetaLab },
 ];
 
 const ADAPTER_BRANCHES = [
@@ -887,6 +890,124 @@ async function assertComponentLab(page) {
     await waitForJsonTestId(page, "autoform-submit-result", (json) => json.status === "valid", "AutoForm valid submit result");
 
     return "exported fields, createField helper, componentMap, and AutoForm results update";
+  });
+}
+
+async function assertUseWatchLab(page) {
+  return scenario("behavior", async () => {
+    await expectVisible(main(page).getByTestId("use-watch-lab"), "useWatch lab root");
+
+    // Single-path watch reacts to its path only.
+    await clickMainButton(page, "Set First Ada");
+    await waitForJsonTestId(page, "watch-single", (json) => json === "Ada", "single watch reflects first");
+    await waitForJsonTestId(page, "watch-multi", (json) => json.first === "Ada", "multi watch reflects first");
+    await waitForJsonTestId(page, "watch-all", (json) => json.first === "Ada", "all watch reflects first");
+
+    // A second path updates multi and all, and single stays on its own path.
+    await clickMainButton(page, "Set Last Lovelace");
+    await waitForJsonTestId(
+      page,
+      "watch-multi",
+      (json) => json.first === "Ada" && json.last === "Lovelace",
+      "multi watch reflects both paths"
+    );
+    await waitForJsonTestId(page, "watch-all", (json) => json.last === "Lovelace", "all watch reflects last");
+    await waitForJsonTestId(page, "watch-single", (json) => json === "Ada", "single watch unchanged by other path");
+
+    // A path outside multi's set reaches all but not the scoped subscriptions.
+    await clickMainButton(page, "Set Nickname");
+    await waitForJsonTestId(page, "watch-all", (json) => json.nickname === "Countess", "all watch reflects nickname");
+    await waitForJsonTestId(page, "watch-multi", (json) => json.nickname === undefined, "multi watch excludes nickname");
+
+    return "single, multiple, and all useWatch subscriptions react to scoped value changes";
+  });
+}
+
+async function assertReactiveValuesLab(page) {
+  return scenario("behavior", async () => {
+    await expectVisible(main(page).getByTestId("reactive-values-lab"), "reactive values lab root");
+    await waitForJsonTestId(page, "rv-values", (json) => json.name === "Ada", "initial form values from external source");
+    await waitForJsonTestId(page, "rv-external", (json) => json.name === "Ada", "initial external source");
+    await waitForJsonTestId(page, "rv-sync-state", (json) => json.keepDirtyValues === false, "keepDirtyValues starts off");
+
+    // keepDirtyValues off: a new external source overwrites the whole form.
+    await clickMainButton(page, "Push Grace");
+    await waitForJsonTestId(
+      page,
+      "rv-values",
+      (json) => json.name === "Grace" && json.email === "grace@example.com",
+      "external push overwrites form when keepDirty is off"
+    );
+
+    // Make name dirty, then keep dirty fields on the next push.
+    await fillByLabel(page, "Name", "Edited");
+    await waitForJsonTestId(page, "rv-values", (json) => json.name === "Edited", "field edit updates form values");
+    await waitForJsonTestId(page, "rv-sync-state", (json) => json.isDirty === true, "edited field marks form dirty");
+    await clickMainButton(page, "Toggle keepDirtyValues");
+    await waitForJsonTestId(page, "rv-sync-state", (json) => json.keepDirtyValues === true, "keepDirtyValues toggled on");
+
+    await clickMainButton(page, "Push Linus");
+    await waitForJsonTestId(
+      page,
+      "rv-values",
+      (json) => json.name === "Edited" && json.email === "linus@example.com",
+      "keepDirtyValues preserves edited name and syncs untouched email"
+    );
+    await waitForJsonTestId(page, "rv-external", (json) => json.name === "Linus", "external source reflects latest push");
+
+    return "reactive values overwrite when keepDirty is off and preserve edited fields when on";
+  });
+}
+
+async function assertSubmitMetaLab(page) {
+  return scenario("behavior", async () => {
+    await expectVisible(main(page).getByTestId("submit-meta-lab"), "submit meta lab root");
+    await waitForJsonTestId(
+      page,
+      "submit-meta-json",
+      (json) =>
+        json.isSubmitted === false &&
+        json.isSubmitSuccessful === false &&
+        json.submitCount === 0,
+      "submit meta starts at defaults"
+    );
+
+    // Invalid submit: marks submitted, bumps count, but not successful.
+    await clickMainButton(page, "Submit");
+    await expectMainText(page, /Name is required/, "invalid submit validation error");
+    await waitForJsonTestId(
+      page,
+      "submit-meta-json",
+      (json) =>
+        json.isSubmitted === true &&
+        json.submitCount === 1 &&
+        json.isSubmitSuccessful === false,
+      "invalid submit sets isSubmitted and submitCount without success"
+    );
+
+    // Valid submit: success flips on and count increments.
+    await fillByLabel(page, "Name", "Ada");
+    await clickMainButton(page, "Submit");
+    await waitForJsonTestId(
+      page,
+      "submit-meta-json",
+      (json) => json.submitCount === 2 && json.isSubmitSuccessful === true,
+      "valid submit marks isSubmitSuccessful"
+    );
+
+    // Reset clears the submit-meta trio.
+    await clickMainButton(page, "Reset Form");
+    await waitForJsonTestId(
+      page,
+      "submit-meta-json",
+      (json) =>
+        json.isSubmitted === false &&
+        json.isSubmitSuccessful === false &&
+        json.submitCount === 0,
+      "reset clears submit meta"
+    );
+
+    return "submit-meta trio tracks invalid submit, valid submit, and reset";
   });
 }
 
