@@ -203,64 +203,90 @@ const form = useForm({
   validators: { onChange: baseSchema },
   fieldValidators: {
     email: {
-      // Custom async validation for email uniqueness
-      onChangeAsync: async (value) => {
-        if (!value) return { isValid: true };
+      // Async check for email uniqueness — runs after sync validators pass
+      onChangeAsync: async ({ value }) => {
+        if (!value) return undefined;
 
         const response = await fetch(`/api/check-email?email=${value}`);
         const data = await response.json();
 
-        return {
-          isValid: !data.exists,
-          errors: data.exists ? { email: "Email already taken" } : undefined,
-        };
+        // Return an error string, or undefined when valid
+        return data.exists ? "Email already taken" : undefined;
       },
+      onChangeAsyncDebounceMs: 500,
     },
     username: {
-      // Custom sync validation
-      onChange: (value) => ({
-        isValid: /^[a-zA-Z0-9_]+$/.test(value),
-        errors: /^[a-zA-Z0-9_]+$/.test(value)
+      // Sync field-level validation — return error string or undefined
+      onChange: ({ value }) =>
+        /^[a-zA-Z0-9_]+$/.test(value)
           ? undefined
-          : { username: "Only letters, numbers, and underscores allowed" },
-      }),
+          : "Only letters, numbers, and underscores allowed",
     },
   },
 });
 ```
 
+:::note Field validator return shape
+Field-level validators (both sync and async) return a **string** (the error
+message) or **`undefined`** (valid). They do **not** return `{ isValid, errors }`
+— that shape is only used internally by schema libraries. Form-level validators
+in `validators` that target specific fields return `{ fields: { <name>: msg } }`
+from async variants; see the [Async Validation Guide](../guides/async-validation.md).
+:::
+
 ## Async Validation
 
-El Form handles async validation with automatic debouncing:
+El Form runs async validators on change/blur and awaits them on submit, with
+stale-result protection so an in-flight result that arrives after the field value
+has changed is discarded.
+
+Use `onChangeAsync` / `onBlurAsync` / `onSubmitAsync` in `fieldValidators` for
+field-level checks. These return a **string** (error) or **`undefined`** (valid):
 
 ```typescript
-const asyncValidator = async (values: any) => {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  const errors: Record<string, string> = {};
-
-  if (values.username) {
-    const response = await fetch(
-      `/api/validate-username?username=${values.username}`
-    );
-    const data = await response.json();
-
-    if (data.taken) {
-      errors.username = "Username is already taken";
-    }
-  }
-
-  return {
-    errors: Object.keys(errors).length > 0 ? errors : undefined,
-    isValid: Object.keys(errors).length === 0,
-  };
-};
-
 const form = useForm({
-  validators: { onChangeAsync: asyncValidator },
+  defaultValues: { username: "" },
+  fieldValidators: {
+    username: {
+      onChangeAsync: async ({ value }) => {
+        if (!value) return undefined;
+        const res = await fetch(`/api/validate-username?username=${value}`);
+        const { taken } = await res.json();
+        return taken ? "Username is already taken" : undefined;
+      },
+      onChangeAsyncDebounceMs: 500, // debounce while the user types
+    },
+  },
 });
 ```
+
+For a form-level async submit check, use `validators.onSubmitAsync`. Return
+`{ fields: { <name>: msg } }` to attach per-field errors:
+
+```typescript
+const form = useForm({
+  defaultValues: { email: "" },
+  validators: {
+    onSubmitAsync: async ({ value }) => {
+      const res = await fetch("/api/check-availability", {
+        method: "POST",
+        body: JSON.stringify(value),
+      });
+      const { emailTaken } = await res.json();
+      if (emailTaken) {
+        return { fields: { email: "That email is already registered" } };
+      }
+    },
+  },
+});
+```
+
+**Submission is blocked** while async validators run — `submit()`,
+`handleSubmit`, and `trigger()` all `await` the result and a failing async rule
+prevents the submit handler from being called.
+
+For a deep dive, including `asyncAlways` and per-event debounce options, see the
+[Async Validation Guide](../guides/async-validation.md).
 
 ## Validation State
 

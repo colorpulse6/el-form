@@ -14,6 +14,27 @@ All notable changes to the el-form project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Fixed
+
+### 🐞 Bug Fix — async validators now actually run (`el-form-react-hooks`)
+
+- **`onChangeAsync` / `onBlurAsync` / `onSubmitAsync` (field- and form-level) were
+  silent no-ops.** The hooks layer never dispatched an async validation event, so
+  every async validator — including `asyncDebounceMs` / `*AsyncDebounceMs`
+  debounce config and the `asyncAlways` flag — had zero effect. They now run:
+  - Sync validators fire first (instant feedback); async validators run only if
+    sync passes, unless `asyncAlways: true` is set on that config.
+  - Change/blur async is **non-blocking** — the async result updates the UI when
+    it settles, with stale-result protection so superseded in-flight results are
+    discarded.
+  - `submit()` / `handleSubmit` / `trigger()` **await** async validation; a
+    failing async rule blocks submission.
+  - Form-level `validators.onSubmitAsync` runs on submit and can return
+    `{ fields: { <name>: msg } }` to attach per-field errors.
+- **Behavior change:** forms that configured async validators will now surface
+  async errors and can gate submission where they previously passed silently.
+- See the updated [Async Validation Guide](./guides/async-validation.md).
+
 ## [3.15.0] - 2026-06-09
 
 Released: `el-form-react-hooks@3.15.0`, `el-form-react-components@4.7.2`,

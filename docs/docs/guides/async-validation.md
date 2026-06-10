@@ -109,6 +109,69 @@ fieldValidators: {
 }
 ```
 
+## Execution order and `asyncAlways`
+
+By default, async validators only run when all **sync** validators for that
+field pass. This avoids a network round-trip while a format error is still on
+screen:
+
+```
+sync validator → passes → async validator runs
+sync validator → fails  → async validator skipped (sync error shown)
+```
+
+Set `asyncAlways: true` on a field validator config to always run async,
+regardless of sync errors:
+
+```typescript
+fieldValidators: {
+  email: {
+    onChange: ({ value }) =>
+      value.includes("@") ? undefined : "Invalid email format",
+    onChangeAsync: async ({ value }) => {
+      const res = await fetch(`/api/check-email?email=${value}`);
+      const { exists } = await res.json();
+      return exists ? "Email already taken" : undefined;
+    },
+    asyncAlways: true, // run async even if sync fails
+    asyncDebounceMs: 500,
+  },
+}
+```
+
+## Async validation and form submission
+
+`submit()`, `handleSubmit`, and `trigger()` **await all async validators** before
+proceeding. A failing async rule blocks the submit handler — the data is never
+passed to `onSubmit` until every async check passes. Change/blur async validation
+is **non-blocking** — the sync error (if any) appears instantly and the async
+result updates the UI when it settles.
+
+## Form-level async submit validation
+
+Use `validators.onSubmitAsync` for async checks that span multiple fields.
+Return `{ fields: { <fieldName>: errorMessage } }` to attach per-field errors,
+or `undefined` to pass:
+
+```typescript
+const form = useForm({
+  defaultValues: { email: "", username: "" },
+  validators: {
+    onSubmitAsync: async ({ value }) => {
+      const res = await fetch("/api/check-availability", {
+        method: "POST",
+        body: JSON.stringify(value),
+      });
+      const { emailTaken, usernameTaken } = await res.json();
+      const fields: Record<string, string> = {};
+      if (emailTaken) fields.email = "Email already registered";
+      if (usernameTaken) fields.username = "Username already taken";
+      if (Object.keys(fields).length) return { fields };
+    },
+  },
+});
+```
+
 ## Combining with schema validation
 
 Async validators run alongside your schema. Use the schema for shape/format and
