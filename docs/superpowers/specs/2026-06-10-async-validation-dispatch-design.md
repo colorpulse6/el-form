@@ -52,7 +52,14 @@ if ((syncResult.isValid || hasAsyncAlways(field)) && validationManager.hasAsyncV
   validationManager.validateFieldAsync(field, value, latestValues, eventType).then((asyncResult) => {
     // stale guard: only apply if the field value hasn't changed since
     if (getNestedValue(formStateRef.current.values, name) !== value) return;
-    if (!asyncResult.isValid) setFormState((prev) => ({ ...prev, errors: { ...prev.errors, ...asyncResult.errors }, isValid: false }));
+    // clear this async pass's owned errors (field + form), re-apply the result,
+    // recompute validity — so an async error CLEARS when the field becomes async-valid:
+    setFormState((prev) => {
+      const errors: any = { ...prev.errors };
+      if (syncResult.isValid) { delete errors[field]; delete errors.form; } // only clear what async owns (preserve sync error under asyncAlways)
+      Object.assign(errors, asyncResult.errors);
+      return { ...prev, errors, isValid: Object.values(errors).every((e) => !e) };
+    });
   });
 }
 ```
