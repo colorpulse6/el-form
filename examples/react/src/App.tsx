@@ -22,6 +22,9 @@ import { FieldArrayLab } from "./forms/coverage/FieldArrayLab";
 import { ValidationAdaptersLab } from "./forms/coverage/ValidationAdaptersLab";
 import { FileValidatorsLab } from "./forms/coverage/FileValidatorsLab";
 import { ComponentLab } from "./forms/coverage/ComponentLab";
+import { UseWatchLab } from "./forms/coverage/UseWatchLab";
+import { ReactiveValuesLab } from "./forms/coverage/ReactiveValuesLab";
+import { SubmitMetaLab } from "./forms/coverage/SubmitMetaLab";
 
 function App() {
   const [currentTest, setCurrentTest] = useState<TestId>("basic-validation");
@@ -68,6 +71,12 @@ function App() {
         return <FileValidatorsLab />;
       case "component-lab":
         return <ComponentLab />;
+      case "use-watch-lab":
+        return <UseWatchLab />;
+      case "reactive-values-lab":
+        return <ReactiveValuesLab />;
+      case "submit-meta-lab":
+        return <SubmitMetaLab />;
       default:
         return <BasicValidationTest />;
     }

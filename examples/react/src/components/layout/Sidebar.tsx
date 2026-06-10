@@ -20,7 +20,10 @@ export type TestId =
   | "field-array-lab"
   | "validation-adapters-lab"
   | "file-validators-lab"
-  | "component-lab";
+  | "component-lab"
+  | "use-watch-lab"
+  | "reactive-values-lab"
+  | "submit-meta-lab";
 
 interface NavItem {
   id: TestId;
@@ -106,6 +109,9 @@ const navigation: NavCategory[] = [
       { id: "validation-adapters-lab", label: "Validation Adapters Lab" },
       { id: "file-validators-lab", label: "File Validators Lab" },
       { id: "component-lab", label: "Component Lab" },
+      { id: "use-watch-lab", label: "useWatch Lab" },
+      { id: "reactive-values-lab", label: "Reactive Values Lab" },
+      { id: "submit-meta-lab", label: "Submit Meta Lab" },
     ],
   },
 ];
