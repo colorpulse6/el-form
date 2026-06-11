@@ -58,23 +58,67 @@ export function createErrorManagementManager<T extends Record<string, any>>(
         const { isValid, errors } = await validationManager.validateForm(
           formState.values
         );
-        setFormState((prev) => ({ ...prev, errors, isValid }));
-        return isValid;
+
+        // Blocking async pass: only runs when sync validation passed.
+        let finalValid = isValid;
+        let finalErrors = errors;
+        if (finalValid) {
+          const asyncResult = await validationManager.validateFormAsync(
+            formState.values,
+            "onSubmit"
+          );
+          if (!asyncResult.isValid) {
+            finalValid = false;
+            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          }
+        }
+
+        setFormState((prev) => ({
+          ...prev,
+          errors: finalErrors,
+          isValid: finalValid,
+        }));
+        return finalValid;
       }
 
       // Validate multiple fields: merge each field's errors, clearing ones now valid
       if (Array.isArray(nameOrNames)) {
         const results = await Promise.all(
-          nameOrNames.map((name) =>
-            validationManager
-              .validateField(
-                name,
-                formState.values[name],
-                formState.values,
-                "onSubmit"
-              )
-              .then((r) => ({ name, r }))
-          )
+          nameOrNames.map(async (name) => {
+            const r = await validationManager.validateField(
+              name,
+              formState.values[name],
+              formState.values,
+              "onSubmit"
+            );
+            // Blocking async pass per field: run all three async event keys.
+            if (r.isValid) {
+              let asyncValid = true;
+              const asyncErrors = { ...r.errors };
+              for (const ev of ["onChange", "onBlur", "onSubmit"] as const) {
+                const asyncR = await validationManager.validateFieldAsync(
+                  name,
+                  formState.values[name],
+                  formState.values,
+                  ev
+                );
+                if (!asyncR.isValid) {
+                  asyncValid = false;
+                  Object.assign(asyncErrors, asyncR.errors);
+                }
+              }
+              if (!asyncValid) {
+                return {
+                  name,
+                  r: {
+                    isValid: false,
+                    errors: asyncErrors,
+                  },
+                };
+              }
+            }
+            return { name, r };
+          })
         );
         setFormState((prev) => {
           const errors: Record<string, string | undefined> = { ...prev.errors };
@@ -98,9 +142,28 @@ export function createErrorManagementManager<T extends Record<string, any>>(
         formState.values,
         "onSubmit"
       );
+
+      // Blocking async pass: run all three async event keys.
+      let finalValid = result.isValid;
+      let finalErrors = result.errors;
+      if (finalValid) {
+        for (const ev of ["onChange", "onBlur", "onSubmit"] as const) {
+          const asyncResult = await validationManager.validateFieldAsync(
+            nameOrNames,
+            formState.values[nameOrNames],
+            formState.values,
+            ev
+          );
+          if (!asyncResult.isValid) {
+            finalValid = false;
+            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          }
+        }
+      }
+
       setFormState((prev) => {
         const errors: Record<string, string | undefined> = { ...prev.errors };
-        if (!result.isValid) Object.assign(errors, result.errors);
+        if (!finalValid) Object.assign(errors, finalErrors);
         else delete errors[String(nameOrNames)];
         return {
           ...prev,
@@ -108,7 +171,7 @@ export function createErrorManagementManager<T extends Record<string, any>>(
           isValid: Object.keys(errors).length === 0,
         };
       });
-      return result.isValid;
+      return finalValid;
     }) as UseFormReturn<T>["trigger"],
   };
 }

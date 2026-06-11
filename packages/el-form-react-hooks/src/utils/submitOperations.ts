@@ -62,16 +62,32 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
           formState.values
         );
 
+        // Blocking async validation pass: only runs when sync validation passed
+        // (keeps it consistent with the onChange/onBlur gate). A failing async
+        // rule blocks submission and merges its errors into the written state.
+        let finalValid = isValid;
+        let finalErrors = errors;
+        if (finalValid) {
+          const asyncResult = await validationManager.validateFormAsync(
+            formState.values,
+            "onSubmit"
+          );
+          if (!asyncResult.isValid) {
+            finalValid = false;
+            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          }
+        }
+
         setFormState((prev) => ({
           ...prev,
-          errors,
-          isValid,
+          errors: finalErrors,
+          isValid: finalValid,
           isSubmitting: false,
           // Mark all fields with errors as touched so they display
-          touched: !isValid
+          touched: !finalValid
             ? {
                 ...prev.touched,
-                ...Object.keys(errors).reduce(
+                ...Object.keys(finalErrors).reduce(
                   (acc, field) => ({ ...acc, [field]: true }),
                   {}
                 ),
@@ -79,19 +95,19 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
             : prev.touched,
         }));
 
-        if (isValid) {
+        if (finalValid) {
           await onValid(formState.values as T);
           setFormState((prev) => ({ ...prev, isSubmitSuccessful: true }));
         } else {
           if (shouldFocusError !== false) {
             const el = findFirstErrorElement(
-              errors as Record<string, any>,
+              finalErrors as Record<string, any>,
               (name) => fieldRefs.current.get(name as keyof T)
             );
             el?.focus();
           }
           if (onError) {
-            onError(errors);
+            onError(finalErrors);
           }
         }
       };
@@ -118,13 +134,27 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
           formState.values
         );
 
+        // Blocking async validation pass: only runs when sync validation passed.
+        let finalValid = isValid;
+        let finalErrors = errors;
+        if (finalValid) {
+          const asyncResult = await validationManager.validateFormAsync(
+            formState.values,
+            "onSubmit"
+          );
+          if (!asyncResult.isValid) {
+            finalValid = false;
+            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          }
+        }
+
         setFormState((prev) => ({
           ...prev,
-          errors,
-          isValid,
+          errors: finalErrors,
+          isValid: finalValid,
         }));
 
-        if (isValid) {
+        if (finalValid) {
           await onSubmit(formState.values as T);
           setFormState((prev) => ({ ...prev, isSubmitSuccessful: true }));
         }
@@ -151,13 +181,27 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
           formState.values
         );
 
+        // Blocking async validation pass: only runs when sync validation passed.
+        let finalValid = isValid;
+        let finalErrors = errors;
+        if (finalValid) {
+          const asyncResult = await validationManager.validateFormAsync(
+            formState.values,
+            "onSubmit"
+          );
+          if (!asyncResult.isValid) {
+            finalValid = false;
+            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          }
+        }
+
         setFormState((prev) => ({
           ...prev,
-          errors,
-          isValid,
+          errors: finalErrors,
+          isValid: finalValid,
         }));
 
-        if (isValid) {
+        if (finalValid) {
           // If onSubmit is provided, call it
           if (onSubmit) {
             await onSubmit(formState.values as T);
@@ -165,7 +209,7 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
           setFormState((prev) => ({ ...prev, isSubmitSuccessful: true }));
           return { success: true, data: formState.values as T };
         } else {
-          return { success: false, errors };
+          return { success: false, errors: finalErrors };
         }
       } finally {
         setFormState((prev) => ({ ...prev, isSubmitting: false }));

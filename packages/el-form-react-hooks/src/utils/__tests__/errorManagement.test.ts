@@ -31,6 +31,8 @@ const createValidationManager = (
   ({
     validateField: vi.fn(async () => ({ isValid: true, errors: {} })),
     validateForm: vi.fn(async () => ({ isValid: true, errors: {} })),
+    validateFieldAsync: vi.fn(async () => ({ isValid: true, errors: {} })),
+    validateFormAsync: vi.fn(async () => ({ isValid: true, errors: {} })),
     shouldValidate: vi.fn(() => true),
     ...overrides,
   }) as ValidationManager<TestValues>;
