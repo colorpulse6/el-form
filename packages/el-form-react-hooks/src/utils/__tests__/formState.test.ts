@@ -29,7 +29,11 @@ function createStateHarness<T extends Record<string, any>>(
 const createManager = (
   initial: Omit<
     FormState<TestValues>,
-    "isSubmitted" | "isSubmitSuccessful" | "submitCount"
+    | "isSubmitted"
+    | "isSubmitSuccessful"
+    | "submitCount"
+    | "isValidating"
+    | "dirtyFields"
   >,
   defaultValues: Partial<TestValues> = initial.values
 ) => {
@@ -37,6 +41,8 @@ const createManager = (
     isSubmitted: false,
     isSubmitSuccessful: false,
     submitCount: 0,
+    isValidating: false,
+    dirtyFields: {},
     ...initial,
   };
   const harness = createStateHarness(initialState);
@@ -138,6 +144,8 @@ describe("createFormStateManager", () => {
       isSubmitted: false,
       isSubmitSuccessful: false,
       submitCount: 0,
+      isValidating: false,
+      dirtyFields: {},
     });
     expect(dirtyManager.dirtyFieldsRef.current.size).toBe(0);
   });

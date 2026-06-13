@@ -23,6 +23,11 @@ export interface FormState<T extends Record<string, any>> {
   isSubmitSuccessful: boolean;
   /** Number of submit attempts. Reset by `reset()`. */
   submitCount: number;
+  /** True while any async validation is in flight. Reset by `reset()`. */
+  isValidating: boolean;
+  /** Per-field dirty map (flat, path-keyed) — the reactive twin of
+   *  `getDirtyFields()`. Reset by `reset()`. */
+  dirtyFields: Partial<Record<string, boolean>>;
 }
 
 export interface FormSnapshot<T extends Record<string, any>> {

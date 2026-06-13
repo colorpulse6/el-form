@@ -62,6 +62,8 @@ export function useForm<T extends Record<string, any>>(
     isSubmitted: false,
     isSubmitSuccessful: false,
     submitCount: 0,
+    isValidating: false,
+    dirtyFields: {},
   });
 
   // Separate state for file previews
@@ -565,6 +567,8 @@ export function useForm<T extends Record<string, any>>(
         isSubmitted: false,
         isSubmitSuccessful: false,
         submitCount: 0,
+        isValidating: false,
+        dirtyFields: {},
       });
 
       // Clear file previews on reset

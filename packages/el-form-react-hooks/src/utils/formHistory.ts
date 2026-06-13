@@ -133,6 +133,8 @@ export function createFormHistoryManager<T extends Record<string, any>>(
         isSubmitted: false,
         isSubmitSuccessful: false,
         submitCount: 0,
+        isValidating: false,
+        dirtyFields: {},
       });
     },
 
