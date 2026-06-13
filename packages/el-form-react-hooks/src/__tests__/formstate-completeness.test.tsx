@@ -46,6 +46,7 @@ function DirtyDemo() {
       <span data-testid="isDirty">{String(formState.isDirty)}</span>
       <button onClick={() => addArrayItem("tags", "a")}>addTag</button>
       <button onClick={() => form.reset()}>resetDirty</button>
+      <button onClick={() => form.reset({ keepDirty: true })}>resetKeepDirty</button>
     </div>
   );
 }
@@ -74,5 +75,14 @@ describe("reactive dirtyFields", () => {
     fireEvent.click(screen.getByText("resetDirty"));
     expect(screen.getByTestId("dirtyFields").textContent).toBe("{}");
     expect(screen.getByTestId("isDirty").textContent).toBe("false");
+  });
+
+  it("reset({ keepDirty: true }) keeps dirtyFields populated and consistent with isDirty", () => {
+    render(<DirtyDemo />);
+    fireEvent.change(screen.getByLabelText("name"), { target: { value: "x" } });
+    expect(JSON.parse(screen.getByTestId("dirtyFields").textContent!)).toEqual({ name: true });
+    fireEvent.click(screen.getByText("resetKeepDirty"));
+    expect(JSON.parse(screen.getByTestId("dirtyFields").textContent!)).toEqual({ name: true });
+    expect(screen.getByTestId("isDirty").textContent).toBe("true");
   });
 });

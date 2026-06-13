@@ -35,6 +35,14 @@ export interface DirtyStateManager<T extends Record<string, any>> {
 export function createDirtyStateManager<T extends Record<string, any>>(
   dirtyFieldsRef: React.MutableRefObject<Set<string>>
 ): DirtyStateManager<T> {
+  // Module-private helper: snapshot the dirty Set as a `{ path: true }` record.
+  // Shared by `toRecord` and `statePatch` to avoid duplicating the loop.
+  const snapshot = (): Record<string, boolean> => {
+    const out: Record<string, boolean> = {};
+    dirtyFieldsRef.current.forEach((p) => (out[p] = true));
+    return out;
+  };
+
   return {
     dirtyFieldsRef,
 
@@ -105,25 +113,14 @@ export function createDirtyStateManager<T extends Record<string, any>>(
     },
 
     // Snapshot the dirty Set as a `{ path: true }` record
-    toRecord: (): Record<string, boolean> => {
-      const out: Record<string, boolean> = {};
-      dirtyFieldsRef.current.forEach((path) => {
-        out[path] = true;
-      });
-      return out;
-    },
+    toRecord: snapshot,
 
     // Paired write helper: keep `isDirty` and `dirtyFields` consistent by
-    // deriving both from the same dirty Set in a single call. Implemented
-    // self-contained (does not call `toRecord`) to avoid `this`-binding
-    // issues on this object literal.
+    // deriving both from the same dirty Set in a single call. Shares the
+    // module-private `snapshot` helper to avoid duplicating the loop.
     statePatch: () => ({
       isDirty: dirtyFieldsRef.current.size > 0,
-      dirtyFields: (() => {
-        const out: Record<string, boolean> = {};
-        dirtyFieldsRef.current.forEach((p) => (out[p] = true));
-        return out;
-      })(),
+      dirtyFields: snapshot(),
     }),
   };
 }

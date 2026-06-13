@@ -557,18 +557,21 @@ export function useForm<T extends Record<string, any>>(
         dirtyManager.clearDirtyState();
       }
 
+      const dirtyPatch = options?.keepDirty
+        ? dirtyManager.statePatch()
+        : { isDirty: false, dirtyFields: {} };
+
       setFormState({
         values: newValues,
         errors: options?.keepErrors ? formState.errors : {},
         touched: options?.keepTouched ? formState.touched : {},
         isSubmitting: false,
         isValid: false,
-        isDirty: options?.keepDirty ? formState.isDirty : false,
         isSubmitted: false,
         isSubmitSuccessful: false,
         submitCount: 0,
         isValidating: false,
-        dirtyFields: {},
+        ...dirtyPatch,
       });
 
       // Clear file previews on reset
