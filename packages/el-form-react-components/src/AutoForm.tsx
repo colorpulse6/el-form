@@ -7,7 +7,6 @@ import {
   AutoFormFieldConfig,
   AutoFormFieldProps,
   AutoFormErrorProps,
-  GridColumns,
   ComponentMap,
 } from "./types";
 import { z } from "zod"; // Classic import for parsing conveniences
@@ -23,6 +22,7 @@ import {
 } from "el-form-core";
 import { FormSwitch, FormCase } from "./Form";
 import { fieldAriaProps } from "./fieldAria";
+import { cx } from "./utils/cx";
 
 // Zod helpers now come from el-form-core (Zod 4 only)
 
@@ -43,9 +43,9 @@ const DefaultErrorComponent: React.FC<AutoFormErrorProps> = ({
       <ul>
         {errorEntries.map(([field, error]) => (
           <li key={field}>
-            <span style={{ color: "#ef4444", marginRight: "0.5rem" }}>•</span>
-            <span style={{ textTransform: "capitalize" }}>{field}:</span>
-            <span style={{ marginLeft: "0.25rem" }}>{String(error)}</span>
+            <span className="el-form-error-summary-bullet">•</span>
+            <span className="el-form-error-summary-field">{field}:</span>
+            <span className="el-form-error-summary-value">{String(error)}</span>
           </li>
         ))}
       </ul>
@@ -77,7 +77,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
 
   if (type === "checkbox") {
     return (
-      <div className={className || "flex items-center gap-x-3"}>
+      <div className={className || "el-form-checkbox-row"}>
         <input
           id={fieldId}
           name={name}
@@ -93,7 +93,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
         />
         <label
           htmlFor={fieldId}
-          className={labelClassName || "text-sm font-medium text-gray-800"}
+          className={labelClassName || "el-form-label"}
         >
           {label}
         </label>
@@ -102,9 +102,10 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
   }
 
   const hasError = touched && error;
-  const baseInputClasses = inputClassName || "el-form-input";
-  const errorInputClasses = hasError ? "el-form-input-error" : "";
-  const inputClasses = `${baseInputClasses} ${errorInputClasses}`.trim();
+  const inputClasses = cx(
+    inputClassName || "el-form-input",
+    hasError && "el-form-input-error"
+  );
 
   return (
     <div className={className || "el-form-field"}>
@@ -173,7 +174,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           className={errorClassName || "el-form-error-message"}
         >
           <span>⚠️</span>
-          <span className="ml-1">{error}</span>
+          <span>{error}</span>
         </div>
       )}
     </div>
@@ -254,7 +255,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
       const fieldValue = arrayValue[itemIndex] || "";
 
       return (
-        <div key={itemPath} className="space-y-1">
+        <div key={itemPath} className="el-form-field">
           <input
             type={nestedFieldConfig.type || "text"}
             value={fieldValue}
@@ -268,7 +269,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
               onValueChange(itemPath, newValue);
             }}
             placeholder={nestedFieldConfig.placeholder || "Enter value"}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="el-form-input"
           />
         </div>
       );
@@ -295,11 +296,9 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
     }
 
     return (
-      <div key={fieldPath} className="space-y-1">
+      <div key={fieldPath} className="el-form-field">
         {nestedFieldConfig.label && (
-          <label className="block text-sm font-medium text-gray-700">
-            {nestedFieldConfig.label}
-          </label>
+          <label className="el-form-label">{nestedFieldConfig.label}</label>
         )}
         <input
           type={nestedFieldConfig.type || "text"}
@@ -314,15 +313,15 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
             onValueChange(fieldPath, newValue);
           }}
           placeholder={nestedFieldConfig.placeholder}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="el-form-input"
         />
       </div>
     );
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="el-form-array">
+      <div className="el-form-array-header">
         <label className="el-form-label">
           {fieldConfig.label || fieldConfig.name}
         </label>
@@ -335,14 +334,14 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="el-form-array">
         {arrayValue.map((_, index) => {
           const itemPath = `${path}[${index}]`;
 
           return (
             <div key={index} className="el-form-array-item">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="text-sm font-semibold text-gray-800">
+              <div className="el-form-array-header">
+                <h4 className="el-form-label">
                   {fieldConfig.label || fieldConfig.name} #{index + 1}
                 </h4>
                 <button
@@ -354,7 +353,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="el-form-object-grid">
                 {fieldConfig.fields?.map((nestedField) =>
                   renderNestedField(nestedField, index, itemPath)
                 )}
@@ -365,8 +364,8 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
       </div>
 
       {arrayValue.length === 0 && (
-        <div className="text-gray-500 text-sm italic text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-          <div className="text-2xl mb-2">📝</div>
+        <div className="el-form-array-empty">
+          <div>📝</div>
           No {fieldConfig.label?.toLowerCase() || fieldConfig.name} added yet.
           <br />
           Click "Add" to create your first entry.
@@ -563,7 +562,7 @@ const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
   return (
     <div className="discriminated-union-field">
       {/* Render the discriminator selector */}
-      <div className="mb-4">
+      <div className="el-form-field">
         <DiscriminatorComponent
           name={fieldConfig.discriminatorField}
           label={fieldConfig.label || fieldConfig.name}
@@ -583,7 +582,7 @@ const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
               const optionFields =
                 fieldConfig.unionOptions![option.value] || [];
               return (
-                <div className="space-y-4">
+                <div className="el-form-array">
                   {optionFields
                     .filter(
                       (field) => field.name !== fieldConfig.discriminatorField
@@ -728,47 +727,14 @@ export function AutoForm<T extends Record<string, any>>({
   const renderField = (fieldConfig: AutoFormFieldConfig) => {
     const fieldName = fieldConfig.name as keyof T;
 
-    // Map colSpan to Tailwind classes
-    const getColSpanClass = (colSpan?: GridColumns) => {
-      const spanMap: Record<GridColumns, string> = {
-        1: "col-span-1",
-        2: "col-span-2",
-        3: "col-span-3",
-        4: "col-span-4",
-        5: "col-span-5",
-        6: "col-span-6",
-        7: "col-span-7",
-        8: "col-span-8",
-        9: "col-span-9",
-        10: "col-span-10",
-        11: "col-span-11",
-        12: "col-span-12",
-      };
-      return spanMap[colSpan || 1];
-    };
-
-    const getFlexClass = (colSpan?: GridColumns) => {
-      const flexMap: Record<GridColumns, string> = {
-        1: "w-1/12",
-        2: "w-2/12",
-        3: "w-3/12",
-        4: "w-4/12",
-        5: "w-5/12",
-        6: "w-6/12",
-        7: "w-7/12",
-        8: "w-8/12",
-        9: "w-9/12",
-        10: "w-10/12",
-        11: "w-11/12",
-        12: "w-full",
-      };
-      return flexMap[colSpan || 12];
-    };
-
-    const fieldContainerClasses =
+    // Map colSpan to an inline layout style: grid → gridColumn span, flex → flexBasis
+    const fieldContainerStyle: React.CSSProperties =
       layout === "grid"
-        ? getColSpanClass(fieldConfig.colSpan)
-        : `flex-none ${getFlexClass(fieldConfig.colSpan)}`;
+        ? { gridColumn: `span ${fieldConfig.colSpan || 1}` }
+        : {
+            flexBasis: `${((fieldConfig.colSpan || 12) / 12) * 100}%`,
+            flexShrink: 0,
+          };
 
     // Handle array fields
     if (fieldConfig.type === "array") {
@@ -776,7 +742,7 @@ export function AutoForm<T extends Record<string, any>>({
       const fieldValue = "value" in fieldProps ? fieldProps.value : [];
       const arrayValue = Array.isArray(fieldValue) ? fieldValue : [];
       return (
-        <div key={fieldConfig.name} className={fieldContainerClasses}>
+        <div key={fieldConfig.name} style={fieldContainerStyle}>
           <ArrayField
             fieldConfig={fieldConfig}
             value={arrayValue}
@@ -794,7 +760,7 @@ export function AutoForm<T extends Record<string, any>>({
     // Handle discriminated union fields
     if (fieldConfig.type === "discriminatedUnion") {
       return (
-        <div key={fieldConfig.name} className={fieldContainerClasses}>
+        <div key={fieldConfig.name} style={fieldContainerStyle}>
           <DiscriminatedUnionField
             fieldConfig={fieldConfig}
             formApi={formApi}
@@ -827,7 +793,7 @@ export function AutoForm<T extends Record<string, any>>({
       DefaultField;
 
     return (
-      <div key={fieldConfig.name} className={fieldContainerClasses}>
+      <div key={fieldConfig.name} style={fieldContainerStyle}>
         <FieldComponent
           name={fieldConfig.name}
           label={fieldConfig.label || fieldConfig.name}
@@ -850,29 +816,15 @@ export function AutoForm<T extends Record<string, any>>({
     );
   };
 
-  // Map columns to Tailwind grid classes
-  const getGridClass = (cols: GridColumns) => {
-    const gridMap: Record<GridColumns, string> = {
-      1: "grid-cols-1",
-      2: "grid-cols-2",
-      3: "grid-cols-3",
-      4: "grid-cols-4",
-      5: "grid-cols-5",
-      6: "grid-cols-6",
-      7: "grid-cols-7",
-      8: "grid-cols-8",
-      9: "grid-cols-9",
-      10: "grid-cols-10",
-      11: "grid-cols-11",
-      12: "grid-cols-12",
-    };
-    return gridMap[cols];
-  };
+  const containerClasses = cx(
+    "el-form-layout",
+    layout === "flex" ? "el-form-layout--flex" : "el-form-layout--grid"
+  );
 
-  const containerClasses =
+  const containerStyle: React.CSSProperties | undefined =
     layout === "grid"
-      ? `grid ${getGridClass(columns)} gap-4`
-      : `flex flex-wrap gap-4`;
+      ? ({ ["--el-form-columns"]: String(columns) } as React.CSSProperties)
+      : undefined;
 
   // Default form rendering
   const defaultForm = (
@@ -883,7 +835,6 @@ export function AutoForm<T extends Record<string, any>>({
           onError ||
             ((errors) => console.error("Form validation errors:", errors))
         )}
-        className="w-full"
       >
         {/* Error Summary Component */}
         <ErrorComponent
@@ -891,7 +842,7 @@ export function AutoForm<T extends Record<string, any>>({
           touched={formState.touched as Record<string, boolean>}
         />
 
-        <div className={containerClasses}>
+        <div className={containerClasses} style={containerStyle}>
           {isRootDiscriminatedUnion
             ? // Special handling for root-level discriminated unions
               (() => {
@@ -941,12 +892,12 @@ export function AutoForm<T extends Record<string, any>>({
               fieldsToRender.map(renderField)}
 
           <div
-            className={`
-            flex gap-4 mt-8
-            ${layout === "grid" ? "col-span-full" : "w-full"}
-          `
-              .trim()
-              .replace(/\s+/g, " ")}
+            className="el-form-actions"
+            style={
+              layout === "grid"
+                ? { gridColumn: "1 / -1" }
+                : { flexBasis: "100%" }
+            }
           >
             <button
               type="submit"
@@ -956,7 +907,7 @@ export function AutoForm<T extends Record<string, any>>({
             >
               {formState.isSubmitting ? (
                 <>
-                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                  <span className="el-form-spinner"></span>
                   Submitting...
                 </>
               ) : (
@@ -988,7 +939,6 @@ export function AutoForm<T extends Record<string, any>>({
             onError ||
               ((errors) => console.error("Form validation errors:", errors))
           )}
-          className="w-full"
         >
           {/* Error Summary Component */}
           <ErrorComponent
@@ -998,7 +948,7 @@ export function AutoForm<T extends Record<string, any>>({
 
           {children(formApi)}
 
-          <div className={containerClasses}>
+          <div className={containerClasses} style={containerStyle}>
             {fieldsToRender.map(renderField)}
           </div>
         </form>

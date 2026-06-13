@@ -83,6 +83,19 @@
     margin-top: 0.5rem; /* space-y-2 */
   }
 
+  .el-form-error-summary-bullet {
+    color: var(--el-form-error);
+    margin-right: 0.5rem;
+  }
+
+  .el-form-error-summary-field {
+    text-transform: capitalize;
+  }
+
+  .el-form-error-summary-value {
+    margin-left: 0.25rem;
+  }
+
   /* ── Field wrapper + label ─────────────────────────────────────────────── */
   .el-form-field > * + * {
     margin-top: 0.5rem; /* space-y-2 */
@@ -161,6 +174,7 @@
     margin-top: 0.25rem;
     display: flex;
     align-items: center;
+    gap: 0.25rem;
   }
 
   /* ── Checkbox ──────────────────────────────────────────────────────────── */
@@ -339,6 +353,14 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--el-form-field-gap);
+  }
+
+  /* Responsive grid for nested object-array item fields: collapses to 1
+     column when the container is narrow, expands to 2+ when wide. */
+  .el-form-object-grid {
+    display: grid;
+    gap: var(--el-form-field-gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   }
 
   .el-form-actions {
