@@ -2,6 +2,7 @@ import { useFormContext, useField } from "el-form-react-hooks";
 import type { Path } from "el-form-react-hooks";
 import type { BaseFieldProps } from "./types";
 import { fieldAriaProps } from "./fieldAria";
+import { cx } from "./utils/cx";
 
 export type { BaseFieldProps };
 
@@ -42,25 +43,16 @@ export function TextField<T extends Record<string, any>, Name extends Path<T>>({
   const registration = form.form.register(name) as Record<string, any>;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
-  const inputClasses = `
-    w-full px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-500
-    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-    ${
-      touched && error
-        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-        : "border-gray-300"
-    } ${className}
-  `
-    .trim()
-    .replace(/\s+/g, " ");
+  const inputClasses = cx(
+    "el-form-input",
+    touched && error && "el-form-input-error",
+    className
+  );
 
   return (
-    <div className="space-y-1">
+    <div className="el-form-field">
       {label && (
-        <label
-          htmlFor={String(name)}
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor={String(name)} className="el-form-label">
           {label}
         </label>
       )}
@@ -77,7 +69,7 @@ export function TextField<T extends Record<string, any>, Name extends Path<T>>({
         className={inputClasses}
       />
       {touched && error && (
-        <div id={aria.errorId} role="alert" className="text-red-500 text-xs mt-1">
+        <div id={aria.errorId} role="alert" className="el-form-error-message">
           {error}
         </div>
       )}
@@ -104,25 +96,16 @@ export function TextareaField<
   const registration = form.form.register(name) as Record<string, any>;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
-  const textareaClasses = `
-    w-full px-3 py-2 border rounded-md text-sm text-gray-900 placeholder-gray-500
-    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none
-    ${
-      touched && error
-        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-        : "border-gray-300"
-    } ${className}
-  `
-    .trim()
-    .replace(/\s+/g, " ");
+  const textareaClasses = cx(
+    "el-form-textarea",
+    touched && error && "el-form-input-error",
+    className
+  );
 
   return (
-    <div className="space-y-1">
+    <div className="el-form-field">
       {label && (
-        <label
-          htmlFor={String(name)}
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor={String(name)} className="el-form-label">
           {label}
         </label>
       )}
@@ -139,7 +122,7 @@ export function TextareaField<
         className={textareaClasses}
       />
       {touched && error && (
-        <div id={aria.errorId} role="alert" className="text-red-500 text-xs mt-1">
+        <div id={aria.errorId} role="alert" className="el-form-error-message">
           {error}
         </div>
       )}
@@ -163,25 +146,16 @@ export function SelectField<T extends Record<string, any>, Name extends Path<T>>
   const registration = form.form.register(name) as Record<string, any>;
   const aria = fieldAriaProps({ fieldId: String(name), error, touched, required });
 
-  const selectClasses = `
-    w-full px-3 py-2 border rounded-md text-sm text-gray-900
-    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-    ${
-      touched && error
-        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-        : "border-gray-300"
-    } ${className}
-  `
-    .trim()
-    .replace(/\s+/g, " ");
+  const selectClasses = cx(
+    "el-form-select",
+    touched && error && "el-form-input-error",
+    className
+  );
 
   return (
-    <div className="space-y-1">
+    <div className="el-form-field">
       {label && (
-        <label
-          htmlFor={String(name)}
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor={String(name)} className="el-form-label">
           {label}
         </label>
       )}
@@ -207,7 +181,7 @@ export function SelectField<T extends Record<string, any>, Name extends Path<T>>
         ))}
       </select>
       {touched && error && (
-        <div id={aria.errorId} role="alert" className="text-red-500 text-xs mt-1">
+        <div id={aria.errorId} role="alert" className="el-form-error-message">
           {error}
         </div>
       )}
