@@ -202,6 +202,16 @@ export function useForm<T extends Record<string, any>>(
         getNestedValue(formStateRef.current?.values || {}, name) ?? "";
       const isCheckbox = typeof fieldValue === "boolean";
 
+      // Build the latest shouldValidate context (touched + submitted) from the
+      // ref so onChange/onBlur read current state, not a stale render closure.
+      const validationCtx = (fieldPath: string) => ({
+        fieldTouched: !!getNestedValue(
+          formStateRef.current?.touched ?? {},
+          fieldPath
+        ),
+        isSubmitted: !!formStateRef.current?.isSubmitted,
+      });
+
       // Note: File input detection will be done via event.target.type in onChange
 
       const handleFileChange = async (
@@ -270,15 +280,7 @@ export function useForm<T extends Record<string, any>>(
         }
 
         // Run Zod validation if configured
-        if (
-          validationManager.shouldValidate("onChange", {
-            fieldTouched: !!getNestedValue(
-              formStateRef.current?.touched ?? {},
-              name
-            ),
-            isSubmitted: !!formStateRef.current?.isSubmitted,
-          })
-        ) {
+        if (validationManager.shouldValidate("onChange", validationCtx(name))) {
           const validationResult = await validationManager.validateField(
             fieldName,
             value,
@@ -370,13 +372,7 @@ export function useForm<T extends Record<string, any>>(
           // Use extracted validation utility
           const shouldValidateResult = validationManager.shouldValidate(
             "onChange",
-            {
-              fieldTouched: !!getNestedValue(
-                formStateRef.current?.touched ?? {},
-                name
-              ),
-              isSubmitted: !!formStateRef.current?.isSubmitted,
-            }
+            validationCtx(name)
           );
 
           if (shouldValidateResult) {
@@ -450,15 +446,7 @@ export function useForm<T extends Record<string, any>>(
             return { ...prev, touched: newTouched };
           });
 
-          if (
-            validationManager.shouldValidate("onBlur", {
-              fieldTouched: !!getNestedValue(
-                formStateRef.current?.touched ?? {},
-                name
-              ),
-              isSubmitted: !!formStateRef.current?.isSubmitted,
-            })
-          ) {
+          if (validationManager.shouldValidate("onBlur", validationCtx(name))) {
             const currentState = formStateRef.current!;
             const blurValue = currentState.values[fieldName];
             const result = await validationManager.validateField(
