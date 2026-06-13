@@ -48,9 +48,9 @@
   ],
   "scripts": {
     "build": "tsup && pnpm run build:css",
-    "build:css": "pnpm exec tailwindcss -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --minify",
+    "build:css": "pnpm exec lightningcss --minify src/styles.css -o dist/styles.css",
     "dev": "tsup --watch",
-    "dev:css": "pnpm exec tailwindcss -i ./src/styles.css -o ./dist/styles.css -c ./tailwind.config.ts --watch",
+    "dev:css": "pnpm exec lightningcss src/styles.css -o dist/styles.css",
     "test": "pnpm -w -r build && vitest --environment jsdom --run",
     "lint": "eslint \"src/**/*.{ts,tsx}\""
   },
@@ -62,16 +62,12 @@
     "react": ">=16.8.0",
     "zod": "^3.22.0 || ^4.0.0"
   },
-  "peerDependenciesMeta": {
-    "tailwindcss": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.8",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.0.0",
     "jsdom": "^24.0.0",
+    "lightningcss-cli": "^1.32.0",
     "tailwindcss": "^4.1.8",
     "tsup": "^8.0.0",
     "typescript": "^5.8.3",

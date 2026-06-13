@@ -16,6 +16,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] — Added
 
+### ✨ AutoForm theming — Tailwind-free styles, themes, and `classNames` slots — `el-form-react-components`
+
+- **Tailwind-free shipped CSS.** `el-form-react-components/styles.css` is now
+  hand-authored plain CSS, tokenized with `--el-form-*` CSS variables and wrapped
+  in an `@layer el-form`. The package needs **no consumer Tailwind** — themes and
+  overrides work in any project. Standalone field components (`TextField`,
+  `SelectField`, `TextareaField`) and `FormSwitch` are also styled by this CSS.
+- **New `theme` prop on `AutoForm`** — `<AutoForm theme="dark" />`, accepting
+  `"default" | "minimal" | "dark"`. Sets `data-el-form-theme` on the container;
+  the theme variable blocks are bundled in the shipped CSS (no extra import).
+- **New `classNames` slots on `AutoForm`** — a global map to append your own
+  classes (Tailwind utilities or custom CSS) to each element: `container`, `form`,
+  `layout`, `field`, `label`, `input`, `select`, `textarea`, `checkbox`, `error`,
+  `submitButton`, `resetButton`, `actions`, `arrayItem`, `arrayHeader`,
+  `arrayAddButton`, `arrayRemoveButton`. Because base styles live in `@layer
+  el-form`, your unlayered classes win the cascade.
+- **CSS-variable overrides** — fine-tune without a full theme by setting
+  `--el-form-*` tokens (e.g. `--el-form-accent`, `--el-form-radius`,
+  `--el-form-bg`, `--el-form-border`, `--el-form-error`) on a wrapper or `:root`.
+- **Behavior refinement:** the existing per-field className props
+  (`className` / `inputClassName` / `labelClassName` / `errorClassName`, set via
+  the `fields` config) now **append** over the base `.el-form-*` class instead of
+  replacing it — the base class is always present beneath your overrides.
+- All additive. See the new [Styling & Themes guide](./guides/styling-and-themes.md).
+
 ### ✨ New `formState` fields + validation-timing options — `el-form-react-hooks`
 
 - **`formState.isValidating: boolean`** — `true` while any **async** validation is in

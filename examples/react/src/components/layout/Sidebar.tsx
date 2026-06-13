@@ -12,6 +12,7 @@ export type TestId =
   | "discriminated-union"
   | "auto-discriminated"
   | "general-autoform"
+  | "themed-autoform"
   | "form-switch-field"
   | "form-switch-select"
   | "form-switch-compat"
@@ -82,6 +83,7 @@ const navigation: NavCategory[] = [
     icon: "wand",
     items: [
       { id: "general-autoform", label: "General AutoForm" },
+      { id: "themed-autoform", label: "Themed AutoForm" },
     ],
   },
   {

@@ -4,6 +4,7 @@ import type { AutoFormFieldConfig } from "../types";
 import { useDiscriminatedUnionContext } from "el-form-react-hooks";
 import { getDiscriminatedUnionInfo, getLiteralValue } from "el-form-core";
 import type { z } from "zod";
+import { cx } from "../utils/cx";
 
 // Discriminated Union Context for schema-driven FormSwitch
 interface DiscriminatedUnionContextValue {
@@ -173,7 +174,7 @@ const FormSwitchImpl = (props: any) => {
       }
       // Default rendering
       return (
-        <div className="space-y-4">
+        <div className="el-form-array">
           {fields.map((fieldConfig: AutoFormFieldConfig) => {
             const fieldProps = formApi.register(fieldConfig.name);
             const error = formApi.formState.errors[fieldConfig.name];
@@ -188,8 +189,8 @@ const FormSwitchImpl = (props: any) => {
 
             // Simple default field rendering (can be enhanced)
             return (
-              <div key={fieldConfig.name} className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">
+              <div key={fieldConfig.name} className="el-form-field">
+                <label className="el-form-label">
                   {fieldConfig.label || fieldConfig.name}
                 </label>
                 <input
@@ -198,10 +199,15 @@ const FormSwitchImpl = (props: any) => {
                   onChange={fieldProps.onChange}
                   onBlur={fieldProps.onBlur}
                   placeholder={fieldConfig.placeholder}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={cx(
+                    "el-form-input",
+                    error && touched && "el-form-input-error"
+                  )}
                 />
                 {error && touched && (
-                  <div className="text-red-500 text-sm">⚠️ {String(error)}</div>
+                  <div className="el-form-error-message">
+                    ⚠️ {String(error)}
+                  </div>
                 )}
               </div>
             );
@@ -240,7 +246,7 @@ const FormSwitchImpl = (props: any) => {
     if (fields.length > 0) {
       // Auto-render fields from schema
       return (
-        <div className="space-y-4">
+        <div className="el-form-array">
           {fields.map((fieldConfig: AutoFormFieldConfig) => {
             const fieldProps = formApi.register(fieldConfig.name);
             const error = formApi.formState.errors[fieldConfig.name];
@@ -254,8 +260,8 @@ const FormSwitchImpl = (props: any) => {
                 : undefined;
 
             return (
-              <div key={fieldConfig.name} className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">
+              <div key={fieldConfig.name} className="el-form-field">
+                <label className="el-form-label">
                   {fieldConfig.label || fieldConfig.name}
                 </label>
                 <input
@@ -264,10 +270,15 @@ const FormSwitchImpl = (props: any) => {
                   onChange={fieldProps.onChange}
                   onBlur={fieldProps.onBlur}
                   placeholder={fieldConfig.placeholder}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={cx(
+                    "el-form-input",
+                    error && touched && "el-form-input-error"
+                  )}
                 />
                 {error && touched && (
-                  <div className="text-red-500 text-sm">⚠️ {String(error)}</div>
+                  <div className="el-form-error-message">
+                    ⚠️ {String(error)}
+                  </div>
                 )}
               </div>
             );

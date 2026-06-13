@@ -1,76 +1,411 @@
-@import "tailwindcss";
+/*
+ * el-form AutoForm styles — plain, Tailwind-free CSS.
+ *
+ * All visual rules live inside the `el-form` cascade layer so consumers can
+ * override them from their own (unlayered) styles without specificity wars.
+ * The look is driven by CSS custom properties (tokens) declared on :root and
+ * the form container; official themes are shipped as [data-el-form-theme="…"]
+ * blocks that only re-assign those tokens.
+ */
 
-/* AutoForm base styles */
-.el-form-error-summary {
-  @apply mb-6 p-4 border border-red-200 rounded-lg bg-red-50 shadow-sm;
+@layer el-form;
+
+/* ── Design tokens (defaults match the previous Tailwind look) ───────────── */
+:root,
+:where(.el-form-container) {
+  --el-form-font: inherit;
+  --el-form-radius: 0.5rem;
+  --el-form-accent: #2563eb;
+  --el-form-border-focus: var(--el-form-accent);
+  --el-form-bg: #ffffff;
+  --el-form-text: #111827;
+  --el-form-muted: #6b7280;
+  --el-form-border: #d1d5db;
+  --el-form-surface: #f9fafb;
+  --el-form-label: #1f2937;
+  --el-form-error: #dc2626;
+  --el-form-error-bg: #fef2f2;
+  --el-form-field-gap: 1rem;
+  --el-form-input-pad-x: 1rem;
+  --el-form-input-pad-y: 0.75rem;
+  --el-form-button-bg: var(--el-form-accent);
+  --el-form-button-text: #ffffff;
+  --el-form-focus-ring: rgba(37, 99, 235, 0.35);
+  /* shadow-sm equivalent; themes may flatten this to none */
+  --el-form-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.el-form-error-summary h3 {
-  @apply text-red-800 font-semibold mb-3 text-sm;
+@layer el-form {
+  /* ── Container ─────────────────────────────────────────────────────────── */
+  .el-form-container {
+    background: var(--el-form-bg);
+    color: var(--el-form-text);
+    border: 1px solid var(--el-form-border);
+    border-radius: 0.75rem; /* rounded-xl */
+    box-shadow: var(--el-form-shadow);
+    padding: 1.5rem; /* p-6 */
+    font: var(--el-form-font);
+  }
+
+  /* ── Error summary ─────────────────────────────────────────────────────── */
+  .el-form-error-summary {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--el-form-error);
+    border-radius: var(--el-form-radius);
+    background: var(--el-form-error-bg);
+    box-shadow: var(--el-form-shadow);
+  }
+
+  .el-form-error-summary h3 {
+    color: var(--el-form-error);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .el-form-error-summary ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .el-form-error-summary li {
+    color: var(--el-form-error);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .el-form-error-summary li + li {
+    margin-top: 0.5rem; /* space-y-2 */
+  }
+
+  .el-form-error-summary-bullet {
+    color: var(--el-form-error);
+    margin-right: 0.5rem;
+  }
+
+  .el-form-error-summary-field {
+    text-transform: capitalize;
+  }
+
+  .el-form-error-summary-value {
+    margin-left: 0.25rem;
+  }
+
+  /* ── Field wrapper + label ─────────────────────────────────────────────── */
+  .el-form-field > * + * {
+    margin-top: 0.5rem; /* space-y-2 */
+  }
+
+  .el-form-label {
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: var(--el-form-label);
+  }
+
+  /* ── Inputs / selects / textareas ──────────────────────────────────────── */
+  .el-form-input,
+  .el-form-select,
+  .el-form-textarea {
+    /* scoped reset (no global * reset) */
+    box-sizing: border-box;
+    font: inherit;
+    width: 100%;
+    padding: var(--el-form-input-pad-y) var(--el-form-input-pad-x);
+    border: 1px solid var(--el-form-border);
+    border-radius: var(--el-form-radius);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--el-form-text);
+    background: var(--el-form-bg);
+    box-shadow: var(--el-form-shadow);
+    transition: all 0.2s ease;
+  }
+
+  .el-form-input::placeholder,
+  .el-form-textarea::placeholder {
+    color: var(--el-form-muted);
+  }
+
+  .el-form-input:hover,
+  .el-form-select:hover,
+  .el-form-textarea:hover {
+    border-color: #9ca3af; /* gray-400 */
+  }
+
+  .el-form-input:focus,
+  .el-form-select:focus,
+  .el-form-textarea:focus {
+    outline: none;
+    border-color: var(--el-form-border-focus);
+    box-shadow: 0 0 0 2px var(--el-form-focus-ring);
+  }
+
+  .el-form-textarea {
+    resize: vertical;
+  }
+
+  .el-form-select {
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  /* ── Error state ───────────────────────────────────────────────────────── */
+  .el-form-input-error {
+    border-color: #f87171; /* red-400 */
+    background: var(--el-form-error-bg);
+  }
+
+  .el-form-input-error:focus {
+    border-color: var(--el-form-error);
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.35);
+  }
+
+  .el-form-error-message {
+    color: var(--el-form-error);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  /* ── Checkbox ──────────────────────────────────────────────────────────── */
+  .el-form-checkbox {
+    box-sizing: border-box;
+    height: 1rem;
+    width: 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--el-form-border);
+    accent-color: var(--el-form-accent);
+    transition: all 0.2s ease;
+  }
+
+  .el-form-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--el-form-focus-ring);
+  }
+
+  .el-form-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* ── Buttons ───────────────────────────────────────────────────────────── */
+  .el-form-submit-button,
+  .el-form-reset-button,
+  .el-form-array-add-button,
+  .el-form-array-remove-button {
+    /* button reset */
+    box-sizing: border-box;
+    font: inherit;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .el-form-submit-button {
+    padding: 0.75rem 1.5rem; /* py-3 px-6 */
+    background: linear-gradient(
+      to right,
+      var(--el-form-button-bg),
+      color-mix(in srgb, var(--el-form-button-bg), black 12%)
+    );
+    color: var(--el-form-button-text);
+    border-radius: var(--el-form-radius);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    box-shadow: var(--el-form-shadow);
+    transition: all 0.2s ease;
+  }
+
+  .el-form-submit-button:hover {
+    background: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--el-form-button-bg), black 12%),
+      color-mix(in srgb, var(--el-form-button-bg), black 24%)
+    );
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .el-form-submit-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--el-form-bg), 0 0 0 4px var(--el-form-accent);
+  }
+
+  .el-form-submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .el-form-reset-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--el-form-surface);
+    color: var(--el-form-text);
+    border: 1px solid var(--el-form-border);
+    border-radius: var(--el-form-radius);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .el-form-reset-button:hover {
+    background: color-mix(in srgb, var(--el-form-surface), black 6%);
+  }
+
+  .el-form-reset-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--el-form-bg), 0 0 0 4px var(--el-form-muted);
+  }
+
+  .el-form-array-add-button {
+    padding: 0.5rem 1rem;
+    background: #16a34a; /* green-600 */
+    color: #ffffff;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    border-radius: 0.375rem; /* rounded-md */
+    box-shadow: var(--el-form-shadow);
+    transition: all 0.2s ease;
+  }
+
+  .el-form-array-add-button:hover {
+    background: #15803d; /* green-700 */
+  }
+
+  .el-form-array-add-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5);
+  }
+
+  .el-form-array-remove-button {
+    padding: 0.25rem 0.75rem;
+    background: #dc2626; /* red-600 */
+    color: #ffffff;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    border-radius: 0.25rem; /* rounded */
+    transition: all 0.2s ease;
+  }
+
+  .el-form-array-remove-button:hover {
+    background: #b91c1c; /* red-700 */
+  }
+
+  .el-form-array-remove-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5);
+  }
+
+  /* ── Array fields ──────────────────────────────────────────────────────── */
+  .el-form-array-item {
+    padding: 1rem;
+    border: 1px solid var(--el-form-border);
+    border-radius: var(--el-form-radius);
+    background: var(--el-form-surface);
+    box-shadow: var(--el-form-shadow);
+  }
+
+  .el-form-array {
+    display: flex;
+    flex-direction: column;
+    gap: var(--el-form-field-gap);
+  }
+
+  .el-form-array-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .el-form-array-empty {
+    color: var(--el-form-muted);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  /* ── Structural layout helpers ─────────────────────────────────────────── */
+  .el-form-layout {
+    display: grid;
+    gap: var(--el-form-field-gap);
+  }
+
+  .el-form-layout--grid {
+    display: grid;
+    gap: var(--el-form-field-gap);
+    grid-template-columns: repeat(var(--el-form-columns, 1), minmax(0, 1fr));
+  }
+
+  .el-form-layout--flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--el-form-field-gap);
+  }
+
+  /* Responsive grid for nested object-array item fields: collapses to 1
+     column when the container is narrow, expands to 2+ when wide. */
+  .el-form-object-grid {
+    display: grid;
+    gap: var(--el-form-field-gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  }
+
+  .el-form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  /* ── Loading spinner ───────────────────────────────────────────────────── */
+  .el-form-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-bottom-color: transparent;
+    border-radius: 9999px;
+    animation: el-form-spin 0.6s linear infinite;
+    margin-right: 0.5rem;
+  }
 }
 
-.el-form-error-summary ul {
-  @apply list-none space-y-2;
+/* keyframes must live at top level, outside the cascade layer */
+@keyframes el-form-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.el-form-error-summary li {
-  @apply text-red-600 text-sm flex items-start;
+/* ── Official themes (token re-assignment only, outside the layer) ───────── */
+[data-el-form-theme="dark"] {
+  --el-form-bg: #1f2937;
+  --el-form-text: #f9fafb;
+  --el-form-border: #374151;
+  --el-form-surface: #374151;
+  --el-form-label: #e5e7eb;
+  --el-form-accent: #60a5fa;
+  --el-form-error: #f87171;
+  --el-form-error-bg: #3f1d1d;
+  --el-form-muted: #9ca3af;
 }
 
-.el-form-submit-button {
-  @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md;
-}
-
-/* Enhanced field styling */
-.el-form-field {
-  @apply space-y-2;
-}
-
-.el-form-label {
-  @apply block text-sm font-medium text-gray-800;
-}
-
-.el-form-input {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 bg-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400;
-}
-
-.el-form-input-error {
-  @apply border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50;
-}
-
-.el-form-error-message {
-  @apply text-red-600 text-sm mt-1 flex items-center;
-}
-
-.el-form-checkbox {
-  @apply h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 transition-colors duration-200;
-}
-
-.el-form-select {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400;
-}
-
-.el-form-textarea {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 bg-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 resize-y;
-}
-
-.el-form-container {
-  @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
-}
-
-/* Array field styling */
-.el-form-array-item {
-  @apply p-4 border border-gray-200 rounded-lg bg-gray-50 shadow-sm;
-}
-
-.el-form-array-add-button {
-  @apply px-4 py-2 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200 shadow-sm;
-}
-
-.el-form-array-remove-button {
-  @apply px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200;
-}
-
-.el-form-reset-button {
-  @apply px-6 py-3 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 border border-gray-300;
+[data-el-form-theme="minimal"] {
+  --el-form-radius: 0.25rem;
+  --el-form-border: #e5e7eb;
+  --el-form-focus-ring: transparent;
+  /* flatter look: drop the soft shadows */
+  --el-form-shadow: none;
 }

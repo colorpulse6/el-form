@@ -40,6 +40,7 @@ const sidebars = {
         "guides/array-fields",
         "guides/custom-components",
         "guides/integration-with-ui-libraries",
+        "guides/styling-and-themes",
         "guides/migration",
       ],
     },

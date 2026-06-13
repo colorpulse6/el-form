@@ -6,6 +6,39 @@ import type { Path } from "el-form-react-hooks";
 // Grid layout types
 export type GridColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
+// Theme presets selectable via the AutoForm `theme` prop. Maps to the
+// `data-el-form-theme` attribute on the form container; `"default"` (or
+// omitting the prop) renders no attribute.
+export type AutoFormTheme = "default" | "minimal" | "dark";
+
+// Global per-slot class map. Each entry appends to (does not replace) the
+// corresponding base `.el-form-*` class on that element, so users can layer
+// Tailwind utilities or custom CSS on top of the built-in semantic classes.
+// Note: there is intentionally no `errorSummary` slot in v1 — the error
+// summary renders inside the (overridable) `customErrorComponent`.
+// Note: fields rendered inside array items (both primitive-array item inputs
+// and nested object-array field inputs/labels) do not yet receive these
+// per-field slots; only the array-level slots below cover that container.
+export interface AutoFormClassNames {
+  container?: string;
+  form?: string;
+  layout?: string;
+  field?: string;
+  label?: string;
+  input?: string;
+  select?: string;
+  textarea?: string;
+  checkbox?: string;
+  error?: string;
+  submitButton?: string;
+  resetButton?: string;
+  actions?: string;
+  arrayItem?: string;
+  arrayHeader?: string;
+  arrayAddButton?: string;
+  arrayRemoveButton?: string;
+}
+
 // AutoForm types
 export interface AutoFormFieldConfig {
   name: string;
@@ -51,6 +84,8 @@ export interface AutoFormFieldProps {
   inputClassName?: string;
   labelClassName?: string;
   errorClassName?: string;
+  // Global per-slot class map (appended to base classes).
+  classNames?: AutoFormClassNames;
 }
 
 export interface AutoFormErrorProps {
@@ -98,6 +133,8 @@ export interface AutoFormProps<T extends Record<string, any>> {
   initialValues?: Partial<T>;
   layout?: "grid" | "flex";
   columns?: GridColumns;
+  theme?: AutoFormTheme;
+  classNames?: AutoFormClassNames;
   onSubmit: (data: T) => void | Promise<void>;
   onError?: (errors: Record<keyof T, string>) => void;
   children?: (formApi: UseFormReturn<T>) => React.ReactNode;

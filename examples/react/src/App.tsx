@@ -11,6 +11,7 @@ import { DiscriminatedUnionForm } from "./forms/DiscriminatedUnionForm";
 import { AutoDiscriminatedUnionForm } from "./forms/AutoDiscriminatedUnionForm";
 import { OnBlurValidationTest } from "./forms/OnBlurValidationTest";
 import { GeneralAutoFormTest } from "./forms/GeneralAutoFormTest";
+import { ThemedAutoFormTest } from "./forms/ThemedAutoFormTest";
 import { AsyncValidationTest } from "./forms/AsyncValidationTest";
 import { ComplexArrayTest } from "./forms/ComplexArrayTest";
 import FormSwitchFieldExample from "./tests/FormSwitch_Field_Example";
@@ -53,6 +54,8 @@ function App() {
         return <AutoDiscriminatedUnionForm />;
       case "general-autoform":
         return <GeneralAutoFormTest />;
+      case "themed-autoform":
+        return <ThemedAutoFormTest />;
       case "form-switch-field":
         return <FormSwitchFieldExample />;
       case "form-switch-select":

@@ -13,6 +13,8 @@ export type {
   AutoFormErrorProps,
   AutoFormFieldProps,
   AutoFormFieldConfig,
+  AutoFormClassNames,
+  AutoFormTheme,
   ComponentMap,
   FieldType,
   GridColumns,
