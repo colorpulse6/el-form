@@ -3,6 +3,7 @@ import { useFormQuickStartFiles } from "./useFormQuickStart";
 import { validationFiles } from "./validation";
 import { fieldArrayFiles } from "./fieldArray";
 import { autoFormBasicFiles } from "./autoFormBasic";
+import { autoFormThemedFiles } from "./autoFormThemed";
 
 export interface PlaygroundExample {
   /** URL-hash id, e.g. `/playground#useform`. */
@@ -18,7 +19,7 @@ export interface PlaygroundExample {
   note?: string;
 }
 
-// The four learning-path examples — all run live in the Sandpack sandbox.
+// The learning-path examples — all run live in the Sandpack sandbox.
 export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
   {
     id: "useform",
@@ -43,6 +44,12 @@ export const PLAYGROUND_EXAMPLES: PlaygroundExample[] = [
     label: "AutoForm",
     blurb: "Generate a whole form from a Zod schema.",
     files: autoFormBasicFiles,
+  },
+  {
+    id: "autoform-themed",
+    label: "AutoForm (themed)",
+    blurb: 'Tailwind-free theming: theme="dark" plus classNames slots.',
+    files: autoFormThemedFiles,
   },
 ];
 
