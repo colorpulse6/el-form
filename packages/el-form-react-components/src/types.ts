@@ -6,6 +6,11 @@ import type { Path } from "el-form-react-hooks";
 // Grid layout types
 export type GridColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
+// Theme presets selectable via the AutoForm `theme` prop. Maps to the
+// `data-el-form-theme` attribute on the form container; `"default"` (or
+// omitting the prop) renders no attribute.
+export type AutoFormTheme = "default" | "minimal" | "dark";
+
 // AutoForm types
 export interface AutoFormFieldConfig {
   name: string;
@@ -98,6 +103,7 @@ export interface AutoFormProps<T extends Record<string, any>> {
   initialValues?: Partial<T>;
   layout?: "grid" | "flex";
   columns?: GridColumns;
+  theme?: AutoFormTheme;
   onSubmit: (data: T) => void | Promise<void>;
   onError?: (errors: Record<keyof T, string>) => void;
   children?: (formApi: UseFormReturn<T>) => React.ReactNode;

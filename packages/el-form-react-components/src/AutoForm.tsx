@@ -671,6 +671,7 @@ export function AutoForm<T extends Record<string, any>>({
   initialValues = {},
   layout = "flex",
   columns = 12,
+  theme,
   onSubmit,
   onError,
   children,
@@ -828,7 +829,10 @@ export function AutoForm<T extends Record<string, any>>({
 
   // Default form rendering
   const defaultForm = (
-    <div className="el-form-container">
+    <div
+      className="el-form-container"
+      data-el-form-theme={theme && theme !== "default" ? theme : undefined}
+    >
       <form
         onSubmit={handleSubmit(
           (data) => onSubmit(data),
@@ -932,7 +936,10 @@ export function AutoForm<T extends Record<string, any>>({
   // If children render prop is provided, render it along with the form
   if (children) {
     return (
-      <div className="el-form-container">
+      <div
+        className="el-form-container"
+        data-el-form-theme={theme && theme !== "default" ? theme : undefined}
+      >
         <form
           onSubmit={handleSubmit(
             (data) => onSubmit(data),
