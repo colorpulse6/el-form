@@ -14,6 +14,32 @@
 
 ---
 
+## Reconciliation note (verified against current code, post-async-fix #90)
+
+This branch was cut **before** the async-validation-dispatch fix (PR #90) landed on `main`, then
+rebased onto it. The fix added `validateFieldAsync` / `validateFormAsync` / `hasAsyncValidator` /
+`shouldRunAsync` to `utils/validation.ts` and a non-blocking async pass to `useForm.ts`
+onChange/onBlur, plus blocking async in `trigger`/submit. **Verified line references** (use these;
+they supersede the `~NNN` hints in the tasks below):
+
+- **Task 1 — full `FormState` construction sites** (add `isValidating: false, dirtyFields: {}`):
+  `useForm.ts:55` (initial `useState`), `useForm.ts:558` (`reset()`), `utils/formState.ts:82`
+  (`resetValues`), `utils/formHistory.ts:126` (`restoreSnapshot`).
+- **Task 2 — derived `isDirty: …size > 0` writes** (route through `statePatch()`):
+  `useForm.ts:260` (file onChange), `useForm.ts:328` (regular onChange), `utils/formState.ts:41`
+  (`setValue`), `:57` (`updateValue`), `:71` (`setValues`), `utils/fieldOperations.ts:148`,
+  `utils/formHistory.ts:132` (`restoreSnapshot`). Plus `utils/arrayOperations.ts:24` & `:31`
+  (`isDirty: true`; `addDirtyField(path)` already called above each).
+- **Task 4 — `shouldValidate` callsites** (pass `ctx`): `useForm.ts:243` (file onChange — pass ctx
+  for consistency), `:333-334` (regular onChange), `:405` (onBlur). Also update the
+  `shouldValidate` **interface signature** at `utils/validation.ts:28` and the
+  `ValidationManagerOptions.mode` union at `:58` (add `"onTouched"`), and destructure
+  `reValidateMode` in `createValidationManager`.
+- **Task 3 — `isValidating`**: the async-fix changed what to wrap. See Task 3 Step 4 below (fully
+  rewritten for the new `validateFieldAsync`/`validateFormAsync` structure).
+
+---
+
 ## File Structure
 
 | File | Responsibility / change |
@@ -229,7 +255,9 @@ git commit -m "feat(hooks): reactive formState.dirtyFields via paired dirty writ
 ## Task 3: `isValidating` via a counter wrapper
 
 **Files:**
-- Modify: `packages/el-form-react-hooks/src/useForm.ts` (counter + `runValidating`, wrap async sites)
+- Modify: `packages/el-form-react-hooks/src/useForm.ts` (counter + `runValidating`, wrap onChange/onBlur async; thread `runValidating` into managers)
+- Modify: `packages/el-form-react-hooks/src/utils/errorManagement.ts` (accept `runValidating`, wrap `trigger` body)
+- Modify: `packages/el-form-react-hooks/src/utils/submitOperations.ts` (accept `runValidating`, wrap submit validation region)
 - Test: `packages/el-form-react-hooks/src/__tests__/isValidating.test.tsx` (new)
 
 - [ ] **Step 1: Write the failing test**
@@ -315,14 +343,73 @@ const runValidating = useCallback(async <R,>(fn: () => Promise<R>): Promise<R> =
 }, []);
 ```
 
-- [ ] **Step 4: Wrap the async validation entry points**
+- [ ] **Step 4: Wrap the async validation entry points** *(rewritten for post-async-fix code)*
 
-Wrap each async validation so it runs inside `runValidating`:
-- `register`'s onChange async `validationManager.validateField(...)` (the `await` that runs when `shouldValidate("onChange")`) and the onBlur equivalent.
-- `trigger` — wrap the **whole** `trigger()` body once (one increment per call), not each inner `validateField`/`validateForm` (it has all-fields / multi-field `Promise.all` / single-field paths). `trigger` lives in `utils/errorManagement.ts`; if wrapping there is awkward, wrap at the `useForm` boundary where `trigger` is exposed, or pass `runValidating` into the error-management manager.
-- The form-level `validateForm` in `utils/submitOperations.ts` — wrap so `isValidating` is true during submit validation (pass `runValidating` into the submit-operations manager, or wrap the exposed `submit`/`handleSubmit`).
+> **Critical scoping.** After PR #90 the genuinely-async calls are `validateFieldAsync` (field) and
+> `validateFormAsync` (form). `isValidating` wraps **those async passes** — NOT the synchronous
+> `validateField`/`validateForm`. Wrapping the sync path would flip `isValidating` true→false on
+> every keystroke even with no async validator configured. The spec's "wrap the onChange/onBlur
+> async path, trigger, and submit's validateForm" maps onto the new async methods as follows.
 
-Keep it minimal: every `await validationManager.validate*` that can be async runs inside exactly one `runValidating` frame. **TypeScript:** `trigger` and `handleSubmit` are exposed via `as UseFormReturn<T>["..."]` overload casts (`useForm.ts` ~536/~556/~563-564) — when wrapping them, re-cast the wrapped function to preserve the overload surface so the public types don't change.
+Wrap exactly these four sites:
+
+1. **`register` onChange async pass** (`useForm.ts` ~376–394) — currently
+   `void validationManager.validateFieldAsync(fieldName, value, latestValues, "onChange").then((asyncResult) => { … })`.
+   Wrap the call and add a `.catch`:
+   ```ts
+   void runValidating(() =>
+     validationManager.validateFieldAsync(fieldName, value, latestValues, "onChange")
+   )
+     .then((asyncResult) => { /* keep the existing stale-guard + clear-on-success body verbatim */ })
+     .catch(() => {}); // rejecting async validator: runValidating's finally still resets the flag
+   ```
+2. **`register` onBlur async pass** (`useForm.ts` ~423–441) — same wrap + `.catch(() => {})`.
+3. **`trigger`** (`utils/errorManagement.ts`) — wrap the **whole** body once (one increment per
+   call; it has all-fields / multi-field `Promise.all` / single-field branches, each awaiting sync
+   **and** async passes). Pass `runValidating` into `createErrorManagementManager`. `trigger` has no
+   user callback, so wrapping the whole body is correct:
+   ```ts
+   trigger: ((nameOrNames?: keyof T | (keyof T)[]) =>
+     runValidating(async () => { /* existing trigger body, returns the boolean */ })
+   ) as UseFormReturn<T>["trigger"],
+   ```
+4. **submit** (`utils/submitOperations.ts`, all three of `handleSubmit`/`submit`/`submitAsync`) —
+   wrap **only the validation region** (sync `validateForm` + conditional `validateFormAsync`), NOT
+   the user's `onSubmit` callback, so `isValidating` is false while `onSubmit` runs. Pass
+   `runValidating` into `createSubmitOperationsManager`. Transform each:
+   ```ts
+   // before:
+   const { isValid, errors } = await validationManager.validateForm(formState.values);
+   let finalValid = isValid; let finalErrors = errors;
+   if (finalValid) {
+     const asyncResult = await validationManager.validateFormAsync(formState.values, "onSubmit");
+     if (!asyncResult.isValid) { finalValid = false; finalErrors = { ...finalErrors, ...asyncResult.errors }; }
+   }
+   // after:
+   const { finalValid, finalErrors } = await runValidating(async () => {
+     const { isValid, errors } = await validationManager.validateForm(formState.values);
+     let v = isValid; let e = errors;
+     if (v) {
+       const a = await validationManager.validateFormAsync(formState.values, "onSubmit");
+       if (!a.isValid) { v = false; e = { ...e, ...a.errors }; }
+     }
+     return { finalValid: v, finalErrors: e };
+   });
+   ```
+
+**Wiring `runValidating` into the managers:** add an optional
+`runValidating?: <R>(fn: () => Promise<R>) => Promise<R>` to `SubmitOperationsOptions` and
+`ErrorManagementOptions`; pass it from `useForm.ts` (where it is defined). Inside each manager,
+default to a pass-through when absent so directly-constructed test managers are unaffected:
+`const run = options.runValidating ?? (<R,>(fn: () => Promise<R>) => fn());`
+
+**Define `runValidating` early** in `useForm.ts` (right after the `useState`/refs, before any
+manager is created at ~113–165) so it is in scope for `registerImpl`, submit, and error managers.
+Add it to `registerImpl`'s `useCallback` dep array (it is stable, so no extra re-creation).
+
+**TypeScript:** `trigger`, `handleSubmit`, `submit` are exposed via `as UseFormReturn<T>["…"]`
+overload casts — keep the re-cast on the wrapped functions so the public overload surface is
+unchanged.
 
 - [ ] **Step 5: Run to verify it passes**
 
