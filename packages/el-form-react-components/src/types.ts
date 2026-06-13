@@ -16,6 +16,9 @@ export type AutoFormTheme = "default" | "minimal" | "dark";
 // Tailwind utilities or custom CSS on top of the built-in semantic classes.
 // Note: there is intentionally no `errorSummary` slot in v1 — the error
 // summary renders inside the (overridable) `customErrorComponent`.
+// Note: fields rendered inside array items (both primitive-array item inputs
+// and nested object-array field inputs/labels) do not yet receive these
+// per-field slots; only the array-level slots below cover that container.
 export interface AutoFormClassNames {
   container?: string;
   form?: string;

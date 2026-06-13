@@ -208,11 +208,12 @@ override](#4-override-css-variables) instead.
 
 A few things are intentionally out of scope for this first release:
 
-- **Primitive-array item inputs** — the individual item inputs of a primitive
-  array field (e.g. `z.array(z.string())`) render through a separate path and do
-  **not** yet receive the per-field `classNames` slots. Object-array items
-  (`arrayItem` / `arrayHeader` / `arrayAddButton` / `arrayRemoveButton`) are
-  covered.
+- **Array-item field inputs** — fields rendered inside array items (both
+  primitive-array item inputs like `z.array(z.string())` and the nested
+  object-array field inputs/labels inside an `ArrayField`) render through a
+  separate path and do **not** yet receive the per-field `classNames` slots. The
+  array-level slots (`arrayItem` / `arrayHeader` / `arrayAddButton` /
+  `arrayRemoveButton`) are covered.
 - **Standalone components & `FormSwitch`** — `TextField`, `SelectField`,
   `TextareaField`, and `FormSwitch` are styled by the shipped CSS, but they don't
   yet accept `theme` or `classNames`. Those props are **AutoForm-only** this
