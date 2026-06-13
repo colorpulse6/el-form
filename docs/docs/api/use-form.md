@@ -182,6 +182,9 @@ Opt-in. Once the form has been submitted at least once, `reValidateMode` pins al
 post-submit re-validation to the single chosen event (React Hook Form's
 `reValidateMode`). Leaving it `undefined` keeps the existing behavior.
 
+> **Precedence:** `validateOn` takes priority. If you set both `validateOn` and
+> `reValidateMode`, `validateOn` wins and `reValidateMode` is ignored.
+
 ```typescript
 const form = useForm({
   validators: { onChange: schema },

@@ -72,9 +72,11 @@ export function useForm<T extends Record<string, any>>(
     Partial<Record<keyof T, string | null>>
   >({});
 
-  // Tracks in-flight genuinely-async validations. `isValidating` is true while
-  // the counter is non-zero. Only the async validation entry points are wrapped
-  // (never the sync pass), so this never flips on a plain keystroke.
+  // Tracks in-flight validations. `isValidating` is true while the counter is
+  // non-zero. The onChange/onBlur keystroke paths wrap ONLY their async pass
+  // (`validateFieldAsync`), so a plain keystroke with no async validator never
+  // flips it. The explicit submit/`trigger()` actions wrap their whole
+  // validation pass (sync + async), so `isValidating` is briefly true there.
   const pendingValidationsRef = useRef(0);
   const runValidating = useCallback(
     async <R,>(fn: () => Promise<R>): Promise<R> => {
@@ -129,11 +131,13 @@ export function useForm<T extends Record<string, any>>(
       });
     } else {
       // Overwrite: the form now matches the new source of truth -> nothing dirty.
+      // Route through statePatch() (Set is now empty -> { isDirty: false,
+      // dirtyFields: {} }) so the reactive dirtyFields clears in lockstep.
       dirtyManager.clearDirtyState();
       setFormState((prev) => ({
         ...prev,
         values: { ...externalValues },
-        isDirty: false,
+        ...dirtyManager.statePatch(),
       }));
     }
   }, [externalValues, keepDirtyValues]);
