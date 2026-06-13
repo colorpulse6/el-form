@@ -7,6 +7,7 @@ import {
   AutoFormFieldConfig,
   AutoFormFieldProps,
   AutoFormErrorProps,
+  AutoFormClassNames,
   ComponentMap,
 } from "./types";
 import { z } from "zod"; // Classic import for parsing conveniences
@@ -71,13 +72,14 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
   inputClassName,
   labelClassName,
   errorClassName,
+  classNames,
 }: AutoFormFieldProps) => {
   const fieldId = `field-${name}`;
   const aria = fieldAriaProps({ fieldId, error, touched, required });
 
   if (type === "checkbox") {
     return (
-      <div className={className || "el-form-checkbox-row"}>
+      <div className={cx("el-form-checkbox-row", className)}>
         <input
           id={fieldId}
           name={name}
@@ -89,11 +91,11 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           aria-invalid={aria["aria-invalid"]}
           aria-describedby={aria["aria-describedby"]}
           aria-required={aria["aria-required"]}
-          className={inputClassName || "el-form-checkbox"}
+          className={cx("el-form-checkbox", classNames?.checkbox, inputClassName)}
         />
         <label
           htmlFor={fieldId}
-          className={labelClassName || "el-form-label"}
+          className={cx("el-form-label", classNames?.label, labelClassName)}
         >
           {label}
         </label>
@@ -103,14 +105,19 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
 
   const hasError = touched && error;
   const inputClasses = cx(
-    inputClassName || "el-form-input",
+    "el-form-input",
+    classNames?.input,
+    inputClassName,
     hasError && "el-form-input-error"
   );
 
   return (
-    <div className={className || "el-form-field"}>
+    <div className={cx("el-form-field", classNames?.field, className)}>
       {label && (
-        <label htmlFor={fieldId} className={labelClassName || "el-form-label"}>
+        <label
+          htmlFor={fieldId}
+          className={cx("el-form-label", classNames?.label, labelClassName)}
+        >
           {label}
         </label>
       )}
@@ -127,7 +134,11 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           aria-describedby={aria["aria-describedby"]}
           aria-required={aria["aria-required"]}
           placeholder={placeholder}
-          className={inputClassName || "el-form-textarea"}
+          className={cx(
+            "el-form-textarea",
+            classNames?.textarea,
+            inputClassName
+          )}
           rows={4}
         />
       ) : type === "select" && options ? (
@@ -141,7 +152,7 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
           aria-invalid={aria["aria-invalid"]}
           aria-describedby={aria["aria-describedby"]}
           aria-required={aria["aria-required"]}
-          className={inputClassName || "el-form-select"}
+          className={cx("el-form-select", classNames?.select, inputClassName)}
         >
           <option value="">{placeholder || "Select an option"}</option>
           {options.map((option: { value: string; label: string }) => (
@@ -171,7 +182,11 @@ const DefaultField: React.FC<AutoFormFieldProps> = ({
         <div
           id={aria.errorId}
           role="alert"
-          className={errorClassName || "el-form-error-message"}
+          className={cx(
+            "el-form-error-message",
+            classNames?.error,
+            errorClassName
+          )}
         >
           <span>⚠️</span>
           <span>{error}</span>
@@ -191,6 +206,7 @@ interface ArrayFieldProps {
   onValueChange: UseFormReturn<any>["setValue"];
   register: any;
   formState: any;
+  classNames?: AutoFormClassNames;
 }
 
 const ArrayField: React.FC<ArrayFieldProps> = ({
@@ -202,6 +218,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
   onValueChange,
   register,
   formState,
+  classNames,
 }: ArrayFieldProps) => {
   const arrayValue = Array.isArray(value) ? value : [];
 
@@ -291,6 +308,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
           onValueChange={onValueChange}
           register={register}
           formState={formState}
+          classNames={classNames}
         />
       );
     }
@@ -321,14 +339,14 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
 
   return (
     <div className="el-form-array">
-      <div className="el-form-array-header">
-        <label className="el-form-label">
+      <div className={cx("el-form-array-header", classNames?.arrayHeader)}>
+        <label className={cx("el-form-label", classNames?.label)}>
           {fieldConfig.label || fieldConfig.name}
         </label>
         <button
           type="button"
           onClick={handleAddItem}
-          className="el-form-array-add-button"
+          className={cx("el-form-array-add-button", classNames?.arrayAddButton)}
         >
           ✨ Add {fieldConfig.label || fieldConfig.name}
         </button>
@@ -339,15 +357,21 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
           const itemPath = `${path}[${index}]`;
 
           return (
-            <div key={index} className="el-form-array-item">
-              <div className="el-form-array-header">
-                <h4 className="el-form-label">
+            <div
+              key={index}
+              className={cx("el-form-array-item", classNames?.arrayItem)}
+            >
+              <div className={cx("el-form-array-header", classNames?.arrayHeader)}>
+                <h4 className={cx("el-form-label", classNames?.label)}>
                   {fieldConfig.label || fieldConfig.name} #{index + 1}
                 </h4>
                 <button
                   type="button"
                   onClick={() => handleRemoveItem(index)}
-                  className="el-form-array-remove-button"
+                  className={cx(
+                    "el-form-array-remove-button",
+                    classNames?.arrayRemoveButton
+                  )}
                 >
                   🗑️ Remove
                 </button>
@@ -538,12 +562,14 @@ interface DiscriminatedUnionFieldProps {
   fieldConfig: AutoFormFieldConfig;
   formApi: any;
   componentMap?: ComponentMap;
+  classNames?: AutoFormClassNames;
 }
 
 const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
   fieldConfig,
   formApi,
   componentMap,
+  classNames,
 }) => {
   const { register, watch } = formApi;
 
@@ -571,6 +597,7 @@ const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
           onChange={discriminatorProps.onChange}
           onBlur={discriminatorProps.onBlur}
           options={fieldConfig.options}
+          classNames={classNames}
         />
       </div>
 
@@ -623,6 +650,7 @@ const DiscriminatedUnionField: React.FC<DiscriminatedUnionFieldProps> = ({
                           inputClassName={field.inputClassName}
                           labelClassName={field.labelClassName}
                           errorClassName={field.errorClassName}
+                          classNames={classNames}
                         />
                       );
                     })}
@@ -672,6 +700,7 @@ export function AutoForm<T extends Record<string, any>>({
   layout = "flex",
   columns = 12,
   theme,
+  classNames,
   onSubmit,
   onError,
   children,
@@ -753,6 +782,7 @@ export function AutoForm<T extends Record<string, any>>({
             onValueChange={setValue}
             register={register}
             formState={formState}
+            classNames={classNames}
           />
         </div>
       );
@@ -766,6 +796,7 @@ export function AutoForm<T extends Record<string, any>>({
             fieldConfig={fieldConfig}
             formApi={formApi}
             componentMap={componentMap}
+            classNames={classNames}
           />
         </div>
       );
@@ -812,6 +843,7 @@ export function AutoForm<T extends Record<string, any>>({
           inputClassName={fieldConfig.inputClassName}
           labelClassName={fieldConfig.labelClassName}
           errorClassName={fieldConfig.errorClassName}
+          classNames={classNames}
         />
       </div>
     );
@@ -819,7 +851,8 @@ export function AutoForm<T extends Record<string, any>>({
 
   const containerClasses = cx(
     "el-form-layout",
-    layout === "flex" ? "el-form-layout--flex" : "el-form-layout--grid"
+    layout === "flex" ? "el-form-layout--flex" : "el-form-layout--grid",
+    classNames?.layout
   );
 
   const containerStyle: React.CSSProperties | undefined =
@@ -830,10 +863,11 @@ export function AutoForm<T extends Record<string, any>>({
   // Default form rendering
   const defaultForm = (
     <div
-      className="el-form-container"
+      className={cx("el-form-container", classNames?.container)}
       data-el-form-theme={theme && theme !== "default" ? theme : undefined}
     >
       <form
+        className={classNames?.form}
         onSubmit={handleSubmit(
           (data) => onSubmit(data),
           onError ||
@@ -889,6 +923,7 @@ export function AutoForm<T extends Record<string, any>>({
                     fieldConfig={fieldConfig}
                     formApi={formApi}
                     componentMap={componentMap}
+                    classNames={classNames}
                   />
                 );
               })()
@@ -896,7 +931,7 @@ export function AutoForm<T extends Record<string, any>>({
               fieldsToRender.map(renderField)}
 
           <div
-            className="el-form-actions"
+            className={cx("el-form-actions", classNames?.actions)}
             style={
               layout === "grid"
                 ? { gridColumn: "1 / -1" }
@@ -906,7 +941,7 @@ export function AutoForm<T extends Record<string, any>>({
             <button
               type="submit"
               disabled={formState.isSubmitting}
-              className="el-form-submit-button"
+              className={cx("el-form-submit-button", classNames?.submitButton)}
               {...submitButtonProps}
             >
               {formState.isSubmitting ? (
@@ -922,7 +957,7 @@ export function AutoForm<T extends Record<string, any>>({
             <button
               type="button"
               onClick={() => reset()}
-              className="el-form-reset-button"
+              className={cx("el-form-reset-button", classNames?.resetButton)}
               {...resetButtonProps}
             >
               Reset
@@ -937,10 +972,11 @@ export function AutoForm<T extends Record<string, any>>({
   if (children) {
     return (
       <div
-        className="el-form-container"
+        className={cx("el-form-container", classNames?.container)}
         data-el-form-theme={theme && theme !== "default" ? theme : undefined}
       >
         <form
+          className={classNames?.form}
           onSubmit={handleSubmit(
             (data) => onSubmit(data),
             onError ||
