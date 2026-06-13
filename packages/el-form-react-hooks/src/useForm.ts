@@ -259,7 +259,7 @@ export function useForm<T extends Record<string, any>>(
           ...prev,
           values: newValues,
           errors: newErrors,
-          isDirty: dirtyFieldsRef.current.size > 0,
+          ...dirtyManager.statePatch(),
         }));
       };
 
@@ -327,7 +327,7 @@ export function useForm<T extends Record<string, any>>(
               ...prev,
               values: newValues,
               errors: newErrors,
-              isDirty: dirtyFieldsRef.current.size > 0,
+              ...dirtyManager.statePatch(),
             };
           });
 

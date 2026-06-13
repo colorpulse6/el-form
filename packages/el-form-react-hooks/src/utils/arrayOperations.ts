@@ -21,14 +21,14 @@ export function createArrayOperationsManager<T extends Record<string, any>>(
       setFormState((prev) => {
         const newValues = appendItem(prev.values, path, item);
         dirtyManager.addDirtyField(path);
-        return { ...prev, values: newValues, isDirty: true };
+        return { ...prev, values: newValues, ...dirtyManager.statePatch() };
       });
     },
     removeArrayItem: (path: string, index: number) => {
       setFormState((prev) => {
         const newValues = removeItemAt(prev.values, path, index);
         dirtyManager.addDirtyField(path);
-        return { ...prev, values: newValues, isDirty: true };
+        return { ...prev, values: newValues, ...dirtyManager.statePatch() };
       });
     },
   };

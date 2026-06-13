@@ -25,6 +25,8 @@ export interface DirtyStateManager<T extends Record<string, any>> {
   clearDirtyState: () => void;
   removeDirtyField: (fieldName: string) => void;
   addDirtyField: (fieldName: string) => void;
+  toRecord: () => Record<string, boolean>;
+  statePatch: () => { isDirty: boolean; dirtyFields: Record<string, boolean> };
 }
 
 /**
@@ -101,5 +103,27 @@ export function createDirtyStateManager<T extends Record<string, any>>(
     addDirtyField: (fieldName: string): void => {
       dirtyFieldsRef.current.add(fieldName);
     },
+
+    // Snapshot the dirty Set as a `{ path: true }` record
+    toRecord: (): Record<string, boolean> => {
+      const out: Record<string, boolean> = {};
+      dirtyFieldsRef.current.forEach((path) => {
+        out[path] = true;
+      });
+      return out;
+    },
+
+    // Paired write helper: keep `isDirty` and `dirtyFields` consistent by
+    // deriving both from the same dirty Set in a single call. Implemented
+    // self-contained (does not call `toRecord`) to avoid `this`-binding
+    // issues on this object literal.
+    statePatch: () => ({
+      isDirty: dirtyFieldsRef.current.size > 0,
+      dirtyFields: (() => {
+        const out: Record<string, boolean> = {};
+        dirtyFieldsRef.current.forEach((p) => (out[p] = true));
+        return out;
+      })(),
+    }),
   };
 }
