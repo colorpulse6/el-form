@@ -37,6 +37,7 @@ export function useForm<T extends Record<string, any>>(
     fileValidators = {},
     mode = "onSubmit",
     validateOn,
+    reValidateMode,
     onSubmit,
     schema,
     shouldFocusError,
@@ -142,6 +143,7 @@ export function useForm<T extends Record<string, any>>(
     fieldValidators,
     mode,
     validateOn,
+    reValidateMode,
     schema, // Pass schema for discriminated union validation
   });
 
@@ -274,6 +276,7 @@ export function useForm<T extends Record<string, any>>(
               formStateRef.current?.touched ?? {},
               name
             ),
+            isSubmitted: !!formStateRef.current?.isSubmitted,
           })
         ) {
           const validationResult = await validationManager.validateField(
@@ -372,6 +375,7 @@ export function useForm<T extends Record<string, any>>(
                 formStateRef.current?.touched ?? {},
                 name
               ),
+              isSubmitted: !!formStateRef.current?.isSubmitted,
             }
           );
 
@@ -452,6 +456,7 @@ export function useForm<T extends Record<string, any>>(
                 formStateRef.current?.touched ?? {},
                 name
               ),
+              isSubmitted: !!formStateRef.current?.isSubmitted,
             })
           ) {
             const currentState = formStateRef.current!;

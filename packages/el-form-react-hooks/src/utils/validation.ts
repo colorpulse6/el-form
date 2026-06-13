@@ -60,6 +60,7 @@ export interface ValidationManagerOptions<T extends Record<string, any>> {
   fieldValidators: Partial<Record<keyof T, ValidatorConfig>>;
   mode: "onChange" | "onBlur" | "onSubmit" | "all" | "onTouched";
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
+  reValidateMode?: "onChange" | "onBlur" | "onSubmit";
   schema?: z.ZodTypeAny;
 }
 
@@ -75,6 +76,7 @@ export function createValidationManager<T extends Record<string, any>>(
     fieldValidators,
     mode,
     validateOn,
+    reValidateMode,
     schema,
   } = options;
 
@@ -114,7 +116,12 @@ export function createValidationManager<T extends Record<string, any>>(
       // Submit always validates.
       if (eventType === "onSubmit") return true;
 
-      // NOTE: Task 5 inserts the `reValidateMode` branch here (uses ctx.isSubmitted).
+      // Opt-in re-validation timing: once the form has been submitted, the caller
+      // can pin onChange/onBlur re-validation to a single event. Only active when
+      // `reValidateMode` is set AND the form is already submitted.
+      if (reValidateMode && ctx.isSubmitted) {
+        return eventType === reValidateMode;
+      }
 
       // Smart validation: if validators has the specific event, enable it
       // regardless of mode — except under `onTouched`, where an onChange on an

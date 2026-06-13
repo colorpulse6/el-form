@@ -55,6 +55,10 @@ export interface UseFormOptions<T extends Record<string, any>> {
   // Flexible validation timing
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
 
+  // Opt-in: after the form is submitted, pin onChange/onBlur re-validation to a
+  // single event. Default (undefined) keeps the pre-submit timing unchanged.
+  reValidateMode?: "onChange" | "onBlur" | "onSubmit";
+
   // Zod schema for discriminated union support and enhanced validation
   schema?: any;
 
