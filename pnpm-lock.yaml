@@ -111,6 +111,9 @@ importers:
       el-form-react:
         specifier: workspace:^
         version: link:../packages/el-form-react
+      el-form-react-components:
+        specifier: workspace:^
+        version: link:../packages/el-form-react-components
       prism-react-renderer:
         specifier: ^2.3.0
         version: 2.4.1(react@18.3.1)

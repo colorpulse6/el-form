@@ -39,6 +39,9 @@ export {
 // Quick Start example
 export { QuickStartExample } from "./QuickStartExample";
 
+// Styling & Themes live showcase
+export { ThemeShowcase } from "./ThemeShowcase";
+
 export * from "./UseFormArraysExample";
 export * from "./FormExamples";
 
