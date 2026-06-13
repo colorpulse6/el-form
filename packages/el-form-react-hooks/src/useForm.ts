@@ -71,6 +71,30 @@ export function useForm<T extends Record<string, any>>(
     Partial<Record<keyof T, string | null>>
   >({});
 
+  // Tracks in-flight genuinely-async validations. `isValidating` is true while
+  // the counter is non-zero. Only the async validation entry points are wrapped
+  // (never the sync pass), so this never flips on a plain keystroke.
+  const pendingValidationsRef = useRef(0);
+  const runValidating = useCallback(
+    async <R,>(fn: () => Promise<R>): Promise<R> => {
+      if (++pendingValidationsRef.current === 1) {
+        setFormState((prev) =>
+          prev.isValidating ? prev : { ...prev, isValidating: true }
+        );
+      }
+      try {
+        return await fn();
+      } finally {
+        if (--pendingValidationsRef.current === 0) {
+          setFormState((prev) =>
+            prev.isValidating ? { ...prev, isValidating: false } : prev
+          );
+        }
+      }
+    },
+    []
+  );
+
   // Compute canSubmit directly as a derived value
   const canSubmit = formState.isValid && !formState.isSubmitting;
 
@@ -142,12 +166,14 @@ export function useForm<T extends Record<string, any>>(
     onSubmit,
     fieldRefs,
     shouldFocusError,
+    runValidating,
   });
 
   const errorManagement = createErrorManagementManager<T>({
     formState,
     setFormState,
     validationManager,
+    runValidating,
   });
 
   const formHistory = createFormHistoryManager<T>({
@@ -380,8 +406,9 @@ export function useForm<T extends Record<string, any>>(
               const latestValues = name.includes(".")
                 ? setNestedValue(formStateRef.current?.values ?? {}, name, value)
                 : { ...(formStateRef.current?.values ?? {}), [name]: value };
-              void validationManager
-                .validateFieldAsync(fieldName, value, latestValues, "onChange")
+              void runValidating(() =>
+                validationManager.validateFieldAsync(fieldName, value, latestValues, "onChange")
+              )
                 .then((asyncResult) => {
                   // stale guard: drop the result if the field changed since
                   if (getNestedValue(formStateRef.current?.values ?? {}, name) !== value) return;
@@ -392,7 +419,8 @@ export function useForm<T extends Record<string, any>>(
                     const isValid = Object.values(newErrors).every((e) => !e);
                     return { ...prev, errors: newErrors, isValid };
                   });
-                });
+                })
+                .catch(() => {}); // rejecting async validator → unhandled-rejection guard; runValidating's finally still resets the flag
             }
           }
         },
@@ -427,8 +455,9 @@ export function useForm<T extends Record<string, any>>(
               const latestValues = name.includes(".")
                 ? setNestedValue(formStateRef.current?.values ?? {}, name, blurValue)
                 : { ...(formStateRef.current?.values ?? {}), [name]: blurValue };
-              void validationManager
-                .validateFieldAsync(fieldName, blurValue, latestValues, "onBlur")
+              void runValidating(() =>
+                validationManager.validateFieldAsync(fieldName, blurValue, latestValues, "onBlur")
+              )
                 .then((asyncResult) => {
                   // stale guard: drop the result if the field changed since
                   if (getNestedValue(formStateRef.current?.values ?? {}, name) !== blurValue) return;
@@ -439,7 +468,8 @@ export function useForm<T extends Record<string, any>>(
                     const isValid = Object.values(newErrors).every((e) => !e);
                     return { ...prev, errors: newErrors, isValid };
                   });
-                });
+                })
+                .catch(() => {}); // rejecting async validator → unhandled-rejection guard; runValidating's finally still resets the flag
             }
           }
         },
@@ -470,6 +500,7 @@ export function useForm<T extends Record<string, any>>(
       validationManager,
       fileValidators,
       formState.values,
+      runValidating,
     ]
   );
 

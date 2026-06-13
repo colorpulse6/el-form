@@ -25,6 +25,7 @@ export interface SubmitOperationsOptions<T extends Record<string, any>> {
     Map<keyof T, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   >;
   shouldFocusError?: boolean;
+  runValidating?: <R>(fn: () => Promise<R>) => Promise<R>;
 }
 
 /**
@@ -41,6 +42,9 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
     fieldRefs,
     shouldFocusError,
   } = options;
+  // Default to pass-through so directly-constructed test managers are unaffected.
+  const run =
+    options.runValidating ?? (<R,>(fn: () => Promise<R>) => fn());
 
   return {
     // Handle submit - simplified
@@ -58,25 +62,27 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
         isSubmitSuccessful: false,
       }));
 
-        const { isValid, errors } = await validationManager.validateForm(
-          formState.values
-        );
-
         // Blocking async validation pass: only runs when sync validation passed
         // (keeps it consistent with the onChange/onBlur gate). A failing async
         // rule blocks submission and merges its errors into the written state.
-        let finalValid = isValid;
-        let finalErrors = errors;
-        if (finalValid) {
-          const asyncResult = await validationManager.validateFormAsync(
-            formState.values,
-            "onSubmit"
+        const { finalValid, finalErrors } = await run(async () => {
+          const { isValid, errors } = await validationManager.validateForm(
+            formState.values
           );
-          if (!asyncResult.isValid) {
-            finalValid = false;
-            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          let v = isValid;
+          let e = errors;
+          if (v) {
+            const a = await validationManager.validateFormAsync(
+              formState.values,
+              "onSubmit"
+            );
+            if (!a.isValid) {
+              v = false;
+              e = { ...e, ...a.errors };
+            }
           }
-        }
+          return { finalValid: v, finalErrors: e };
+        });
 
         setFormState((prev) => ({
           ...prev,
@@ -129,24 +135,26 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
       }));
 
       try {
-        // Always validate before submitting
-        const { isValid, errors } = await validationManager.validateForm(
-          formState.values
-        );
-
+        // Always validate before submitting.
         // Blocking async validation pass: only runs when sync validation passed.
-        let finalValid = isValid;
-        let finalErrors = errors;
-        if (finalValid) {
-          const asyncResult = await validationManager.validateFormAsync(
-            formState.values,
-            "onSubmit"
+        const { finalValid, finalErrors } = await run(async () => {
+          const { isValid, errors } = await validationManager.validateForm(
+            formState.values
           );
-          if (!asyncResult.isValid) {
-            finalValid = false;
-            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          let v = isValid;
+          let e = errors;
+          if (v) {
+            const a = await validationManager.validateFormAsync(
+              formState.values,
+              "onSubmit"
+            );
+            if (!a.isValid) {
+              v = false;
+              e = { ...e, ...a.errors };
+            }
           }
-        }
+          return { finalValid: v, finalErrors: e };
+        });
 
         setFormState((prev) => ({
           ...prev,
@@ -176,24 +184,26 @@ export function createSubmitOperationsManager<T extends Record<string, any>>(
       }));
 
       try {
-        // Always validate before submitting
-        const { isValid, errors } = await validationManager.validateForm(
-          formState.values
-        );
-
+        // Always validate before submitting.
         // Blocking async validation pass: only runs when sync validation passed.
-        let finalValid = isValid;
-        let finalErrors = errors;
-        if (finalValid) {
-          const asyncResult = await validationManager.validateFormAsync(
-            formState.values,
-            "onSubmit"
+        const { finalValid, finalErrors } = await run(async () => {
+          const { isValid, errors } = await validationManager.validateForm(
+            formState.values
           );
-          if (!asyncResult.isValid) {
-            finalValid = false;
-            finalErrors = { ...finalErrors, ...asyncResult.errors };
+          let v = isValid;
+          let e = errors;
+          if (v) {
+            const a = await validationManager.validateFormAsync(
+              formState.values,
+              "onSubmit"
+            );
+            if (!a.isValid) {
+              v = false;
+              e = { ...e, ...a.errors };
+            }
           }
-        }
+          return { finalValid: v, finalErrors: e };
+        });
 
         setFormState((prev) => ({
           ...prev,

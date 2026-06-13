@@ -16,6 +16,7 @@ export interface ErrorManagementOptions<T extends Record<string, any>> {
   formState: FormState<T>;
   setFormState: React.Dispatch<React.SetStateAction<FormState<T>>>;
   validationManager: ValidationManager<T>;
+  runValidating?: <R>(fn: () => Promise<R>) => Promise<R>;
 }
 
 /**
@@ -25,6 +26,9 @@ export function createErrorManagementManager<T extends Record<string, any>>(
   options: ErrorManagementOptions<T>
 ): ErrorManagementManager<T> {
   const { formState, setFormState, validationManager } = options;
+  // Default to pass-through so directly-constructed test managers are unaffected.
+  const run =
+    options.runValidating ?? (<R,>(fn: () => Promise<R>) => fn());
 
   return {
     // Clear errors
@@ -52,7 +56,8 @@ export function createErrorManagementManager<T extends Record<string, any>>(
     },
 
     // Manual validation trigger
-    trigger: (async (nameOrNames?: keyof T | (keyof T)[]) => {
+    trigger: ((nameOrNames?: keyof T | (keyof T)[]) =>
+      run(async () => {
       // Validate all fields
       if (!nameOrNames) {
         const { isValid, errors } = await validationManager.validateForm(
@@ -172,6 +177,6 @@ export function createErrorManagementManager<T extends Record<string, any>>(
         };
       });
       return finalValid;
-    }) as UseFormReturn<T>["trigger"],
+      })) as UseFormReturn<T>["trigger"],
   };
 }
