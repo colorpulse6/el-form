@@ -65,7 +65,7 @@ RHF-parity polish, purely additive. After this slice:
   `isDirty` and `dirtyFields` can never drift. The 7 derived `isDirty: size > 0` writes to
   convert: `useForm.ts` regular onChange (~328) and file-input onChange (~260) paths;
   `utils/formState.ts` (~41, ~57, ~71); `utils/fieldOperations.ts` (~148); `utils/formHistory.ts`
-  (~132). (Separately, the `reset()` ternary at `useForm.ts` ~521 is a reset-style write — it sets
+  (~132). (Separately, the `reset()` ternary at `useForm.ts` ~564 is a reset-style write — it sets
   `dirtyFields: {}`, not from the Set.)
 - `arrayOperations` already adds the path via `addDirtyField`; the only change is routing its
   dirty write through the paired helper so `dirtyFields` is populated alongside `isDirty`.
