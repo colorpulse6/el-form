@@ -37,6 +37,7 @@ export function useForm<T extends Record<string, any>>(
     fileValidators = {},
     mode = "onSubmit",
     validateOn,
+    reValidateMode,
     onSubmit,
     schema,
     shouldFocusError,
@@ -62,12 +63,40 @@ export function useForm<T extends Record<string, any>>(
     isSubmitted: false,
     isSubmitSuccessful: false,
     submitCount: 0,
+    isValidating: false,
+    dirtyFields: {},
   });
 
   // Separate state for file previews
   const [filePreview, setFilePreview] = useState<
     Partial<Record<keyof T, string | null>>
   >({});
+
+  // Tracks in-flight validations. `isValidating` is true while the counter is
+  // non-zero. The onChange/onBlur keystroke paths wrap ONLY their async pass
+  // (`validateFieldAsync`), so a plain keystroke with no async validator never
+  // flips it. The explicit submit/`trigger()` actions wrap their whole
+  // validation pass (sync + async), so `isValidating` is briefly true there.
+  const pendingValidationsRef = useRef(0);
+  const runValidating = useCallback(
+    async <R,>(fn: () => Promise<R>): Promise<R> => {
+      if (++pendingValidationsRef.current === 1) {
+        setFormState((prev) =>
+          prev.isValidating ? prev : { ...prev, isValidating: true }
+        );
+      }
+      try {
+        return await fn();
+      } finally {
+        if (--pendingValidationsRef.current === 0) {
+          setFormState((prev) =>
+            prev.isValidating ? { ...prev, isValidating: false } : prev
+          );
+        }
+      }
+    },
+    []
+  );
 
   // Compute canSubmit directly as a derived value
   const canSubmit = formState.isValid && !formState.isSubmitting;
@@ -102,11 +131,13 @@ export function useForm<T extends Record<string, any>>(
       });
     } else {
       // Overwrite: the form now matches the new source of truth -> nothing dirty.
+      // Route through statePatch() (Set is now empty -> { isDirty: false,
+      // dirtyFields: {} }) so the reactive dirtyFields clears in lockstep.
       dirtyManager.clearDirtyState();
       setFormState((prev) => ({
         ...prev,
         values: { ...externalValues },
-        isDirty: false,
+        ...dirtyManager.statePatch(),
       }));
     }
   }, [externalValues, keepDirtyValues]);
@@ -116,6 +147,7 @@ export function useForm<T extends Record<string, any>>(
     fieldValidators,
     mode,
     validateOn,
+    reValidateMode,
     schema, // Pass schema for discriminated union validation
   });
 
@@ -140,12 +172,14 @@ export function useForm<T extends Record<string, any>>(
     onSubmit,
     fieldRefs,
     shouldFocusError,
+    runValidating,
   });
 
   const errorManagement = createErrorManagementManager<T>({
     formState,
     setFormState,
     validationManager,
+    runValidating,
   });
 
   const formHistory = createFormHistoryManager<T>({
@@ -171,6 +205,16 @@ export function useForm<T extends Record<string, any>>(
       const fieldValue =
         getNestedValue(formStateRef.current?.values || {}, name) ?? "";
       const isCheckbox = typeof fieldValue === "boolean";
+
+      // Build the latest shouldValidate context (touched + submitted) from the
+      // ref so onChange/onBlur read current state, not a stale render closure.
+      const validationCtx = (fieldPath: string) => ({
+        fieldTouched: !!getNestedValue(
+          formStateRef.current?.touched ?? {},
+          fieldPath
+        ),
+        isSubmitted: !!formStateRef.current?.isSubmitted,
+      });
 
       // Note: File input detection will be done via event.target.type in onChange
 
@@ -240,7 +284,7 @@ export function useForm<T extends Record<string, any>>(
         }
 
         // Run Zod validation if configured
-        if (validationManager.shouldValidate("onChange")) {
+        if (validationManager.shouldValidate("onChange", validationCtx(name))) {
           const validationResult = await validationManager.validateField(
             fieldName,
             value,
@@ -257,7 +301,7 @@ export function useForm<T extends Record<string, any>>(
           ...prev,
           values: newValues,
           errors: newErrors,
-          isDirty: dirtyFieldsRef.current.size > 0,
+          ...dirtyManager.statePatch(),
         }));
       };
 
@@ -325,13 +369,15 @@ export function useForm<T extends Record<string, any>>(
               ...prev,
               values: newValues,
               errors: newErrors,
-              isDirty: dirtyFieldsRef.current.size > 0,
+              ...dirtyManager.statePatch(),
             };
           });
 
           // Use extracted validation utility
-          const shouldValidateResult =
-            validationManager.shouldValidate("onChange");
+          const shouldValidateResult = validationManager.shouldValidate(
+            "onChange",
+            validationCtx(name)
+          );
 
           if (shouldValidateResult) {
             // Use formStateRef.current to avoid stale closure in async validation
@@ -378,8 +424,9 @@ export function useForm<T extends Record<string, any>>(
               const latestValues = name.includes(".")
                 ? setNestedValue(formStateRef.current?.values ?? {}, name, value)
                 : { ...(formStateRef.current?.values ?? {}), [name]: value };
-              void validationManager
-                .validateFieldAsync(fieldName, value, latestValues, "onChange")
+              void runValidating(() =>
+                validationManager.validateFieldAsync(fieldName, value, latestValues, "onChange")
+              )
                 .then((asyncResult) => {
                   // stale guard: drop the result if the field changed since
                   if (getNestedValue(formStateRef.current?.values ?? {}, name) !== value) return;
@@ -390,7 +437,8 @@ export function useForm<T extends Record<string, any>>(
                     const isValid = Object.values(newErrors).every((e) => !e);
                     return { ...prev, errors: newErrors, isValid };
                   });
-                });
+                })
+                .catch(() => {}); // rejecting async validator → unhandled-rejection guard; runValidating's finally still resets the flag
             }
           }
         },
@@ -402,7 +450,7 @@ export function useForm<T extends Record<string, any>>(
             return { ...prev, touched: newTouched };
           });
 
-          if (validationManager.shouldValidate("onBlur")) {
+          if (validationManager.shouldValidate("onBlur", validationCtx(name))) {
             const currentState = formStateRef.current!;
             const blurValue = currentState.values[fieldName];
             const result = await validationManager.validateField(
@@ -425,8 +473,9 @@ export function useForm<T extends Record<string, any>>(
               const latestValues = name.includes(".")
                 ? setNestedValue(formStateRef.current?.values ?? {}, name, blurValue)
                 : { ...(formStateRef.current?.values ?? {}), [name]: blurValue };
-              void validationManager
-                .validateFieldAsync(fieldName, blurValue, latestValues, "onBlur")
+              void runValidating(() =>
+                validationManager.validateFieldAsync(fieldName, blurValue, latestValues, "onBlur")
+              )
                 .then((asyncResult) => {
                   // stale guard: drop the result if the field changed since
                   if (getNestedValue(formStateRef.current?.values ?? {}, name) !== blurValue) return;
@@ -437,7 +486,8 @@ export function useForm<T extends Record<string, any>>(
                     const isValid = Object.values(newErrors).every((e) => !e);
                     return { ...prev, errors: newErrors, isValid };
                   });
-                });
+                })
+                .catch(() => {}); // rejecting async validator → unhandled-rejection guard; runValidating's finally still resets the flag
             }
           }
         },
@@ -468,6 +518,7 @@ export function useForm<T extends Record<string, any>>(
       validationManager,
       fileValidators,
       formState.values,
+      runValidating,
     ]
   );
 
@@ -555,16 +606,21 @@ export function useForm<T extends Record<string, any>>(
         dirtyManager.clearDirtyState();
       }
 
+      const dirtyPatch = options?.keepDirty
+        ? dirtyManager.statePatch()
+        : { isDirty: false, dirtyFields: {} };
+
       setFormState({
         values: newValues,
         errors: options?.keepErrors ? formState.errors : {},
         touched: options?.keepTouched ? formState.touched : {},
         isSubmitting: false,
         isValid: false,
-        isDirty: options?.keepDirty ? formState.isDirty : false,
         isSubmitted: false,
         isSubmitSuccessful: false,
         submitCount: 0,
+        isValidating: false,
+        ...dirtyPatch,
       });
 
       // Clear file previews on reset

@@ -38,7 +38,7 @@ export function createFormStateManager<T extends Record<string, any>>(
       setFormState((prev) => ({
         ...prev,
         values: setNestedValue(prev.values, path, value),
-        isDirty: dirtyManager.dirtyFieldsRef.current.size > 0,
+        ...dirtyManager.statePatch(),
       }));
     },
 
@@ -54,7 +54,7 @@ export function createFormStateManager<T extends Record<string, any>>(
         return {
           ...prev,
           values: newValues,
-          isDirty: dirtyManager.dirtyFieldsRef.current.size > 0,
+          ...dirtyManager.statePatch(),
         };
       });
     },
@@ -68,7 +68,7 @@ export function createFormStateManager<T extends Record<string, any>>(
       setFormState((prev) => ({
         ...prev,
         values: { ...prev.values, ...values },
-        isDirty: dirtyManager.dirtyFieldsRef.current.size > 0,
+        ...dirtyManager.statePatch(),
       }));
     },
 
@@ -89,6 +89,8 @@ export function createFormStateManager<T extends Record<string, any>>(
         isSubmitted: false,
         isSubmitSuccessful: false,
         submitCount: 0,
+        isValidating: false,
+        dirtyFields: {},
       });
     },
 

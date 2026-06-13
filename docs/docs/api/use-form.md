@@ -32,7 +32,8 @@ interface UseFormOptions<T extends Record<string, any>> {
   onSubmit?: (values: T) => void | Promise<void>;
   fieldValidators?: Partial<Record<keyof T, ValidatorConfig>>;
   fileValidators?: Partial<Record<keyof T, FileValidationOptions>>;
-  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
+  mode?: "onChange" | "onBlur" | "onTouched" | "onSubmit" | "all";
+  reValidateMode?: "onChange" | "onBlur" | "onSubmit";
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
   shouldFocusError?: boolean; // default true
   values?: Partial<T>; // reactive external values (props/server data)
@@ -157,11 +158,46 @@ const form = useForm({
 
 #### mode
 
-**Type:** `"onChange" | "onBlur" | "onSubmit" | "all"`  
+**Type:** `"onChange" | "onBlur" | "onTouched" | "onSubmit" | "all"`  
 **Optional:** Yes  
 **Default:** `"onSubmit"`
 
-Legacy validation mode setting. Use `validateOn` for more precise control.
+When validation first runs for a field, matching React Hook Form's `mode`:
+
+- `"onChange"` — validate on every change.
+- `"onBlur"` — validate when a field loses focus.
+- `"onTouched"` — validate on a field's **first blur**, then on **every change**
+  once it has been touched.
+- `"onSubmit"` — validate only on submit (the default).
+- `"all"` — validate on both change and blur.
+
+Use `validateOn` for more granular control over the trigger event.
+
+#### reValidateMode
+
+**Type:** `"onChange" | "onBlur" | "onSubmit"`  
+**Optional:** Yes — **default `undefined`** (behavior unchanged)
+
+Opt-in. Once the form has been submitted at least once, `reValidateMode` pins all
+post-submit re-validation to the single chosen event (React Hook Form's
+`reValidateMode`). Leaving it `undefined` keeps the existing behavior.
+
+> **Precedence:** `validateOn` takes priority. If you set both `validateOn` and
+> `reValidateMode`, `validateOn` wins and `reValidateMode` is ignored.
+
+```typescript
+const form = useForm({
+  validators: { onChange: schema },
+  reValidateMode: "onBlur", // after the first submit, re-validate only on blur
+});
+```
+
+**Transient-clear nuance:** el-form's `register` `onChange` handler eagerly clears a
+field's error _before_ the `reValidateMode` gate is applied. So with
+`reValidateMode: "onBlur"`, a post-submit **keystroke visibly clears** the field's
+error immediately, and a later **blur re-adds** it if the value is still invalid.
+This is expected — the error reappears on the next gated event rather than on the
+keystroke itself.
 
 #### validateOn
 
@@ -417,9 +453,11 @@ interface FormState<T> {
   isSubmitting: boolean; // Form submission in progress
   isValid: boolean; // Overall form validity
   isDirty: boolean; // Form has been modified
+  isValidating: boolean; // Validation in flight (esp. async); reset by reset()
   isSubmitted: boolean; // True after the first submit attempt; reset by reset()
   isSubmitSuccessful: boolean; // True when the last submit passed validation and the handler ran without throwing; reset by reset()
   submitCount: number; // Number of submit attempts; reset by reset()
+  dirtyFields: Partial<Record<string, boolean>>; // Reactive, path-keyed map of dirty fields; reset by reset()
 }
 ```
 
@@ -435,9 +473,11 @@ console.log(formState.touched); // Which fields have been touched
 console.log(formState.isValid); // Is the entire form valid?
 console.log(formState.isDirty); // Has the form been modified?
 console.log(formState.isSubmitting); // Is submission in progress?
+console.log(formState.isValidating); // Is async validation in flight?
 console.log(formState.isSubmitted); // Has a submit been attempted?
 console.log(formState.isSubmitSuccessful); // Did the last submit succeed?
 console.log(formState.submitCount); // How many submit attempts?
+console.log(formState.dirtyFields); // { "profile.name": true, ... } reactive, path-keyed
 
 // Conditional rendering based on state
 {

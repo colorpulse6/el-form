@@ -45,6 +45,8 @@ function makeState(
     isSubmitted: false,
     isSubmitSuccessful: false,
     submitCount: 0,
+    isValidating: false,
+    dirtyFields: {},
     ...overrides,
   };
 }

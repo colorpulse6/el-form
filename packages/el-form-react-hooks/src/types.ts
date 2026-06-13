@@ -23,6 +23,11 @@ export interface FormState<T extends Record<string, any>> {
   isSubmitSuccessful: boolean;
   /** Number of submit attempts. Reset by `reset()`. */
   submitCount: number;
+  /** True while any async validation is in flight. Reset by `reset()`. */
+  isValidating: boolean;
+  /** Per-field dirty map (flat, path-keyed) — the reactive twin of
+   *  `getDirtyFields()`. Reset by `reset()`. */
+  dirtyFields: Partial<Record<string, boolean>>;
 }
 
 export interface FormSnapshot<T extends Record<string, any>> {
@@ -45,10 +50,14 @@ export interface UseFormOptions<T extends Record<string, any>> {
   fileValidators?: Partial<Record<keyof T, FileValidationOptions>>;
 
   // New validation mode (more flexible)
-  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
+  mode?: "onChange" | "onBlur" | "onSubmit" | "all" | "onTouched";
 
   // Flexible validation timing
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
+
+  // Opt-in: after the form is submitted, pin onChange/onBlur re-validation to a
+  // single event. Default (undefined) keeps the pre-submit timing unchanged.
+  reValidateMode?: "onChange" | "onBlur" | "onSubmit";
 
   // Zod schema for discriminated union support and enhanced validation
   schema?: any;

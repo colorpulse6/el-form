@@ -30,6 +30,9 @@ function makeApp() {
         <div data-testid="a">{form.formState.values.a ?? ""}</div>
         <div data-testid="b">{form.formState.values.b ?? ""}</div>
         <div data-testid="dirty">{String(form.formState.isDirty)}</div>
+        <div data-testid="dirtyFields">
+          {JSON.stringify(form.formState.dirtyFields)}
+        </div>
       </FormProvider>
     );
   }
@@ -39,6 +42,7 @@ function makeApp() {
 const a = () => screen.getByTestId("a").textContent;
 const b = () => screen.getByTestId("b").textContent;
 const dirty = () => screen.getByTestId("dirty").textContent;
+const dirtyFields = () => screen.getByTestId("dirtyFields").textContent;
 
 describe("useForm reactive `values`", () => {
   it("seeds initial values from `values` (precedence over defaultValues)", () => {
@@ -76,9 +80,12 @@ describe("useForm reactive `values`", () => {
       getApi().setValue("a", "edited");
     });
     expect(dirty()).toBe("true");
+    expect(JSON.parse(dirtyFields()!)).toEqual({ a: true });
     rerender(<App values={{ a: "2", b: "2" }} />);
     expect(a()).toBe("2"); // overwritten
     expect(dirty()).toBe("false");
+    // reactive dirtyFields must clear in lockstep with isDirty on overwrite-sync
+    expect(dirtyFields()).toBe("{}");
   });
 
   it("keepDirtyValues=true: preserves edited fields, syncs the rest", () => {

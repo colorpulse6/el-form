@@ -6,7 +6,8 @@ Install everything with `npm install el-form-react`. The library is modular, so 
 
 Key facts:
 - AutoForm: `import { AutoForm } from "el-form-react-components"` — pass a `schema`, get a working form. Import `"el-form-react-components/styles.css"` for zero-config styling.
-- useForm: `import { useForm } from "el-form-react-hooks"` — `register`, `handleSubmit`, `formState`, `watch`, `setError`, `clearErrors` (familiar React Hook Form API). `formState` fields: `values`, `errors` (string per field), `touched`, `isValid`, `isDirty`, `isSubmitting`, `isSubmitted`, `isSubmitSuccessful`, `submitCount`.
+- useForm: `import { useForm } from "el-form-react-hooks"` — `register`, `handleSubmit`, `formState`, `watch`, `setError`, `clearErrors` (familiar React Hook Form API). `formState` fields: `values`, `errors` (string per field), `touched`, `isValid`, `isDirty`, `isSubmitting`, `isValidating` (async validation in flight), `isSubmitted`, `isSubmitSuccessful`, `submitCount`, `dirtyFields` (reactive, path-keyed map; reactive twin of `getDirtyFields()`).
+- Validation timing (RHF parity): `mode: "onChange" | "onBlur" | "onTouched" | "onSubmit" | "all"` (`onTouched` = validate on first blur, then every change once touched); opt-in `reValidateMode: "onChange" | "onBlur" | "onSubmit"` pins post-submit re-validation to one event (default `undefined` = unchanged).
 - Reactive hooks (inside `<FormProvider>`): `useWatch` (subscribe to value(s) by path, values only), `useField` (`value + error + touched`), `useFormSelector` (derived slice), `useFieldArray` (dynamic array fields with stable row ids).
 - Reactive external values: `useForm({ values, keepDirtyValues })` re-syncs to props/server data (RHF `values` / Formik `enableReinitialize` equivalent).
 - Validation-agnostic: Zod (v3 + v4), Yup, Valibot, custom validators, or no validation. Validation libraries are optional peer installs.

@@ -26,9 +26,11 @@ interface FormState<T> {
   isSubmitting: boolean;                       // submit handler in flight
   isValid: boolean;                            // no current errors
   isDirty: boolean;                            // any value changed from default
+  isValidating: boolean;                       // any async validation in flight
   isSubmitted: boolean;                        // true after the first submit attempt
   isSubmitSuccessful: boolean;                 // true when the last submit passed validation and the handler ran without throwing
   submitCount: number;                         // number of submit attempts
+  dirtyFields: Partial<Record<string, boolean>>; // reactive, path-keyed map of dirty fields
 }
 ```
 
@@ -39,6 +41,15 @@ A few things worth knowing:
 - **`touched`** flips to `true` when a field is blurred, so you can defer
   showing errors until the user leaves a field.
 - **`isDirty`** compares against `defaultValues`; resetting clears it.
+- **`isValidating`** is `true` while validation is in flight — most importantly while
+  an `onChange`/`onBlur` **async** validator runs, and also for the brief duration of
+  `submit`/`handleSubmit`/`trigger()` validation (which is bracketed as a whole). It is
+  `false` otherwise. Use it to show a spinner or disable submit during in-flight checks.
+  Reset by `reset()`.
+- **`dirtyFields`** is a reactive, flat, **path-keyed** map of the fields that differ
+  from their defaults (e.g. `{ "profile.name": true }`) — the reactive twin of the
+  [`getDirtyFields()`](#field-level-state-queries) method. Its keys are path strings
+  (matching `getDirtyFields()`), **not** `keyof T`. Reset by `reset()`.
 - **`isSubmitted`** flips to `true` after the first submit attempt and is reset by
   `reset()`.
 - **`isSubmitSuccessful`** is `true` when the last submit passed validation and the

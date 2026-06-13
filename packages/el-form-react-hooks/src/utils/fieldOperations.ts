@@ -145,7 +145,7 @@ export function createFieldOperationsManager<T extends Record<string, any>>(
           values: newValues,
           errors: newErrors,
           touched: newTouched,
-          isDirty: dirtyManager.dirtyFieldsRef.current.size > 0,
+          ...dirtyManager.statePatch(),
         };
       });
     },
