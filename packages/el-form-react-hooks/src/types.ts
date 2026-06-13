@@ -50,7 +50,7 @@ export interface UseFormOptions<T extends Record<string, any>> {
   fileValidators?: Partial<Record<keyof T, FileValidationOptions>>;
 
   // New validation mode (more flexible)
-  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
+  mode?: "onChange" | "onBlur" | "onSubmit" | "all" | "onTouched";
 
   // Flexible validation timing
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";

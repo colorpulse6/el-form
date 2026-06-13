@@ -268,7 +268,14 @@ export function useForm<T extends Record<string, any>>(
         }
 
         // Run Zod validation if configured
-        if (validationManager.shouldValidate("onChange")) {
+        if (
+          validationManager.shouldValidate("onChange", {
+            fieldTouched: !!getNestedValue(
+              formStateRef.current?.touched ?? {},
+              name
+            ),
+          })
+        ) {
           const validationResult = await validationManager.validateField(
             fieldName,
             value,
@@ -358,8 +365,15 @@ export function useForm<T extends Record<string, any>>(
           });
 
           // Use extracted validation utility
-          const shouldValidateResult =
-            validationManager.shouldValidate("onChange");
+          const shouldValidateResult = validationManager.shouldValidate(
+            "onChange",
+            {
+              fieldTouched: !!getNestedValue(
+                formStateRef.current?.touched ?? {},
+                name
+              ),
+            }
+          );
 
           if (shouldValidateResult) {
             // Use formStateRef.current to avoid stale closure in async validation
@@ -432,7 +446,14 @@ export function useForm<T extends Record<string, any>>(
             return { ...prev, touched: newTouched };
           });
 
-          if (validationManager.shouldValidate("onBlur")) {
+          if (
+            validationManager.shouldValidate("onBlur", {
+              fieldTouched: !!getNestedValue(
+                formStateRef.current?.touched ?? {},
+                name
+              ),
+            })
+          ) {
             const currentState = formStateRef.current!;
             const blurValue = currentState.values[fieldName];
             const result = await validationManager.validateField(

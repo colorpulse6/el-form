@@ -25,7 +25,10 @@ export interface ValidationManager<T extends Record<string, any>> {
     eventType?: "onChange" | "onBlur" | "onSubmit"
   ) => Promise<{ isValid: boolean; errors: Record<keyof T, string> }>;
 
-  shouldValidate: (eventType: "onChange" | "onBlur" | "onSubmit") => boolean;
+  shouldValidate: (
+    eventType: "onChange" | "onBlur" | "onSubmit",
+    ctx?: { fieldTouched?: boolean; isSubmitted?: boolean }
+  ) => boolean;
 
   hasAsyncValidator: (
     fieldName: keyof T,
@@ -55,7 +58,7 @@ export interface ValidationManagerOptions<T extends Record<string, any>> {
   validationEngine: React.MutableRefObject<ValidationEngine>;
   validators: ValidatorConfig;
   fieldValidators: Partial<Record<keyof T, ValidatorConfig>>;
-  mode: "onChange" | "onBlur" | "onSubmit" | "all";
+  mode: "onChange" | "onBlur" | "onSubmit" | "all" | "onTouched";
   validateOn?: "onChange" | "onBlur" | "onSubmit" | "manual";
   schema?: z.ZodTypeAny;
 }
@@ -97,7 +100,8 @@ export function createValidationManager<T extends Record<string, any>>(
   return {
     // Determine if validation should run based on mode and validateOn option
     shouldValidate: (
-      eventType: "onChange" | "onBlur" | "onSubmit"
+      eventType: "onChange" | "onBlur" | "onSubmit",
+      ctx: { fieldTouched?: boolean; isSubmitted?: boolean } = {}
     ): boolean => {
       // New validateOn option takes precedence
       if (validateOn) {
@@ -107,16 +111,28 @@ export function createValidationManager<T extends Record<string, any>>(
         return false;
       }
 
-      // Smart validation: if validators has the specific event, enable it regardless of mode
+      // Submit always validates.
+      if (eventType === "onSubmit") return true;
+
+      // NOTE: Task 5 inserts the `reValidateMode` branch here (uses ctx.isSubmitted).
+
+      // Smart validation: if validators has the specific event, enable it
+      // regardless of mode — except under `onTouched`, where an onChange on an
+      // untouched field is suppressed until the field has been touched.
       const hasValidatorForEvent = validators && (validators as any)[eventType];
       if (hasValidatorForEvent) {
+        if (mode === "onTouched" && eventType === "onChange" && !ctx.fieldTouched)
+          return false;
         return true;
       }
 
       // Fallback to mode
-      if (mode === "all") return true;
+      if (mode === "all") return eventType === "onChange" || eventType === "onBlur";
+      if (mode === "onTouched") {
+        if (eventType === "onBlur") return true;
+        return !!ctx.fieldTouched;
+      }
       if (mode === eventType) return true;
-      if (eventType === "onSubmit") return true; // Always validate on submit
 
       return false;
     },
