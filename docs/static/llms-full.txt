@@ -151,12 +151,18 @@ export function LoginForm() {
 
 `useForm` returns (most-used): `register`, `handleSubmit`, `formState`
 (`values`, `errors`, `touched`, `isDirty`, `isSubmitting`, `isValid`,
-`isSubmitted`, `isSubmitSuccessful`, `submitCount`), `watch`,
-`setError`, `clearErrors`, `reset`, `setValue`. Each `errors[field]` is a
-plain string (no `.message`). `isSubmitted`/`isSubmitSuccessful`/`submitCount`
-track submit attempts and are reset by `reset()`. There is no `isValidating`,
-`defaultValues`, `dirtyFields`, or `isLoading` on `formState` — per-field
-dirty/touched maps are the `getDirtyFields()` / `getTouchedFields()` methods.
+`isValidating`, `isSubmitted`, `isSubmitSuccessful`, `submitCount`,
+`dirtyFields`), `watch`, `setError`, `clearErrors`, `reset`, `setValue`. Each
+`errors[field]` is a plain string (no `.message`).
+`isSubmitted`/`isSubmitSuccessful`/`submitCount` track submit attempts and are
+reset by `reset()`. `isValidating` is `true` while any async validation
+(onChange/onBlur/submit/`trigger()` async validator) is in flight, else `false`;
+reset by `reset()`. `dirtyFields` is a reactive, flat, path-keyed map of dirty
+fields (e.g. `{ "profile.name": true }`) — the reactive twin of
+`getDirtyFields()` (keys are path strings, not `keyof T`); reset by `reset()`.
+There is no `defaultValues` or `isLoading` on `formState` — per-field
+dirty/touched maps are also available as the `getDirtyFields()` /
+`getTouchedFields()` methods.
 
 Validation triggers are configured per event:
 
@@ -164,6 +170,24 @@ Validation triggers are configured per event:
 useForm({ validators: { onChange: schema } }); // validate on change
 useForm({ validators: { onBlur: schema } });   // validate on blur
 useForm({ validators: { onSubmit: schema } }); // validate on submit
+```
+
+Validation timing options (RHF parity):
+
+```tsx
+// mode: when a field is first validated
+useForm({ mode: "onChange" });  // validate every change
+useForm({ mode: "onBlur" });    // validate on blur
+useForm({ mode: "onTouched" }); // validate on first blur, then every change once touched
+useForm({ mode: "onSubmit" });  // validate only on submit (default)
+useForm({ mode: "all" });       // validate on change and blur
+
+// reValidateMode (opt-in; default undefined = unchanged): after the form has been
+// submitted once, pin post-submit re-validation to a single event.
+useForm({ validators: { onChange: schema }, reValidateMode: "onBlur" });
+// Nuance: register's onChange eagerly CLEARS a field's error before the
+// reValidateMode gate, so with reValidateMode: "onBlur" a post-submit keystroke
+// visibly clears the error immediately and a later blur re-adds it if still invalid.
 ```
 
 --------------------------------------------------------------------------------

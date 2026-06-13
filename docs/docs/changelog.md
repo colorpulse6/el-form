@@ -14,6 +14,31 @@ All notable changes to the el-form project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Added
+
+### ✨ New `formState` fields + validation-timing options — `el-form-react-hooks`
+
+- **`formState.isValidating: boolean`** — `true` while any **async** validation is in
+  flight (an `onChange`/`onBlur`/submit/`trigger()` async validator), and `false`
+  otherwise. Reset by `reset()`. (Previously there was no `isValidating` on
+  `formState`.)
+- **`formState.dirtyFields: Partial<Record<string, boolean>>`** — a reactive, flat,
+  **path-keyed** map of dirty fields (e.g. `{ "profile.name": true }`); the reactive
+  twin of the existing `getDirtyFields()` method. Keys are path strings (matching
+  `getDirtyFields()`), **not** `keyof T`. Reset by `reset()`.
+- **`mode: "onTouched"`** — a new value for the existing `useForm({ mode })` option.
+  Validates a field on its **first blur**, then on **every change** once it has been
+  touched (matches React Hook Form's `onTouched`).
+- **`reValidateMode?: "onChange" | "onBlur" | "onSubmit"`** — a new opt-in `useForm`
+  option (default `undefined` = behavior unchanged). Once the form has been submitted,
+  it pins post-submit re-validation to the single chosen event (RHF-style). Note:
+  `register`'s `onChange` eagerly clears a field's error _before_ the gate, so with
+  `reValidateMode: "onBlur"` a post-submit keystroke visibly clears the error
+  immediately and a later blur re-adds it if still invalid.
+- All four additions are additive and backward-compatible — existing forms are
+  unaffected. See the [Form State concept](./concepts/form-state.md) and the
+  [useForm API](./api/use-form.md).
+
 ## [Unreleased] — Fixed
 
 ### 🐞 Bug Fix — async validators now actually run (`el-form-react-hooks`)
