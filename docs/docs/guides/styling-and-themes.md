@@ -10,6 +10,8 @@ keywords:
   - tailwind-free forms
 ---
 
+import { ThemeShowcase } from "@site/src/components/examples/ThemeShowcase";
+
 # Styling & Themes
 
 `AutoForm` ships with hand-authored, **Tailwind-free** CSS. The base styles are
@@ -55,6 +57,13 @@ Pass the `theme` prop. There are three official values:
 The prop sets a `data-el-form-theme` attribute on the form container, and the
 theme's variable block is already bundled in the shipped `styles.css` — there's
 **nothing extra to import**.
+
+### See the themes live
+
+These are real `AutoForm`s rendered from the same schema, one per theme, plus a
+`classNames` override — exactly what you get from the snippets above:
+
+<ThemeShowcase />
 
 ## 3. Restyle with `classNames` slots
 

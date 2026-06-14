@@ -1,3 +1,11 @@
+/* Load el-form's shipped, Tailwind-free CSS so the docs site's LIVE AutoForm
+   examples render styled. This is el-form-react-components/styles.css (the
+   canonical stylesheet with .el-form-* classes, @layer el-form, --el-form-*
+   tokens, and [data-el-form-theme] blocks). Do NOT use el-form-react/styles.css
+   — that copy is stale (old class names). Imported first so Tailwind (loaded
+   via src/tailwind.css) stays last in the cascade. */
+@import "el-form-react-components/styles.css";
+
 /* Essential Docusaurus overrides only */
 
 /* Define CSS custom properties that automatically change with theme */

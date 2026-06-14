@@ -26,6 +26,7 @@
     "clsx": "^2.0.0",
     "el-form-core": "workspace:^",
     "el-form-react": "workspace:^",
+    "el-form-react-components": "workspace:^",
     "prism-react-renderer": "^2.3.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
