@@ -85,6 +85,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   async errors and can gate submission where they previously passed silently.
 - See the updated [Async Validation Guide](./guides/async-validation.md).
 
+## [Unreleased] — Docs
+
+### 📚 Interactive Playground + live theme previews
+
+- **Interactive Playground & inline sandboxes.** [elform.dev](https://elform.dev) now has a
+  live [Playground](https://elform.dev/playground) and editable code sandboxes embedded
+  throughout the docs, so you can run `AutoForm` / `useForm` examples directly in the browser.
+- **Live theme previews.** The new [Styling & Themes guide](./guides/styling-and-themes.md)
+  renders the `default` / `minimal` / `dark` themes — plus a `classNames` override — as live,
+  interactive forms.
+
 ## [3.15.0] - 2026-06-09
 
 Released: `el-form-react-hooks@3.15.0`, `el-form-react-components@4.7.2`,
