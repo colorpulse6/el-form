@@ -4,7 +4,9 @@ import path from "path";
 import { getElFormVersions } from "./src/sandboxes/versions";
 
 const config: Config = {
-  title: "El Form",
+  // Appended to every page's <title> as "{Page} | {title}", so keep it
+  // descriptive/keyword-rich (the navbar brand below stays just "El Form").
+  title: "El Form — React form library",
   tagline:
     "TypeScript-first React form library: schema-driven AutoForm + a flexible useForm hook (Zod, Yup, Valibot).",
   favicon: "img/favicon.ico",

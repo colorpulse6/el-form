@@ -1,7 +1,7 @@
 ---
 sidebar_position: 7
 title: FAQ
-description: Frequently asked questions about El Form—features, installation, customization, and best practices.
+description: Answers to common questions about El Form—how it compares to React Hook Form and Formik, installation, TypeScript support, validation libraries, styling and customization.
 keywords:
   - el form faq
   - react form questions

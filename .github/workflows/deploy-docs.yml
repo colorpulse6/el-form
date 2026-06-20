@@ -49,6 +49,13 @@ jobs:
           # When the secret is unset this is empty and analytics stay off.
           GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
 
+      # Notify IndexNow (Bing, Yandex…) of the current URLs so changes are
+      # picked up in minutes. Non-fatal: a failed ping never blocks the deploy.
+      - name: Submit URLs to IndexNow
+        working-directory: ./docs
+        continue-on-error: true
+        run: node scripts/indexnow-submit.mjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v6
 

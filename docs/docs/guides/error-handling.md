@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
 title: Error Handling Guide
-description: Comprehensive strategies for validation, manual errors, server errors, and accessible feedback using El Form.
+description: Strategies for handling form errors in El Form—schema validation, manual and field-level errors, async server errors, and accessible, user-friendly error feedback.
 keywords:
   - form errors
   - error handling

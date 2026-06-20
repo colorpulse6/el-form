@@ -1,6 +1,6 @@
 ---
 title: Field Types
-description: Reference list of supported field types and how El Form maps schema definitions to form inputs.
+description: Reference of every field type El Form supports—text, number, select, checkbox, radio, date, array and more—and how your Zod, Yup or Valibot schema maps to the right input.
 keywords:
   - field types
   - form field mapping

@@ -1,6 +1,6 @@
 ---
 title: Changelog
-description: Version history and notable changes for El Form following semantic versioning and Keep a Changelog format.
+description: Release notes and version history for El Form across all packages—new features, fixes and breaking changes, following semantic versioning and the Keep a Changelog format.
 keywords:
   - el form changelog
   - release notes

@@ -1,7 +1,7 @@
 ---
 sidebar_position: 2
 title: Quick Start
-description: Get started with El Form quickly—installation, AutoForm, useForm hook, and validation options.
+description: Get started with El Form in minutes—install the packages, generate your first schema-driven AutoForm, wire up the useForm hook, and validate with Zod, Yup or Valibot.
 keywords:
   - el form
   - react form quick start

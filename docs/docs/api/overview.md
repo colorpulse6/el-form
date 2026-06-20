@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: API Overview
-description: Complete reference summary of El Form APIs including useForm methods, AutoForm, components, and utilities.
+description: A complete reference summary of the El Form API—the useForm hook and its methods, the AutoForm component, field components, FormProvider context, and validation utilities.
 keywords:
   - el form api
   - useform api

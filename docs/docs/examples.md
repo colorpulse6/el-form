@@ -1,7 +1,7 @@
 ---
 sidebar_position: 6
 title: Examples
-description: Practical example forms demonstrating registration, contact, profile editing and more with El Form.
+description: Practical, copy-paste example forms built with El Form—registration, login, contact, multi-step, profile editing and dynamic array fields, all type-safe and validated with Zod.
 keywords:
   - form examples
   - el form examples
