@@ -1,5 +1,15 @@
 # el-form-react-hooks
 
+## 3.16.0
+
+### Minor Changes
+
+- 2bcd9ad: Add `formState.isValidating` (true during async validation) and reactive
+  `formState.dirtyFields` (flat path-keyed, the reactive twin of `getDirtyFields()`),
+  plus two validation-timing options: `mode: "onTouched"` (validate on first blur,
+  then on change once touched) and opt-in `reValidateMode` ("onChange" | "onBlur" |
+  "onSubmit") controlling re-validation timing after the form is submitted. All additive.
+
 ## 3.15.2
 
 ### Patch Changes
