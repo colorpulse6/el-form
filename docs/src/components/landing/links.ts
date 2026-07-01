@@ -10,6 +10,7 @@ export const LINKS = {
   github: "https://github.com/colorpulse6/el-form",
   npm: "https://www.npmjs.com/package/el-form-react",
   issues: "https://github.com/colorpulse6/el-form/issues",
+  coffee: "https://buymeacoffee.com/nicbarnes",
   portfolio: "https://nichalasbarnes.com",
 } as const;
 
