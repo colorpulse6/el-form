@@ -2,6 +2,8 @@
 
 🪝 **React Hook Form alternative - TypeScript-first useForm hook with enterprise-grade state management**
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/nicbarnes)
+
 Perfect React Hook Form alternative for developers who want to build custom UIs with full control over styling and components.
 
 **Why choose el-form-react-hooks over React Hook Form:**

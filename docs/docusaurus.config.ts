@@ -169,6 +169,12 @@ const config: Config = {
           type: "html",
           position: "right",
           value:
+            '<a href="https://buymeacoffee.com/nicbarnes" class="navbar-bmc-button" target="_blank" rel="noopener noreferrer" aria-label="Buy me a coffee — support El Form">☕ Buy me a coffee</a>',
+        },
+        {
+          type: "html",
+          position: "right",
+          value:
             '<a href="https://github.com/colorpulse6/el-form" class="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-gray-800 to-black rounded-lg hover:from-gray-700 hover:to-gray-900 hover:-translate-y-0.5 transition-all duration-200 border border-white/10 shadow-md hover:shadow-lg ml-2 no-underline hover:no-underline hover:text-white" target="_blank" rel="noopener noreferrer">⭐ GitHub</a>',
         },
       ],

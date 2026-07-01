@@ -2,6 +2,8 @@
 
 🔧 **Framework-agnostic form validation engine - TypeScript schema validation core**
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/nicbarnes)
+
 The foundational validation logic that powers the entire el-form ecosystem.
 
 ## 🧭 **Choose the Right Package**

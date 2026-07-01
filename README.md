@@ -8,6 +8,7 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/el-form-react)](https://bundlephobia.com/package/el-form-react)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/colorpulse6/el-form/ci.yml?branch=main)](https://github.com/colorpulse6/el-form/actions)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/nicbarnes)
 
 **TypeScript-first React form library** with zero-boilerplate AutoForm and powerful useForm hook. The best React Hook Form alternative with schema-first validation (Zod, Yup, Valibot), built-in components, and enterprise-grade form management.
 
