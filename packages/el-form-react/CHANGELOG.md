@@ -1,5 +1,15 @@
 # el-form-react
 
+## 4.1.18
+
+### Patch Changes
+
+- a81288f: docs: add a Buy Me a Coffee support badge to each package README (shown on the npm page).
+- Updated dependencies [a81288f]
+  - el-form-core@2.3.4
+  - el-form-react-hooks@3.16.1
+  - el-form-react-components@4.8.1
+
 ## 4.1.17
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # el-form-core
 
+## 2.3.4
+
+### Patch Changes
+
+- a81288f: docs: add a Buy Me a Coffee support badge to each package README (shown on the npm page).
+
 ## 2.3.3
 
 ### Patch Changes

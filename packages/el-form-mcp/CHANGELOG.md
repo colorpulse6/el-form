@@ -1,5 +1,11 @@
 # el-form-mcp
 
+## 0.1.1
+
+### Patch Changes
+
+- a81288f: docs: add a Buy Me a Coffee support badge to each package README (shown on the npm page).
+
 ## 0.1.0
 
 ### Minor Changes
