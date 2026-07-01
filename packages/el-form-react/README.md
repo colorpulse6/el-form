@@ -2,6 +2,8 @@
 
 ⚡ **Best React Hook Form alternative - Complete TypeScript form library with zero-boilerplate AutoForm**
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/nicbarnes)
+
 This is the **all-in-one** package that includes everything you need for modern React forms. Perfect alternative to React Hook Form + manual component building, or complex form builders like Formik.
 
 **Why developers choose el-form-react:**

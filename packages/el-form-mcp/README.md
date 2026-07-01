@@ -4,6 +4,8 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server that gives AI
 agents accurate, up-to-date knowledge of [El Form](https://elform.dev) — plus a
 tool that generates ready-to-paste form code.
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/nicbarnes)
+
 ## Why
 
 If an agent is scaffolding a React form, this server lets it pull El Form's real

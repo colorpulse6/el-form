@@ -577,6 +577,36 @@ select:focus {
 }
 */
 
+/* Compact "Buy me a coffee" text button in the navbar — sits beside the
+   ⭐ GitHub button, matching its shape/size but in Buy Me a Coffee yellow.
+   Self-contained CSS (not Tailwind utilities) because docusaurus.config.ts is
+   outside Tailwind's content globs, so utility classes there aren't generated. */
+.navbar-bmc-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #0a0a0a;
+  background-color: #ffdd00;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+  text-decoration: none !important;
+}
+
+.navbar-bmc-button:hover {
+  color: #0a0a0a;
+  background-color: #ffe533;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 221, 0, 0.4);
+  text-decoration: none !important;
+}
+
 /* Buy Me a Coffee button styling in navbar */
 .bmc-button {
   display: inline-block;

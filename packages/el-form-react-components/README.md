@@ -2,6 +2,8 @@
 
 🎨 **Zero-boilerplate React AutoForm - Generate beautiful forms instantly from Zod schemas**
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-ffdd00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/nicbarnes)
+
 Perfect for developers who want plug-and-play form components that look great out of the box. Skip the tedious form building - generate complete, production-ready forms instantly.
 
 **AutoForm advantages:**
