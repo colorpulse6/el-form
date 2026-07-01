@@ -259,6 +259,22 @@ html:has(.elform-landing) {
   color: var(--text);
   background: var(--panel);
 }
+/* GitHub link: space between the mark and the "GitHub" label. */
+.elform-landing .nav-links a.lnk.gh {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+/* Coffee: icon-only support link; tints Buy Me a Coffee yellow on hover. */
+.elform-landing .nav-links a.lnk.coffee {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 11px;
+}
+.elform-landing .nav-links a.lnk.coffee:hover {
+  color: #ffdd00;
+  background: rgba(255, 221, 0, 0.1);
+}
 .elform-landing .nav-cta {
   display: inline-flex;
   align-items: center;
@@ -280,7 +296,8 @@ html:has(.elform-landing) {
   .elform-landing .nav-links .lnk {
     display: none;
   }
-  .elform-landing .nav-links .lnk.gh {
+  .elform-landing .nav-links .lnk.gh,
+  .elform-landing .nav-links .lnk.coffee {
     display: inline-flex;
   }
 }

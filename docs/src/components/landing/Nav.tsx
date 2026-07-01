@@ -1,6 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import { ArrowIcon, GithubIcon, BrandMark } from "./Icons";
+import { ArrowIcon, GithubIcon, CoffeeIcon, BrandMark } from "./Icons";
 import { LINKS } from "./links";
 
 // Sticky top nav. Gains a hairline bottom border + denser background once the
@@ -25,15 +25,31 @@ export function Nav() {
           </span>
         </a>
         <nav className="nav-links" aria-label="Primary">
-          <a className="lnk" href={LINKS.docs}>
+          <a className="lnk" href={LINKS.docs} target="_blank" rel="noopener noreferrer">
             Docs
           </a>
-          <a className="lnk" href={LINKS.npm}>
+          <a className="lnk" href={LINKS.npm} target="_blank" rel="noopener noreferrer">
             npm
           </a>
-          <a className="lnk gh" href={LINKS.github} aria-label="GitHub repository">
+          <a
+            className="lnk gh"
+            href={LINKS.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub repository"
+          >
             <GithubIcon />
             <span>GitHub</span>
+          </a>
+          <a
+            className="lnk coffee"
+            href={LINKS.coffee}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Buy me a coffee"
+            title="Buy me a coffee"
+          >
+            <CoffeeIcon />
           </a>
           <a className="nav-cta" href={LINKS.docs}>
             Get Started
