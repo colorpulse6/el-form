@@ -218,7 +218,7 @@ const config: Config = {
         },
       ],
 
-      copyright: `Copyright © ${new Date().getFullYear()} El Form. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Nichalas Barnes and El Form contributors. MIT licensed. <a href="/copyright.html">Copyright and licensing</a>.`,
     },
   } satisfies Preset.ThemeConfig,
 };

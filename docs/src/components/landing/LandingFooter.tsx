@@ -36,6 +36,7 @@ export function LandingFooter() {
           </div>
         </div>
         <div className="foot-bottom">
+          <a href="/copyright.html">© 2026 Nichalas Barnes · Copyright and licensing</a>
           <span className="mit">
             <span className="v" />
             MIT licensed
